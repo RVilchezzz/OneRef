@@ -1,0 +1,12 @@
+pydantic>=2.6
+pydantic-settings>=2.2
+numpy
+pillow
+scipy
+torch
+transformers>=4.56      # Qwen3-VL / InternVL3-hf / DINOv3
+accelerate
+# bitsandbytes          # 4-bit on 6 GB GPU / T4 (Linux/Colab)
+# vllm                  # optional fast backend (Colab)
+# logfire               # optional telemetry (set ONEREF_USE_LOGFIRE=true)
+pytest
