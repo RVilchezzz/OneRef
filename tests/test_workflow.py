@@ -291,3 +291,16 @@ def test_reader_fails_fast_without_llm_server():
     r = ReaderMLLM(Settings(llm_base_url="http://127.0.0.1:9/v1", vllm_autostart=False), "Qwen/Qwen3-VL-8B-Instruct", "reader_a")
     with pytest.raises(RuntimeError, match="No LLM server"):
         r.load()
+
+
+def test_remote_role_uses_its_own_endpoint_and_no_local_server(monkeypatch):
+    import inspector.agents.llm as llm
+
+    monkeypatch.setattr(llm.VLLMServer, "start", lambda self: pytest.fail("local server must not start"))
+    s = Settings(remote={"reader_a": {"base_url": "https://api.x.ai/v1", "api_key": "k", "model": "grok-x"}})
+    r = ReaderMLLM(s, "Qwen/Qwen3-VL-8B-Instruct", "reader_a_reopen", reopen=True)
+    r.load()
+    try:
+        assert r.agent.model.model_name == "grok-x" and "api.x.ai" in str(r.agent.model.client.base_url)
+    finally:
+        r.unload()

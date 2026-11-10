@@ -30,8 +30,12 @@ from inspector.config.settings import Settings
 from inspector.schemas.state import InspectionState
 
 
-def make_model(s: Settings, model_name: str) -> OpenAIChatModel:
-    return OpenAIChatModel(model_name, provider=OpenAIProvider(base_url=s.llm_base_url, api_key=s.llm_api_key))
+def make_model(s: Settings, model_name: str, ep: dict[str, str] | None = None) -> OpenAIChatModel:
+    ep = ep or {}
+    return OpenAIChatModel(
+        ep.get("model", model_name),
+        provider=OpenAIProvider(base_url=ep.get("base_url", s.llm_base_url), api_key=ep.get("api_key", s.llm_api_key)),
+    )
 
 
 def image_part(path: str) -> BinaryContent:
@@ -114,9 +118,11 @@ class LLMAgent(BaseAgent):
             return
         model = self._model
         if model is None:
-            self.server = VLLMServer(self.s, self.model_name)
-            self.server.start()
-            model = make_model(self.s, self.model_name)
+            ep = self.s.remote.get(self.name.removesuffix("_reopen"))  # hosted API: no local server
+            if ep is None:
+                self.server = VLLMServer(self.s, self.model_name)
+                self.server.start()
+            model = make_model(self.s, self.model_name, ep)
         self.agent = self.build(model)
         self.loop = asyncio.new_event_loop()  # one loop per pass: the HTTP client stays bound to it
 

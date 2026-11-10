@@ -48,6 +48,9 @@ class Settings(BaseSettings):
         "--enable-auto-tool-choice", "--tool-call-parser", "hermes",  # needed by the critic's tool
     ]
     vllm_startup_timeout_s: int = 900
+    # Hosted API per agent, e.g. ONEREF_REMOTE='{"reader_a":{"base_url":"https://api.x.ai/v1","api_key":"...","model":"grok-..."}}'
+    # Roles: reader_a, reader_b, critic. A listed role skips vLLM entirely (nothing on the GPU).
+    remote: dict[str, dict[str, str]] = {}
 
     # ---- expert calibration (tune on dev only) ----------------------------
     anomaly_norm_low: float = 0.2                     # cosine distance mapped to score 0
