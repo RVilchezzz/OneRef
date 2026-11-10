@@ -35,15 +35,20 @@ class VisualExpertOutput(BaseModel):
         )
 
 
-class ReaderOutput(BaseModel):
-    """One MLLM answer to one question."""
+class ReaderAnswer(BaseModel):
+    """What the MLLM itself returns (the pydantic-ai ``output_type`` of a reader)."""
 
     model_config = ConfigDict(extra="ignore")
 
-    question_id: str
     selected_option: OptionLetter
     confidence: float = Field(ge=0.0, le=1.0)
     brief_rationale: str = ""
+
+
+class ReaderOutput(ReaderAnswer):
+    """One MLLM answer to one question, tagged with the question it answers."""
+
+    question_id: str
 
 
 class CriticOutput(BaseModel):

@@ -1,6 +1,6 @@
-"""Critic / verifier (service agent). Rule-based, no model, so it costs no GPU pass.
+"""Critic / verifier (service agent): deterministic rules + an optional LLM critic (pydantic-ai).
 
-Checks, in order:
+Rules (always on, no model), in order:
 1. Schema/format: a reader answer is missing (invalid after retry) -> ``is_valid=False``, reopen it.
 2. Consistency across questions of the same image (per reader):
    a. discrimination says "No defect" but the expert sees a strong anomaly (score >= threshold);
@@ -9,14 +9,25 @@ Checks, in order:
       Disabled by default: question presence reveals the label in MMAD (strict protocol).
 3. Disagreement between readers is NOT a conflict by itself: the aggregator votes.
 
+LLM critic (``use_llm_critic``, Qwen3-VL-8B with a critic prompt): sees the images, the expert
+evidence and both readers' answers; the rules are exposed to it as the ``run_consistency_rules`` tool
+(PasteurAIze tool pattern). Its reopen list is merged with the rules' (union). If it fails, the
+rules-only verdict stands. ``use_llm_critic=False`` is the "rules-only critic" ablation (no GPU pass).
+
 The reopen is granted at most ``Settings.max_reopen`` times per image (MAST: no unbounded loops);
 ``state.reopen_count`` is the guard.
 """
 from __future__ import annotations
 
+from dataclasses import dataclass
 from typing import Any
 
-from inspector.agents.base import BaseAgent
+from pydantic_ai import Agent, ModelRetry, PromptedOutput, RunContext, capture_run_messages
+from pydantic_ai.exceptions import UnexpectedModelBehavior
+from pydantic_ai.models import Model
+from pydantic_ai.settings import ModelSettings
+
+from inspector.agents.llm import LLMAgent, response_texts
 from inspector.config.settings import Settings
 from inspector.schemas.agent_outputs import CriticOutput, ReaderOutput
 from inspector.schemas.mmad import Question, SubTask
@@ -26,6 +37,16 @@ _CELLS = [
     "top left", "top center", "top right", "middle left", "center",
     "middle right", "bottom left", "bottom center", "bottom right",
 ]
+
+CRITIC_PROMPT = (
+    "You are the quality-control reviewer of an industrial inspection team. Image 1 is the inspected "
+    "part, image 2 a normal reference, image 3 (if present) the region a visual expert found most "
+    "different. Two inspectors answered multiple-choice questions about image 1. First call "
+    "`run_consistency_rules` to get the automatic checks. Then decide which questions must be "
+    "re-asked because an answer contradicts the images, the expert evidence, or another answer of "
+    "the same inspector. Only list question ids that appear in the input. Do not re-ask a question "
+    "just because the two inspectors disagree."
+)
 
 
 def says_no_defect(q: Question, letter: str) -> bool:
@@ -45,12 +66,60 @@ def cell_in_text(text: str) -> str | None:
     return None
 
 
-class CriticVerifier(BaseAgent):
+@dataclass
+class CriticDeps:
+    findings: list[str]        # rule findings, returned by the tool
+    question_ids: set[str]     # valid ids for the output validator
+
+
+class CriticVerifier(LLMAgent):
     name = "critic"
 
-    def __init__(self, settings: Settings):
-        self.s = settings
+    def __init__(self, settings: Settings, model: Model | None = None):
+        super().__init__(settings, settings.critic_model, model)
 
+    # ---- LLM critic ------------------------------------------------------------
+    def enabled(self) -> bool:
+        return self.s.use_llm_critic
+
+    def build(self, model: Model) -> Agent[CriticDeps, CriticOutput]:
+        agent = Agent(
+            model,
+            name="Critic",
+            system_prompt=CRITIC_PROMPT,
+            output_type=PromptedOutput([CriticOutput]),
+            deps_type=CriticDeps,
+            retries={"output": self.s.json_retries},
+            model_settings=ModelSettings(temperature=0.0, max_tokens=self.s.max_new_tokens),
+        )
+
+        @agent.tool
+        def run_consistency_rules(ctx: RunContext[CriticDeps]) -> str:
+            """Deterministic checks: missing answers, answers contradicting the visual expert."""
+            return "\n".join(ctx.deps.findings) or "No rule violation found."
+
+        @agent.output_validator
+        def ids_exist(ctx: RunContext[CriticDeps], out: CriticOutput) -> CriticOutput:
+            unknown = set(out.reopen_questions) - ctx.deps.question_ids
+            if unknown:
+                raise ModelRetry(f"Unknown question ids {sorted(unknown)}. Valid ids: {sorted(ctx.deps.question_ids)}.")
+            return out
+
+        return agent
+
+    @staticmethod
+    def describe(state: InspectionState) -> str:
+        """Text input of the LLM critic: expert evidence + both readers' answers per question."""
+        lines = [state.visual_evidence.as_text()] if state.visual_evidence else []
+        for q in state.questions:
+            opts = "; ".join(f"{k}. {v}" for k, v in sorted(q.options.items()))
+            lines.append(f"[{q.id}] {q.text} ({opts})")
+            for who, store in (("inspector A", state.reader_a_responses), ("inspector B", state.reader_b_responses)):
+                a = store.get(q.id)
+                lines.append(f"  {who}: " + (f"{a.selected_option} (conf {a.confidence:.2f}) {a.brief_rationale}" if a else "no valid answer"))
+        return "\n".join(lines)
+
+    # ---- rules -------------------------------------------------------------------
     def check_reader(self, state: InspectionState, answers: dict[str, ReaderOutput | None], who: str) -> tuple[bool, list[str], list[str]]:
         """Return (valid, reopen_ids, reasons) for one reader."""
         valid, reopen, reasons = True, [], []
@@ -85,6 +154,23 @@ class CriticVerifier(BaseAgent):
             valid &= v
             reopen += r
             reasons += why
+
+        if self.agent is not None:
+            deps = CriticDeps(findings=list(reasons), question_ids={q.id for q in state.questions})
+            prompt = self.describe(state)
+            rec["prompt"] = prompt
+            with capture_run_messages() as messages:
+                try:
+                    res = self.run_async(self.agent.run([prompt, *self.image_parts(state)], deps=deps))
+                    usage = res.usage
+                    rec.update(llm=res.output.model_dump(), tokens_in=usage.input_tokens, tokens_out=usage.output_tokens)
+                    reopen += res.output.reopen_questions
+                    if res.output.reopen_questions and res.output.critique_reason:
+                        reasons.append(f"reviewer: {res.output.critique_reason}")
+                except UnexpectedModelBehavior as e:  # LLM critic failed: the rules-only verdict stands
+                    rec["llm_error"] = repr(e)
+            rec["raw"] = response_texts(messages)
+
         reopen = sorted(set(reopen))
         allowed = state.reopen_count < self.s.max_reopen
         if reopen and allowed:
