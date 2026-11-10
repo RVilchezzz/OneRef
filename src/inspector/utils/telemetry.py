@@ -37,6 +37,7 @@ class Telemetry:
                 import logfire
 
                 logfire.configure(send_to_logfire="if-token-present")
+                logfire.instrument_pydantic_ai()  # traces every agent run, as in PasteurAIze
                 self._logfire = logfire
             except Exception as e:  # noqa: BLE001
                 self.write({"event": "logfire_unavailable", "error": repr(e)})
