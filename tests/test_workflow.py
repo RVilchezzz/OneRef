@@ -3,11 +3,14 @@ import json
 
 import pytest
 from pydantic import ValidationError
+from pydantic_ai import models
+from pydantic_ai.messages import ModelResponse, TextPart, ToolCallPart, ToolReturnPart
+from pydantic_ai.models.function import FunctionModel
 
 from inspector.agents.aggregator import Aggregator
 from inspector.agents.critic_verifier import CriticVerifier, cell_in_text
-from inspector.agents.mock import MockExpert, MockReader
-from inspector.agents.reader_mllm import parse_reader_json
+from inspector.agents.mock import MockExpert
+from inspector.agents.reader_mllm import ReaderMLLM
 from inspector.config.settings import Settings
 from inspector.orchestrator.graph import Step, build_steps
 from inspector.orchestrator.pass_runner import PassRunner
@@ -17,6 +20,8 @@ from inspector.schemas.state import InspectionState
 from inspector.utils import metrics
 from inspector.utils.splits import make_split
 from inspector.utils.telemetry import Telemetry
+
+models.ALLOW_MODEL_REQUESTS = False  # tests never call a real LLM endpoint
 
 DISC = {"A": "Yes", "B": "No"}
 LOC = {"A": "top left", "B": "top right", "C": "center", "D": "bottom right"}
@@ -73,11 +78,45 @@ def test_load_mmad_ignores_similar_templates(tmp_path):
     assert s.reference == "r0.png" and not hasattr(s, "similar_templates") and not s.is_defective
 
 
-def test_parse_reader_json_tolerant():
-    q = mk_questions()[0]
-    assert parse_reader_json('Sure! {"selected_option": "b", "confidence": 0.7} done', q).selected_option == "B"
-    assert parse_reader_json('{"selected_option": "C", "confidence": 0.7}', q) is None  # not an offered option
-    assert parse_reader_json("no json", q) is None
+def scripted(*replies):
+    """FunctionModel replying with the given texts / tool calls in order; records the calls."""
+    calls = []
+
+    def fn(messages, info):
+        calls.append(messages)
+        r = replies[min(len(calls), len(replies)) - 1]
+        part = ToolCallPart(tool_name=r[1], args={}) if isinstance(r, tuple) else TextPart(r)
+        return ModelResponse(parts=[part])
+
+    return FunctionModel(fn), calls
+
+
+def run_reader(model, state):
+    r = ReaderMLLM(Settings(json_retries=1), "m", "reader_a", model=model)
+    r.image_parts = lambda st: []
+    r.load()
+    try:
+        return r._run(state, rec := {}), rec
+    finally:
+        r.unload()
+
+
+def test_reader_agent_retries_on_option_not_offered():
+    st = mk_state()
+    st.questions = st.questions[:1]
+    # "C" is not offered on a yes/no question -> output_validator raises ModelRetry -> second answer kept
+    model, calls = scripted('{"selected_option": "C", "confidence": 0.7}', '{"selected_option": "B", "confidence": 0.7}')
+    st, rec = run_reader(model, st)
+    a = st.reader_a_responses[st.questions[0].id]
+    assert a.selected_option == "B" and a.question_id == st.questions[0].id
+    assert len(calls) == 2 and rec["calls"][0]["raw"] and "tokens_in" in rec
+
+
+def test_reader_agent_gives_none_after_retries():
+    model, _ = scripted("not json at all")
+    st, rec = run_reader(model, mk_state())
+    assert all(v is None for v in st.reader_a_responses.values())
+    assert all("error" in c for c in rec["calls"])
 
 
 # ---- critic ------------------------------------------------------------------
@@ -102,6 +141,42 @@ def test_critic_flags_missing_answer_as_invalid():
     st.reader_b_responses = {q.id: ans(q.id, "A") for q in st.questions}
     st = CriticVerifier(Settings())._run(st, {})
     assert not st.critic_verdict.is_valid
+
+
+def test_llm_critic_calls_rule_tool_rejects_unknown_ids_and_merges_with_rules():
+    st = mk_state()
+    st.visual_evidence = expert(0.9, "top right")
+    q0, q1 = st.questions
+    st.reader_a_responses = {q0.id: ans(q0.id, "B"), q1.id: ans(q1.id, "B")}  # rules: q0 contradicts expert
+    st.reader_b_responses = {q0.id: ans(q0.id, "A"), q1.id: ans(q1.id, "B")}
+    bad = '{"is_valid": true, "conflict_detected": true, "reopen_questions": ["nope"], "critique_reason": "x"}'
+    good = f'{{"is_valid": true, "conflict_detected": true, "reopen_questions": ["{q1.id}"], "critique_reason": "loc looks wrong"}}'
+    model, calls = scripted(("tool", "run_consistency_rules"), bad, good)
+    critic = CriticVerifier(Settings(json_retries=1), model=model)
+    critic.image_parts = lambda s: []
+    critic.load()
+    try:
+        st = critic._run(st, rec := {})
+    finally:
+        critic.unload()
+    tool_out = [p.content for m in calls[1] for p in getattr(m, "parts", []) if isinstance(p, ToolReturnPart)]
+    assert "said no defect" in tool_out[0]                       # the rules reached the LLM via the tool
+    assert set(st.critic_verdict.reopen_questions) == {q0.id, q1.id}  # rules ∪ LLM, unknown id retried away
+    assert "reviewer: loc looks wrong" in st.critic_verdict.critique_reason
+
+
+def test_llm_critic_failure_keeps_rules_verdict():
+    st = mk_state()
+    st.visual_evidence = expert(0.9, "top right")
+    q0, q1 = st.questions
+    st.reader_a_responses = st.reader_b_responses = {q0.id: ans(q0.id, "B"), q1.id: ans(q1.id, "B")}
+    model, _ = scripted("garbage")
+    critic = CriticVerifier(Settings(), model=model)
+    critic.image_parts = lambda s: []
+    critic.load()
+    st = critic._run(st, rec := {})
+    critic.unload()
+    assert st.critic_verdict.reopen_questions == [q0.id] and "llm_error" in rec
 
 
 def test_cell_in_text_longest_match():
@@ -210,3 +285,22 @@ def test_expert_anomaly_map_and_grid():
     d = anomaly_map(q, r)
     assert d[:3].max() < 1e-6 and d[3] > 0.4
     assert grid_cell(0, 0, 90, 90) == "top left" and grid_cell(89, 89, 90, 90) == "bottom right" and grid_cell(45, 45, 90, 90) == "center"
+
+
+def test_reader_fails_fast_without_llm_server():
+    r = ReaderMLLM(Settings(llm_base_url="http://127.0.0.1:9/v1", vllm_autostart=False), "Qwen/Qwen3-VL-8B-Instruct", "reader_a")
+    with pytest.raises(RuntimeError, match="No LLM server"):
+        r.load()
+
+
+def test_remote_role_uses_its_own_endpoint_and_no_local_server(monkeypatch):
+    import inspector.agents.llm as llm
+
+    monkeypatch.setattr(llm.VLLMServer, "start", lambda self: pytest.fail("local server must not start"))
+    s = Settings(remote={"reader_a": {"base_url": "https://api.x.ai/v1", "api_key": "k", "model": "grok-x"}})
+    r = ReaderMLLM(s, "Qwen/Qwen3-VL-8B-Instruct", "reader_a_reopen", reopen=True)
+    r.load()
+    try:
+        assert r.agent.model.model_name == "grok-x" and "api.x.ai" in str(r.agent.model.client.base_url)
+    finally:
+        r.unload()

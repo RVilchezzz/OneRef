@@ -1,0 +1,9 @@
+# torch / numpy come with Colab and vLLM: not pinned here to avoid reinstall conflicts
+pydantic>=2.6
+pydantic-settings>=2.2
+pydantic-ai-slim[openai]>=2.0
+transformers>=4.56      # DINOv3 visual expert
+scipy
+pillow
+pytest
+vllm                    # serves Qwen3-VL / InternVL3 (one `vllm serve` per pass)
