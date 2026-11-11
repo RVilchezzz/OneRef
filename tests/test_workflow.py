@@ -15,7 +15,7 @@ from inspector.config.settings import Settings
 from inspector.orchestrator.graph import Step, build_steps
 from inspector.orchestrator.pass_runner import PassRunner
 from inspector.schemas.agent_outputs import ReaderOutput, VisualExpertOutput
-from inspector.schemas.mmad import Question, Sample, SubTask, load_mmad
+from inspector.schemas.mmad import Question, Sample, SubTask, load_mmad, parse_subtask
 from inspector.schemas.state import InspectionState
 from inspector.utils import metrics
 from inspector.utils.splits import make_split
@@ -76,6 +76,16 @@ def test_load_mmad_ignores_similar_templates(tmp_path):
     p.write_text(json.dumps({"MVTec/bottle/test/good/000.png": entry}))
     (s,) = load_mmad(p)
     assert s.reference == "r0.png" and not hasattr(s, "similar_templates") and not s.is_defective
+
+
+def test_parse_subtask_accepts_every_type_in_mmad_json():
+    # the 9 "type" strings found in mmad.json (corrected revision, Oct 22 2026)
+    raw = {"Anomaly Detection": SubTask.ANOMALY_DISCRIMINATION, "Defect Classification": SubTask.DEFECT_CLASSIFICATION,
+           "Defect Localization": SubTask.DEFECT_LOCALIZATION, "Defect Description": SubTask.DEFECT_DESCRIPTION,
+           "Defect Analysis": SubTask.DEFECT_ANALYSIS, "Object Classification": SubTask.OBJECT_CLASSIFICATION,
+           "Object Analysis": SubTask.OBJECT_ANALYSIS, "Object Structure": SubTask.OBJECT_ANALYSIS,
+           "Object Details": SubTask.OBJECT_ANALYSIS}
+    assert {k: parse_subtask(k) for k in raw} == raw
 
 
 def scripted(*replies):
