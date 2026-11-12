@@ -7,6 +7,11 @@
 | `project/assets/` | Copies of the images the slides show, with their sources and licenses (`assets/README.md`) |
 | `slides_content.md` | Plain text of every slide and its speaker notes, for quick reading |
 | `delivery_I_plan.pptx` | PPTX export of the first version (9 slides, text only) |
+| `speaker_script_delivery_I.en.md` / `.fr.md` | Word-for-word 15-min script per slide (EN / FR), speaker split, slide improvements and jury Q&A |
+| `OneRef – Preliminary Results (Delivery II).pdf` | Delivery II deck (11 slides, Nov 12) |
+| `speaker_script_delivery_II.en.md` / `.fr.md` / `.es.md` | Word-for-word 10-min script for the Delivery II deck (EN / FR / ES), speaker split, slide improvements and jury Q&A |
+| `charles_part_delivery_II.fr.md` | Charles's part of Delivery II in detail (FR): what the GPU-free tests, the 18-image run and the four cases actually did, limits, jury Q&A |
+| `../../../IA025 – Final Project Plan (Delivery I) – notes EN.pptx` / `notes FR.pptx` | Copies of the final deck with the script in the speaker notes (project folder, outside the repo) |
 
 **Slide order:**
 1. `cover`: title, with a real good/defective MMAD pair

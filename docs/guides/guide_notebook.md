@@ -46,13 +46,14 @@ Les variables d'environnement posées par cette cellule **l'emportent** sur un �
 Dans la cellule de configuration :
 ```python
 PROVIDER = "groq"              # Qwen sur Groq ; repli auto sur Gemini si une clé Gemini est fournie
-GROQ_API_KEY   = "gsk_XXXX"
-GEMINI_API_KEY = "XXXX"        # optionnel mais conseillé (backup quand le quota Groq est épuisé)
+GROQ_API_KEYS   = ["gsk_1", "gsk_2", "", "", ""]   # 5 emplacements (tu peux en ajouter) ; "" = inutilisé
+GEMINI_API_KEYS = ["AIza_1", "AIza_2", "", "", ""] # optionnel mais conseillé (backup quand le quota Groq est épuisé)
+# ou variables d'environnement GROQ_API_KEY_1..5 / GEMINI_API_KEY_1..5
 MMAD_MODE = "sample"           # "sample" | "full" | "none"
 SAMPLE_ZIPS = ["DS-MVTec.zip"]
 MMAD_ROOT = "data/MMAD"        # autre disque si C: est plein
 ```
-Les deux cellules suivantes téléchargent MMAD (`sample` = `mmad.json` + 1 zip de 1,6 Go, supprimé après extraction). Avec `sample`, les commandes d'exécution reçoivent automatiquement `--available-only`. Fonctionne sous Windows (pur Python).
+Ordre d'essai quand un quota est épuisé (erreur 429...) : clés Groq 1 à 5, puis clés Gemini 1 à 5. Les deux cellules suivantes téléchargent MMAD (`sample` = `mmad.json` + 1 zip de 1,6 Go, supprimé après extraction). Avec `sample`, les commandes d'exécution reçoivent automatiquement `--available-only`. Fonctionne sous Windows (pur Python).
 
 ## 3. Les cellules d'exécution
 

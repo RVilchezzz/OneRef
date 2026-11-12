@@ -120,6 +120,8 @@ Ensuite ajoute `--available-only` à chaque commande du §7 : seules les images 
 
 Avec `ONEREF_USE_GROK=true` (Groq) et les variables Gemini `ONEREF_LLM_*`, toute erreur de Groq (quota 429, panne) relance automatiquement l'appel sur le modèle Gemini du même rôle. Désactivable : `ONEREF_BACKUP_ENABLED=false`.
 
+**Plusieurs clés :** `ONEREF_GROK_API_KEY` (clé 1) + `ONEREF_GROK_API_KEYS=cle2,cle3,cle4,cle5` pour Groq ; `ONEREF_LLM_API_KEY` (clé 1) + `ONEREF_LLM_API_KEYS=cle2,...` pour Gemini. Ordre d'essai : clés Groq, puis clés Gemini ; on passe à la suivante à chaque erreur d'API (quota...). Chaque appel recommence par la première clé, donc une clé épuisée ajoute un petit délai par appel : retire-la du `.env` quand elle est vide pour la journée.
+
 ## 7. Le workflow, étape par étape
 
 ```powershell

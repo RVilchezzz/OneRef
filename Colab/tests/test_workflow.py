@@ -380,3 +380,14 @@ def test_load_mmad_available_under_keeps_only_existing_images(tmp_path):
     assert len(load_mmad(tmp_path / "mmad.json")) == 2
     kept = load_mmad(tmp_path / "mmad.json", available_under=tmp_path)
     assert [x.image_path for x in kept] == ["S/c/test/good/1.png"]
+
+
+def test_multiple_keys_build_a_failover_chain():
+    s = Settings(_env_file=None, use_grok=True, grok_api_key="g1", grok_api_keys="g2, g3",
+                 llm_api_key="m1", llm_api_keys="m2 m3")
+    fm = make_role_model(s, "gemini-x", s.remote["reader_a"])
+    keys = [m.client.api_key for m in fm.models]
+    assert keys == ["g1", "g2", "g3", "m1", "m2", "m3"]
+    only_gemini = Settings(_env_file=None, llm_api_key="m1", llm_api_keys="m2")      # no hosted endpoint: rotate Gemini keys
+    assert [m.client.api_key for m in make_role_model(only_gemini, "gemini-x").models] == ["m1", "m2"]
+    assert not hasattr(make_role_model(Settings(_env_file=None, llm_api_key="m1"), "gemini-x"), "models")

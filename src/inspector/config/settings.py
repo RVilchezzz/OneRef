@@ -5,6 +5,7 @@ Every value can be overridden by an env var prefixed ``ONEREF_`` (e.g.
 """
 from __future__ import annotations
 
+import re
 from pathlib import Path
 from typing import Literal
 
@@ -59,6 +60,7 @@ class Settings(BaseSettings):
 
     # A role with a `remote` endpoint falls back to the default llm_* endpoint on API errors (quota...).
     backup_enabled: bool = True
+    llm_api_keys: str = ""         # extra keys (commas/spaces) for the default endpoint (e.g. Gemini): tried after llm_api_key
 
     # ---- Grok (xAI, OpenAI-compatible) -------------------------------------
     # ONEREF_USE_GROK=true fills `remote` for the three roles (explicit ONEREF_REMOTE entries win).
@@ -66,6 +68,7 @@ class Settings(BaseSettings):
     use_grok: bool = False
     grok_base_url: str = "https://api.x.ai/v1"
     grok_api_key: str = Field("", validation_alias=AliasChoices("ONEREF_GROK_API_KEY", "XAI_API_KEY"))
+    grok_api_keys: str = ""        # extra Groq keys, separated by commas/spaces: tried in order when a key hits its quota
     grok_reader_a_model: str = "grok-4"
     grok_reader_b_model: str = "grok-4"
     grok_critic_model: str = "grok-4"
@@ -93,6 +96,10 @@ class Settings(BaseSettings):
 
     # ---- telemetry ---------------------------------------------------------
     use_logfire: bool = False                         # optional; JSONL is always on
+
+    @staticmethod
+    def split_keys(raw: str) -> list[str]:
+        return [k for k in re.split(r"[,;\s]+", raw) if k]
 
     @model_validator(mode="after")
     def _grok_remote(self) -> "Settings":

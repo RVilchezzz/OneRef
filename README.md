@@ -46,7 +46,7 @@ image + reference ──► Visual expert (DINOv3: anomaly map, 3×3 region, zoo
    ```
    The HF router bills Inference Providers on prepaid credits (error 402 without credits). Check which model ids it serves with `GET <base_url>/models`.
 
-   **Backup on quota exhaustion:** with a hosted `ONEREF_USE_GROK` (Groq) and the Gemini variables above (`ONEREF_LLM_*`), any API error from Groq (429 quota, 5xx...) makes the same call retry on the Gemini model of that role (pydantic-ai `FallbackModel`). Disable with `ONEREF_BACKUP_ENABLED=false`.
+   **Backup on quota exhaustion:** with a hosted `ONEREF_USE_GROK` (Groq) and the Gemini variables above (`ONEREF_LLM_*`), any API error from Groq (429 quota, 5xx...) makes the same call retry on the Gemini model of that role (pydantic-ai `FallbackModel`). Disable with `ONEREF_BACKUP_ENABLED=false`. Extra keys rotate the same way: `ONEREF_GROK_API_KEYS=k2,k3,...` (Groq) and `ONEREF_LLM_API_KEYS=k2,k3,...` (Gemini); order: Groq keys, then Gemini keys.
 
    **Grok / Groq instead** (the `GROK` variables work for any OpenAI-compatible host; a key starting with `gsk_` is **Groq**, use `ONEREF_GROK_BASE_URL=https://api.groq.com/openai/v1` and a model such as `qwen/qwen3.8-27b`; xAI Grok keys use `https://api.x.ai/v1`): set `ONEREF_USE_GROK=true`, `ONEREF_GROK_API_KEY=<key>` (or `XAI_API_KEY`) and the model ids `ONEREF_GROK_READER_A_MODEL`, `ONEREF_GROK_READER_B_MODEL`, `ONEREF_GROK_CRITIC_MODEL` (placeholders `grok-4`: check vision-capable ids on <https://docs.x.ai>). It fills `ONEREF_REMOTE` for the three roles, so no vLLM is started. Hosted: report as upper bound.
 

@@ -40,12 +40,18 @@ def make_model(s: Settings, model_name: str, ep: dict[str, str] | None = None) -
 
 
 def make_role_model(s: Settings, model_name: str, ep: dict[str, str] | None = None) -> Model:
-    """``make_model``, plus a backup: a hosted ``remote`` endpoint (e.g. Groq) falls back to the default
-    ``llm_*`` endpoint (e.g. Gemini) on any API error (429/402 quota, 5xx...)."""
-    primary = make_model(s, model_name, ep)
-    if ep and s.backup_enabled and s.llm_provider == "router" and s.llm_api_key not in ("", "EMPTY"):
-        return FallbackModel(primary, make_model(s, model_name))
-    return primary
+    """``make_model`` plus failover (pydantic-ai ``FallbackModel``, any API error such as 429/402 quota, 5xx):
+    1. the role's hosted endpoint (e.g. Groq) with its extra keys ``grok_api_keys``;
+    2. the default ``llm_*`` endpoint (e.g. Gemini) with ``llm_api_key`` then ``llm_api_keys``.
+    Without a hosted endpoint, only the extra ``llm_api_keys`` of the default endpoint are added."""
+    chain = [make_model(s, model_name, ep)]
+    if ep and s.use_grok and ep.get("base_url") == s.grok_base_url:
+        chain += [make_model(s, model_name, {**ep, "api_key": k}) for k in s.split_keys(s.grok_api_keys)]
+    if s.backup_enabled and s.llm_provider == "router":
+        extra = s.split_keys(s.llm_api_keys)
+        keys = ([s.llm_api_key] if ep and s.llm_api_key not in ("", "EMPTY") else []) + extra
+        chain += [make_model(s, model_name, {"api_key": k}) for k in keys if k != s.llm_api_key or ep]
+    return chain[0] if len(chain) == 1 else FallbackModel(*chain)
 
 
 def image_part(path: str) -> BinaryContent:
