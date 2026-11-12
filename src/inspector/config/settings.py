@@ -35,6 +35,7 @@ class Settings(BaseSettings):
     reader_b_model: str = "OpenGVLab/InternVL3-8B"
     critic_model: str = "Qwen/Qwen3-VL-8B-Instruct"  # same weights as reader A, critic prompt
     max_new_tokens: int = 256
+    reader_image_max_side: int = 768                  # images sent to the MLLMs are downscaled to this side (vision-token budget)
     json_retries: int = 1                             # pydantic-ai output retries on bad JSON / option
 
     # ---- LLM endpoint (OpenAI-compatible: vLLM on Colab, Ollama / LM Studio locally) ----

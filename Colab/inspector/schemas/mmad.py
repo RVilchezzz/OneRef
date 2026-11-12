@@ -29,6 +29,7 @@ class SubTask(str, Enum):
 
 # Raw MMAD "type" strings -> SubTask (matched case-insensitively, spaces/underscores ignored).
 _RAW_TYPES: dict[str, SubTask] = {
+    "anomalydetection": SubTask.ANOMALY_DISCRIMINATION,  # the name used in mmad.json
     "anomalydiscrimination": SubTask.ANOMALY_DISCRIMINATION,
     "defectclassification": SubTask.DEFECT_CLASSIFICATION,
     "defectlocalization": SubTask.DEFECT_LOCALIZATION,

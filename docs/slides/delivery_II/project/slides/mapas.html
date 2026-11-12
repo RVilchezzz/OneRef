@@ -1,0 +1,20 @@
+<section id="mapas" data-transition="fade" style="background:#F6F4EF;color:#15253A;font-family:'IBM Plex Sans', Arial, sans-serif;padding:128px 128px 160px;display:flex;flex-direction:column;gap:32px">
+<div style="display:flex;flex-direction:column;gap:12px">
+<p style="font-size:24px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:#B04A17">Development · what worked, what did not</p>
+<h2 style="font-family:'Source Serif 4', Georgia, serif;font-size:64px;font-weight:600;line-height:1.15;color:#15253A">Reference · part · our DINOv3 map</h2>
+</div>
+<div style="display:flex;gap:40px">
+<div style="flex:1;display:flex;flex-direction:column;gap:14px">
+<p style="font-size:26px;font-weight:600;color:#15253A">✓ Worked: defect found</p>
+<div style="display:flex;gap:8px"><img src="/_blob/831c1b0bd54c23b06c0238d69ca0b5ca" alt="Good grid" style="width:250px;height:250px;object-fit:cover;border-radius:8px"><img src="/_blob/32fc790b970ecb088d228041a678a354" alt="Grid with a thread" style="width:250px;height:250px;object-fit:cover;border-radius:8px"><img src="/_blob/26cbf797ac7fbc771f97c96ddf095490" alt="Map: hot spot on the thread" style="width:250px;height:250px;object-fit:cover;border-radius:8px;border:3px solid #15253A"></div>
+<div style="display:flex;gap:8px"><img src="/_blob/10704b4470b85bbfd55395a3eab5f7dd" alt="Good chewing gum" style="width:250px;height:250px;object-fit:cover;border-radius:8px"><img src="/_blob/c499d1c729ba2b6609b8a46217da4e25" alt="Chewing gum with a torn corner" style="width:250px;height:250px;object-fit:cover;border-radius:8px"><img src="/_blob/b51bdbd27a17655b92d2d9e98e2ca350" alt="Map: hot spot on the tear" style="width:250px;height:250px;object-fit:cover;border-radius:8px;border:3px solid #15253A"></div>
+</div>
+<div style="flex:1;display:flex;flex-direction:column;gap:14px">
+<p style="font-size:26px;font-weight:600;color:#B04A17">✗ Failed: reference is another product</p>
+<div style="display:flex;gap:8px"><img src="/_blob/7468bfddbee668c1f84970033ac18795" alt="Reference: a green box" style="width:250px;height:250px;object-fit:cover;border-radius:8px"><img src="/_blob/007a7dd71a9dca69c68201f0d886e094" alt="Part: a pink box, deformed" style="width:250px;height:250px;object-fit:cover;border-radius:8px"><img src="/_blob/1f2c2e794925fe7291e1c3628618f899" alt="Map: the whole box lights up" style="width:250px;height:250px;object-fit:cover;border-radius:8px;border:3px solid #B04A17"></div>
+<div style="display:flex;gap:8px"><img src="/_blob/c4656a2a65714c098c98d068562b5b07" alt="Reference: mango juice" style="width:250px;height:250px;object-fit:cover;border-radius:8px"><img src="/_blob/b2e0e1895d1599394a16a19bca7ca349" alt="Part: banana juice with a logical defect" style="width:250px;height:250px;object-fit:cover;border-radius:8px"><img src="/_blob/71de3bc2e353c0e2b1bcb0a2b26eb508" alt="Map: lights up the label, which only differs by flavor" style="width:250px;height:250px;object-fit:cover;border-radius:8px;border:3px solid #B04A17"></div>
+</div>
+</div>
+<p style="position:absolute;left:128px;bottom:64px;width:1664px;font-size:24px;color:#5B6673">Real dev images: MVTec AD grid, VisA chewing gum, GoodsAD food box, MVTec LOCO juice. Images: MMAD (CC BY-NC-SA 4.0, CC BY 4.0, research use).</p>
+<aside>Left, what worked: on the metal grid and the chewing gum, the map's hot spot sits exactly on the defect. Right, what went wrong: in GoodsAD the single reference is a green box while the part is a pink box, so everything lights up; in MVTec LOCO the reference is mango juice and the part is banana juice, so the map flags the label, which is a normal variation, not the defect. The expert cannot tell variation from defect: this is exactly the readers' and the verifier's job, and a reason to weight the expert by how reliable it is.</aside>
+</section>
