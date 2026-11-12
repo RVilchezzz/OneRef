@@ -3,6 +3,7 @@
     python -m inspector.main --split dev  --limit 50 --run-name dev01
     python -m inspector.main --split test --frozen-config --run-name final     # run ONCE
     python -m inspector.main --split dev --limit 5 --mock                       # GPU-free smoke test
+    python -m inspector.main --split dev --per-source 4 --run-name quick         # few images of every source
 
 Needs ``src`` on PYTHONPATH (``pip install -e .`` or ``set PYTHONPATH=src``).
 """
@@ -18,7 +19,7 @@ from inspector.orchestrator.pass_runner import PassRunner
 from inspector.schemas.mmad import load_mmad
 from inspector.schemas.state import InspectionState
 from inspector.utils import metrics
-from inspector.utils.splits import make_split, save_split
+from inspector.utils.splits import make_split, sample_per_source, save_split
 from inspector.utils.telemetry import Telemetry
 
 
@@ -26,6 +27,7 @@ def main(argv: list[str] | None = None) -> int:
     ap = argparse.ArgumentParser(description="OneRef multi-agent inspector (strict MMAD 1-shot)")
     ap.add_argument("--split", choices=["dev", "test"], default="dev")
     ap.add_argument("--limit", type=int, default=None, help="use only the first N images of the split")
+    ap.add_argument("--per-source", type=int, default=None, help="use only K images per source (half normal, half defective)")
     ap.add_argument("--run-name", default="run")
     ap.add_argument("--mock", action="store_true", help="GPU-free mock agents (smoke test)")
     ap.add_argument("--frozen-config", action="store_true", help="required for --split test: config is frozen")
@@ -39,7 +41,10 @@ def main(argv: list[str] | None = None) -> int:
     samples = load_mmad(s.mmad_json)
     dev, test = make_split(samples, s.dev_fraction, s.seed)
     save_split(dev, test, s.splits_dir)
-    chosen = (dev if args.split == "dev" else test)[: args.limit]
+    chosen = dev if args.split == "dev" else test
+    if args.per_source:
+        chosen = sample_per_source(chosen, args.per_source, s.seed)
+    chosen = chosen[: args.limit]
 
     run_dir = Path(s.outputs_dir) / args.run_name
     tel = Telemetry(run_dir / "telemetry.jsonl", run=args.run_name, use_logfire=s.use_logfire)
