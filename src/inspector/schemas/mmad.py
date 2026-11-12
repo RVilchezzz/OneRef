@@ -92,12 +92,20 @@ def _parse_options(raw: dict | list) -> dict[str, str]:
     return {"ABCD"[i]: str(v) for i, v in enumerate(raw)}
 
 
-def load_mmad(path: str | Path, limit: int | None = None) -> list[Sample]:
-    """Load ``mmad.json`` (dict keyed by image path) into validated ``Sample`` objects."""
+def load_mmad(path: str | Path, limit: int | None = None, available_under: str | Path | None = None) -> list[Sample]:
+    """Load ``mmad.json`` (dict keyed by image path) into validated ``Sample`` objects.
+
+    ``available_under``: keep only images whose file and reference template exist under that folder
+    (for a downloaded sample of MMAD).
+    """
     data = json.loads(Path(path).read_text(encoding="utf-8"))
     items = data.items() if isinstance(data, dict) else ((d["image"], d) for d in data)
     samples: list[Sample] = []
     for image_path, entry in items:
+        if available_under is not None:
+            refs = entry.get("random_templates") or [None]
+            if not all((Path(available_under) / p).is_file() for p in (image_path, refs[0]) if p):
+                continue
         parts = Path(image_path).parts
         image_id = "/".join(parts[-4:]).rsplit(".", 1)[0]
         mask = entry.get("mask_path")

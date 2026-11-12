@@ -22,6 +22,7 @@ from urllib.parse import urlparse
 from pydantic_ai import Agent, BinaryContent
 from pydantic_ai.messages import ModelMessage, ModelResponse, TextPart
 from pydantic_ai.models import Model
+from pydantic_ai.models.fallback import FallbackModel
 from pydantic_ai.models.openai import OpenAIChatModel
 from pydantic_ai.providers.openai import OpenAIProvider
 
@@ -36,6 +37,21 @@ def make_model(s: Settings, model_name: str, ep: dict[str, str] | None = None) -
         ep.get("model", model_name),
         provider=OpenAIProvider(base_url=ep.get("base_url", s.llm_base_url), api_key=ep.get("api_key", s.llm_api_key)),
     )
+
+
+def make_role_model(s: Settings, model_name: str, ep: dict[str, str] | None = None) -> Model:
+    """``make_model`` plus failover (pydantic-ai ``FallbackModel``, any API error such as 429/402 quota, 5xx):
+    1. the role's hosted endpoint (e.g. Groq) with its extra keys ``grok_api_keys``;
+    2. the default ``llm_*`` endpoint (e.g. Gemini) with ``llm_api_key`` then ``llm_api_keys``.
+    Without a hosted endpoint, only the extra ``llm_api_keys`` of the default endpoint are added."""
+    chain = [make_model(s, model_name, ep)]
+    if ep and s.use_grok and ep.get("base_url") == s.grok_base_url:
+        chain += [make_model(s, model_name, {**ep, "api_key": k}) for k in s.split_keys(s.grok_api_keys)]
+    if s.backup_enabled and s.llm_provider == "router":
+        extra = s.split_keys(s.llm_api_keys)
+        keys = ([s.llm_api_key] if ep and s.llm_api_key not in ("", "EMPTY") else []) + extra
+        chain += [make_model(s, model_name, {"api_key": k}) for k in keys if k != s.llm_api_key or ep]
+    return chain[0] if len(chain) == 1 else FallbackModel(*chain)
 
 
 def image_part(path: str) -> BinaryContent:
@@ -119,10 +135,10 @@ class LLMAgent(BaseAgent):
         model = self._model
         if model is None:
             ep = self.s.remote.get(self.name.removesuffix("_reopen"))  # hosted API: no local server
-            if ep is None:
+            if ep is None and self.s.llm_provider == "vllm":
                 self.server = VLLMServer(self.s, self.model_name)
                 self.server.start()
-            model = make_model(self.s, self.model_name, ep)
+            model = make_role_model(self.s, self.model_name, ep)
         self.agent = self.build(model)
         self.loop = asyncio.new_event_loop()  # one loop per pass: the HTTP client stays bound to it
 
