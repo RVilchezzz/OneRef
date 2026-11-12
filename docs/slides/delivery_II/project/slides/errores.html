@@ -8,7 +8,7 @@
 <tr><td>Loader never tried on real data</td><td>crashed on “Anomaly Detection”, the name mmad.json uses</td><td>fixed + test with the 9 real names</td></tr>
 <tr><td>Expert threshold off-scale for DINOv3</td><td>distances 0.11–0.31 vs range 0.2–0.8: flag never fires (bal. acc. 0.49)</td><td>recalibrated on dev: 0.49 → 0.61 (in-sample)</td></tr>
 <tr><td>Single reference ≠ same product</td><td>GoodsAD AUROC 0.51, peak on defect 10%</td><td>trust the expert less there: weights fixed on dev</td></tr>
-<tr><td>8B readers not run yet</td><td>Colab notebook written, not executed</td><td>50-question cost test, then full dev</td></tr>
+<tr><td>8B readers not run yet</td><td>Colab not executed; local 4B run: 9 images only</td><td>50-question cost test, then full dev</td></tr>
 </table>
 <div style="display:flex;gap:16px;align-items:center;background:#EAE6DC;padding:20px 28px;border-left:6px solid #B04A17;border-radius:8px">
 <x-icon name="Lightbulb" style="width:40px;height:40px;color:#B04A17"></x-icon>

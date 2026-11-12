@@ -1,20 +1,35 @@
-<section id="leitor" data-transition="fade" style="background:#EAE6DC;color:#15253A;font-family:'IBM Plex Sans', Arial, sans-serif;padding:128px 128px 160px;display:flex;flex-direction:column;gap:40px">
+<section id="leitor" data-transition="fade" style="background:#EAE6DC;color:#15253A;font-family:'IBM Plex Sans', Arial, sans-serif;padding:128px 128px 160px;display:flex;flex-direction:column;gap:36px">
 <div style="display:flex;flex-direction:column;gap:12px">
-<p style="font-size:24px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:#B04A17">Development · first reader test</p>
-<h2 style="font-family:'Source Serif 4', Georgia, serif;font-size:64px;font-weight:600;line-height:1.15;color:#15253A">Does the expert's hint help a reader?</h2>
+<p style="font-size:24px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:#B04A17">Development · first end-to-end run</p>
+<h2 style="font-family:'Source Serif 4', Georgia, serif;font-size:64px;font-weight:600;line-height:1.15;color:#15253A">All five agents ran on real MMAD images</h2>
+</div>
+<div style="display:flex;gap:10px;align-items:center">
+<p style="font-size:24px;background:#FBEBDD;border:2px solid #B04A17;padding:12px 16px;border-radius:999px;white-space:nowrap">Expert 11 s</p>
+<x-connector head="end" style="width:32px;color:#5B6673"></x-connector>
+<p style="font-size:24px;background:#FFFDF8;padding:12px 16px;border-radius:999px;white-space:nowrap">Reader A 179 s</p>
+<x-connector head="end" style="width:32px;color:#5B6673"></x-connector>
+<p style="font-size:24px;background:#FFFDF8;padding:12px 16px;border-radius:999px;white-space:nowrap">Reader B 181 s</p>
+<x-connector head="end" style="width:32px;color:#5B6673"></x-connector>
+<p style="font-size:24px;background:#FFFDF8;padding:12px 16px;border-radius:999px;white-space:nowrap">Verifier: 2 reopened</p>
+<x-connector head="end" style="width:32px;color:#5B6673"></x-connector>
+<p style="font-size:24px;color:#F6F4EF;background:#15253A;padding:12px 16px;border-radius:999px;white-space:nowrap">Vote</p>
 </div>
 <div style="display:flex;gap:48px;flex:1">
-<div style="flex:1;display:flex;flex-direction:column;gap:20px">
-<p style="font-size:26px;line-height:1.4">Same model, same questions, two prompts:</p>
-<div style="display:flex;flex-direction:column;gap:8px;background:#FFFDF8;padding:24px;border:1px solid #DDD6C8;border-radius:12px"><p style="font-size:24px;font-weight:600">Without expert</p><p style="font-size:24px;line-height:1.35;color:#3D4A58">part + reference + question</p></div>
-<div style="display:flex;flex-direction:column;gap:8px;background:#FBEBDD;padding:24px;border:2px solid #B04A17;border-radius:12px"><p style="font-size:24px;font-weight:600">With expert</p><p style="font-size:24px;line-height:1.35;color:#3D4A58">+ “the region that differs most from the reference is: bottom right”</p></div>
-<p style="font-size:24px;line-height:1.4;color:#3D4A58">Qwen3-VL-4B in 4-bit on the laptop GPU, a stratified dev sample (12 images per source).</p>
+<table style="font-family:'IBM Plex Sans', Arial, sans-serif;font-size:26px;color:#15253A;width:820px">
+<tr><th style="width:70%;text-align:left">Subtask (45 questions)</th><th style="width:30%;text-align:right">Accuracy</th></tr>
+<tr><td>Anomaly discrimination (balanced)</td><td style="text-align:right">57.5%</td></tr>
+<tr><td>Defect classification · description</td><td style="text-align:right">50% · 50%</td></tr>
+<tr><td>Defect localization</td><td style="text-align:right">25.0%</td></tr>
+<tr><td>Defect analysis</td><td style="text-align:right">75.0%</td></tr>
+<tr><td>Object classification · analysis</td><td style="text-align:right">100% · 93.3%</td></tr>
+<tr style="background:#FFFDF8"><td><b>Mean of 7</b></td><td style="text-align:right"><b>64.4%</b></td></tr>
+</table>
+<div style="flex:1;display:flex;flex-direction:column;gap:16px">
+<div style="display:flex;flex-direction:column;gap:6px;background:#FFFDF8;padding:22px;border-radius:12px"><p style="font-size:24px;font-weight:600">0 errors in 94 calls</p><p style="font-size:24px;color:#3D4A58">all answers valid JSON; ~4 s per question</p></div>
+<div style="display:flex;flex-direction:column;gap:6px;background:#FFFDF8;padding:22px;border-radius:12px"><p style="font-size:24px;font-weight:600">Readers agree 45/45</p><p style="font-size:24px;color:#3D4A58">same model twice: why we need two different families</p></div>
+<div style="display:flex;flex-direction:column;gap:6px;background:#FBEBDD;padding:22px;border-radius:12px"><p style="font-size:24px;font-weight:600;color:#B04A17">95% CI [37%, 82%]</p><p style="font-size:24px;color:#3D4A58">9 images: a working pipeline, not a result</p></div>
 </div>
-<div style="flex:1;display:flex;flex-direction:column;gap:20px;justify-content:center">
-<div style="display:flex;flex-direction:column;gap:4px;background:#FFFDF8;padding:28px;border-radius:16px"><p style="font-size:24px;color:#3D4A58">Mean accuracy, without expert</p><p style="font-family:'Source Serif 4', Georgia, serif;font-size:72px;font-weight:600;color:#5B6673">PENDING</p></div>
-<div style="display:flex;flex-direction:column;gap:4px;background:#FFFDF8;padding:28px;border-radius:16px"><p style="font-size:24px;color:#3D4A58">Mean accuracy, with expert</p><p style="font-family:'Source Serif 4', Georgia, serif;font-size:72px;font-weight:600;color:#B04A17">PENDING</p></div>
 </div>
-</div>
-<p style="position:absolute;left:128px;bottom:64px;width:1664px;font-size:24px;color:#5B6673">A small-model smoke test of the core idea, not the B1 baseline: the real readers are the 8B models on Colab. Paired comparison with McNemar.</p>
-<aside>Before the 8B runs on Colab, we test the core idea on the laptop with the small 4B model: the same questions answered twice, with and without one sentence from the visual expert saying which region differs most. This is a smoke test, not a baseline. If the hint helps here, it supports the design; if not, it tells us early that the hint must be calibrated or given only where the expert is reliable.</aside>
+<p style="position:absolute;left:128px;bottom:64px;width:1664px;font-size:24px;color:#5B6673">Smoke test on the laptop (RTX 3060, 6 GB): 9 dev images, 1–2 per source; both readers = Qwen3-VL-4B quantized (Ollama); rules-only verifier. The 8B readers run on Colab.</p>
+<aside>This is the first time the whole multi-agent workflow ran on real MMAD data, today, on the laptop. Nine dev images, one normal and one defective per source, 45 questions. Each agent ran as its own pass and freed the GPU: expert, reader A, reader B, the verifier, which reopened two images it found inconsistent, and the vote. No invalid answers. Object questions are easy, localization is the weak spot, which is exactly where the expert should help once calibrated. With nine images the confidence interval goes from 37 to 82 percent, so this proves the pipeline works, not that it beats anything. The two readers agreed on every question because they were the same small model: that is why the real system uses two different model families.</aside>
 </section>

@@ -38,7 +38,20 @@ def make_model(s: Settings, model_name: str, ep: dict[str, str] | None = None) -
     )
 
 
-def image_part(path: str) -> BinaryContent:
+def image_part(path: str, max_side: int | None = None) -> BinaryContent:
+    """Image as ``BinaryContent``; larger than ``max_side`` pixels -> downscaled JPEG (fewer vision tokens)."""
+    if max_side:
+        from io import BytesIO
+
+        from PIL import Image
+
+        im = Image.open(path)
+        if max(im.size) > max_side:
+            im = im.convert("RGB")
+            im.thumbnail((max_side, max_side), Image.BICUBIC)
+            buf = BytesIO()
+            im.save(buf, "JPEG", quality=92)
+            return BinaryContent(data=buf.getvalue(), media_type="image/jpeg")
     media = mimetypes.guess_type(path)[0] or "image/png"
     return BinaryContent(data=Path(path).read_bytes(), media_type=media)
 
@@ -138,7 +151,7 @@ class LLMAgent(BaseAgent):
         """Query, normal reference (random_templates[0]) and the expert's zoomed crop."""
         ev = state.visual_evidence
         paths = [state.query_image_path, state.reference_image_path] + ([ev.crop_path] if ev else [])
-        return [image_part(p) for p in paths]
+        return [image_part(p, self.s.reader_image_max_side) for p in paths]
 
     def run_async(self, coro: Any) -> Any:
         assert self.loop is not None, "load() must be called before run()"
