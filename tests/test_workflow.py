@@ -9,6 +9,7 @@ from pydantic_ai.models.function import FunctionModel
 
 from inspector.agents.aggregator import Aggregator
 from inspector.agents.critic_verifier import CriticVerifier, cell_in_text
+from inspector.agents.llm import make_model, make_role_model
 from inspector.agents.mock import MockExpert
 from inspector.agents.reader_mllm import ReaderMLLM
 from inspector.config.settings import Settings
@@ -20,6 +21,14 @@ from inspector.schemas.state import InspectionState
 from inspector.utils import metrics
 from inspector.utils.splits import make_split
 from inspector.utils.telemetry import Telemetry
+
+
+@pytest.fixture(autouse=True)
+def _clean_env(monkeypatch):
+    """Settings reads os.environ: ignore ONEREF_* / keys set by a notebook profile or the shell."""
+    import os
+    for k in [k for k in os.environ if k.startswith("ONEREF_")] + ["HF_TOKEN", "XAI_API_KEY"]:
+        monkeypatch.delenv(k, raising=False)
 
 models.ALLOW_MODEL_REQUESTS = False  # tests never call a real LLM endpoint
 
@@ -288,7 +297,7 @@ def test_expert_anomaly_map_and_grid():
 
 
 def test_reader_fails_fast_without_llm_server():
-    r = ReaderMLLM(Settings(llm_base_url="http://127.0.0.1:9/v1", vllm_autostart=False), "Qwen/Qwen3-VL-8B-Instruct", "reader_a")
+    r = ReaderMLLM(Settings(_env_file=None, llm_provider="vllm", llm_base_url="http://127.0.0.1:9/v1", vllm_autostart=False), "Qwen/Qwen3-VL-8B-Instruct", "reader_a")
     with pytest.raises(RuntimeError, match="No LLM server"):
         r.load()
 
@@ -297,10 +306,77 @@ def test_remote_role_uses_its_own_endpoint_and_no_local_server(monkeypatch):
     import inspector.agents.llm as llm
 
     monkeypatch.setattr(llm.VLLMServer, "start", lambda self: pytest.fail("local server must not start"))
-    s = Settings(remote={"reader_a": {"base_url": "https://api.x.ai/v1", "api_key": "k", "model": "grok-x"}})
+    s = Settings(_env_file=None, backup_enabled=False, remote={"reader_a": {"base_url": "https://api.x.ai/v1", "api_key": "k", "model": "grok-x"}})
     r = ReaderMLLM(s, "Qwen/Qwen3-VL-8B-Instruct", "reader_a_reopen", reopen=True)
     r.load()
     try:
         assert r.agent.model.model_name == "grok-x" and "api.x.ai" in str(r.agent.model.client.base_url)
     finally:
         r.unload()
+
+
+def test_grok_fills_remote_for_three_roles():
+    s = Settings(_env_file=None, use_grok=True, grok_api_key="k")
+    assert set(s.remote) == {"reader_a", "reader_b", "critic"}
+    assert all("api.x.ai" in ep["base_url"] and ep["api_key"] == "k" for ep in s.remote.values())
+    assert "api.x.ai" in make_model(s, "x", s.remote["critic"]).client.base_url.host
+
+
+def test_grok_without_key_is_an_error(monkeypatch):
+    monkeypatch.delenv("XAI_API_KEY", raising=False)
+    with pytest.raises(ValueError, match="GROK_API_KEY"):
+        Settings(_env_file=None, use_grok=True)
+
+
+def test_router_is_default_and_starts_no_server(monkeypatch):
+    import inspector.agents.llm as llm
+
+    monkeypatch.setattr(llm.VLLMServer, "start", lambda self: pytest.fail("router must not start a server"))
+    monkeypatch.setenv("HF_TOKEN", "hf_test")
+    s = Settings(_env_file=None)  # ignore the local .env: this checks the built-in defaults
+    r = ReaderMLLM(s, s.reader_a_model, "reader_a")
+    r.load()
+    try:
+        assert "router.huggingface.co" in str(r.agent.model.client.base_url) and r.agent.model.client.api_key == "hf_test"
+    finally:
+        r.unload()
+
+
+def test_remote_role_gets_a_backup_endpoint(monkeypatch):
+    from pydantic_ai.models.fallback import FallbackModel
+    s = Settings(_env_file=None, llm_api_key="gem-key", use_grok=True, grok_api_key="groq-key")
+    assert isinstance(make_role_model(s, "gemini-x", s.remote["reader_a"]), FallbackModel)
+    assert not isinstance(make_role_model(s, "gemini-x"), FallbackModel)            # no remote: nothing to back up
+    off = Settings(_env_file=None, llm_api_key="gem-key", use_grok=True, grok_api_key="groq-key", backup_enabled=False)
+    assert not isinstance(make_role_model(off, "gemini-x", off.remote["reader_a"]), FallbackModel)
+    nokey = Settings(_env_file=None, use_grok=True, grok_api_key="groq-key")        # llm_api_key stays "EMPTY"
+    monkeypatch.delenv("HF_TOKEN", raising=False)
+    assert not isinstance(make_role_model(nokey, "gemini-x", nokey.remote["reader_a"]), FallbackModel)
+
+
+def test_backup_answers_when_primary_hits_quota():
+    from pydantic_ai import Agent
+    from pydantic_ai.exceptions import ModelHTTPError
+    from pydantic_ai.models.fallback import FallbackModel
+
+    def quota(messages, info):
+        raise ModelHTTPError(429, "groq", {"error": "rate limit"})
+
+    def ok(messages, info):
+        return ModelResponse(parts=[TextPart("from backup")])
+
+    agent = Agent(FallbackModel(FunctionModel(quota), FunctionModel(ok)))
+    assert agent.run_sync("hi").output == "from backup"
+
+
+def test_load_mmad_available_under_keeps_only_existing_images(tmp_path):
+    entry = lambda img, ref: {"random_templates": [ref], "conversation": [
+        {"Question": "q?", "Options": {"A": "a", "B": "b"}, "Answer": "A", "type": "Anomaly Discrimination"}]}
+    data = {"S/c/test/good/1.png": entry(0, "S/c/train/good/0.png"), "S/c/test/good/2.png": entry(0, "S/c/train/good/0.png")}
+    (tmp_path / "mmad.json").write_text(json.dumps(data))
+    for p in ("S/c/test/good/1.png", "S/c/train/good/0.png"):
+        (tmp_path / p).parent.mkdir(parents=True, exist_ok=True)
+        (tmp_path / p).write_bytes(b"x")
+    assert len(load_mmad(tmp_path / "mmad.json")) == 2
+    kept = load_mmad(tmp_path / "mmad.json", available_under=tmp_path)
+    assert [x.image_path for x in kept] == ["S/c/test/good/1.png"]

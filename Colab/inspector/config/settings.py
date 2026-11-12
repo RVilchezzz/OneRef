@@ -8,14 +8,14 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Literal
 
-from pydantic import Field
+from pydantic import AliasChoices, Field, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 ROOT = Path(__file__).resolve().parents[3]  # OneRef/
 
 
 class Settings(BaseSettings):
-    model_config = SettingsConfigDict(env_prefix="ONEREF_", env_file=".env", extra="ignore")
+    model_config = SettingsConfigDict(env_prefix="ONEREF_", env_file=".env", extra="ignore", populate_by_name=True)
 
     # ---- paths -------------------------------------------------------------
     mmad_root: Path = ROOT / "data" / "MMAD"          # images (gitignored)
@@ -37,9 +37,14 @@ class Settings(BaseSettings):
     max_new_tokens: int = 256
     json_retries: int = 1                             # pydantic-ai output retries on bad JSON / option
 
-    # ---- LLM endpoint (OpenAI-compatible: vLLM on Colab, Ollama / LM Studio locally) ----
-    llm_base_url: str = "http://localhost:8000/v1"
-    llm_api_key: str = "EMPTY"
+    # ---- LLM endpoint (OpenAI-compatible) ----------------------------------
+    # "router": Hugging Face router (https://router.huggingface.co/v1), key = HF_TOKEN, no local server.
+    #           Model ids are HF ids, optionally with a provider suffix ("Qwen/Qwen3-VL-8B-Instruct:novita").
+    # "vllm":   a local/Colab vLLM server (see vllm_* below); set ONEREF_LLM_BASE_URL=http://localhost:8000/v1
+    #           and ONEREF_LLM_API_KEY=EMPTY.
+    llm_provider: Literal["router", "vllm"] = "router"
+    llm_base_url: str = "https://router.huggingface.co/v1"
+    llm_api_key: str = Field("EMPTY", validation_alias=AliasChoices("ONEREF_LLM_API_KEY", "HF_TOKEN"))
     # True: each GPU pass starts `vllm serve <model>` and stops it at the end of the pass.
     # False: a server is already running; the pass only checks it serves the right model.
     vllm_autostart: bool = False
@@ -51,6 +56,19 @@ class Settings(BaseSettings):
     # Hosted API per agent, e.g. ONEREF_REMOTE='{"reader_a":{"base_url":"https://api.x.ai/v1","api_key":"...","model":"grok-..."}}'
     # Roles: reader_a, reader_b, critic. A listed role skips vLLM entirely (nothing on the GPU).
     remote: dict[str, dict[str, str]] = {}
+
+    # A role with a `remote` endpoint falls back to the default llm_* endpoint on API errors (quota...).
+    backup_enabled: bool = True
+
+    # ---- Grok (xAI, OpenAI-compatible) -------------------------------------
+    # ONEREF_USE_GROK=true fills `remote` for the three roles (explicit ONEREF_REMOTE entries win).
+    # Hosted: leaves the strict local <=8B protocol, report as upper bound. Model ids are placeholders.
+    use_grok: bool = False
+    grok_base_url: str = "https://api.x.ai/v1"
+    grok_api_key: str = Field("", validation_alias=AliasChoices("ONEREF_GROK_API_KEY", "XAI_API_KEY"))
+    grok_reader_a_model: str = "grok-4"
+    grok_reader_b_model: str = "grok-4"
+    grok_critic_model: str = "grok-4"
 
     # ---- expert calibration (tune on dev only) ----------------------------
     anomaly_norm_low: float = 0.2                     # cosine distance mapped to score 0
@@ -75,6 +93,16 @@ class Settings(BaseSettings):
 
     # ---- telemetry ---------------------------------------------------------
     use_logfire: bool = False                         # optional; JSONL is always on
+
+    @model_validator(mode="after")
+    def _grok_remote(self) -> "Settings":
+        if not self.use_grok:
+            return self
+        if not self.grok_api_key:
+            raise ValueError("ONEREF_USE_GROK=true needs ONEREF_GROK_API_KEY (or XAI_API_KEY)")
+        for role, model in (("reader_a", self.grok_reader_a_model), ("reader_b", self.grok_reader_b_model), ("critic", self.grok_critic_model)):
+            self.remote.setdefault(role, {"base_url": self.grok_base_url, "api_key": self.grok_api_key, "model": model})
+        return self
 
 
 def get_settings() -> Settings:

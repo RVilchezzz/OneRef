@@ -22,6 +22,7 @@ from urllib.parse import urlparse
 from pydantic_ai import Agent, BinaryContent
 from pydantic_ai.messages import ModelMessage, ModelResponse, TextPart
 from pydantic_ai.models import Model
+from pydantic_ai.models.fallback import FallbackModel
 from pydantic_ai.models.openai import OpenAIChatModel
 from pydantic_ai.providers.openai import OpenAIProvider
 
@@ -36,6 +37,15 @@ def make_model(s: Settings, model_name: str, ep: dict[str, str] | None = None) -
         ep.get("model", model_name),
         provider=OpenAIProvider(base_url=ep.get("base_url", s.llm_base_url), api_key=ep.get("api_key", s.llm_api_key)),
     )
+
+
+def make_role_model(s: Settings, model_name: str, ep: dict[str, str] | None = None) -> Model:
+    """``make_model``, plus a backup: a hosted ``remote`` endpoint (e.g. Groq) falls back to the default
+    ``llm_*`` endpoint (e.g. Gemini) on any API error (429/402 quota, 5xx...)."""
+    primary = make_model(s, model_name, ep)
+    if ep and s.backup_enabled and s.llm_provider == "router" and s.llm_api_key not in ("", "EMPTY"):
+        return FallbackModel(primary, make_model(s, model_name))
+    return primary
 
 
 def image_part(path: str) -> BinaryContent:
@@ -119,10 +129,10 @@ class LLMAgent(BaseAgent):
         model = self._model
         if model is None:
             ep = self.s.remote.get(self.name.removesuffix("_reopen"))  # hosted API: no local server
-            if ep is None:
+            if ep is None and self.s.llm_provider == "vllm":
                 self.server = VLLMServer(self.s, self.model_name)
                 self.server.start()
-            model = make_model(self.s, self.model_name, ep)
+            model = make_role_model(self.s, self.model_name, ep)
         self.agent = self.build(model)
         self.loop = asyncio.new_event_loop()  # one loop per pass: the HTTP client stays bound to it
 

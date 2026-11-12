@@ -26,6 +26,7 @@ def main(argv: list[str] | None = None) -> int:
     ap = argparse.ArgumentParser(description="OneRef multi-agent inspector (strict MMAD 1-shot)")
     ap.add_argument("--split", choices=["dev", "test"], default="dev")
     ap.add_argument("--limit", type=int, default=None, help="use only the first N images of the split")
+    ap.add_argument("--available-only", action="store_true", help="keep only images present under ONEREF_MMAD_ROOT (sample download)")
     ap.add_argument("--run-name", default="run")
     ap.add_argument("--mock", action="store_true", help="GPU-free mock agents (smoke test)")
     ap.add_argument("--frozen-config", action="store_true", help="required for --split test: config is frozen")
@@ -36,7 +37,13 @@ def main(argv: list[str] | None = None) -> int:
         return 2
 
     s = get_settings()
-    samples = load_mmad(s.mmad_json)
+    samples = load_mmad(s.mmad_json, available_under=s.mmad_root if args.available_only else None)
+    if args.available_only:
+        print(f"--available-only: {len(samples)} images found under {s.mmad_root}")
+        if not samples:
+            print("No image of mmad.json exists under ONEREF_MMAD_ROOT: download a sample first "
+                  "(scripts/download_mmad.py --sample) and check the folder layout.", file=sys.stderr)
+            return 2
     dev, test = make_split(samples, s.dev_fraction, s.seed)
     save_split(dev, test, s.splits_dir)
     chosen = (dev if args.split == "dev" else test)[: args.limit]
