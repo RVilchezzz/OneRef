@@ -27,6 +27,21 @@ def make_split(samples: list[Sample], dev_fraction: float, seed: int) -> tuple[l
     return dev, test
 
 
+def sample_per_source(samples: list[Sample], per_source: int, seed: int) -> list[Sample]:
+    """Small balanced subset for quick runs: ``per_source`` images per source, half normal, half defective."""
+    rng = random.Random(seed)
+    by: dict[tuple, list[Sample]] = defaultdict(list)
+    for s in samples:
+        by[(s.source, s.is_defective)].append(s)
+    picked: list[Sample] = []
+    for src in sorted({s.source for s in samples}):
+        for defective in (False, True):
+            group = sorted(by[(src, defective)], key=lambda s: s.image_id)
+            rng.shuffle(group)
+            picked += group[: max(1, per_source // 2)]
+    return picked
+
+
 def save_split(dev: list[Sample], test: list[Sample], out_dir: Path) -> None:
     out_dir.mkdir(parents=True, exist_ok=True)
     (out_dir / "dev_ids.json").write_text(json.dumps([s.image_id for s in dev]), encoding="utf-8")

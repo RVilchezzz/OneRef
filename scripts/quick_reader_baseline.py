@@ -15,11 +15,9 @@ from __future__ import annotations
 
 import argparse
 import json
-import random
 import re
 import sys
 import time
-from collections import defaultdict
 from datetime import datetime
 from pathlib import Path
 
@@ -32,24 +30,11 @@ sys.path.insert(0, str(ROOT / "src"))
 from inspector.config.settings import get_settings  # noqa: E402
 from inspector.schemas.mmad import load_mmad  # noqa: E402
 from inspector.utils import metrics  # noqa: E402
+from inspector.utils.splits import sample_per_source  # noqa: E402
 
 SYSTEM = ("You are an industrial quality inspector. Image 1 is the part to inspect. Image 2 is a normal "
           "(defect-free) reference of the same product. Answer the multiple-choice question with the "
           "letter of one option only.")
-
-
-def sample_images(samples, per_source: int, seed: int):
-    """Same number of images per source, half normal and half defective when possible."""
-    rng, picked = random.Random(seed), []
-    by = defaultdict(list)
-    for s in samples:
-        by[(s.source, s.is_defective)].append(s)
-    for src in sorted({s.source for s in samples}):
-        for d in (False, True):
-            g = sorted(by[(src, d)], key=lambda s: s.image_id)
-            rng.shuffle(g)
-            picked += g[: per_source // 2]
-    return picked
 
 
 def load_img(path: Path, side: int) -> Image.Image:
@@ -72,7 +57,7 @@ def main() -> int:
 
     s = get_settings()
     dev_ids = set(json.loads((s.splits_dir / "dev_ids.json").read_text()))
-    samples = sample_images([x for x in load_mmad(s.mmad_json) if x.image_id in dev_ids], args.per_source, args.seed)
+    samples = sample_per_source([x for x in load_mmad(s.mmad_json) if x.image_id in dev_ids], args.per_source, args.seed)
     region = {}
     for line in open(args.expert_run / "per_image.jsonl"):
         r = json.loads(line)

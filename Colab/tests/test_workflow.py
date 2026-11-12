@@ -18,7 +18,7 @@ from inspector.schemas.agent_outputs import ReaderOutput, VisualExpertOutput
 from inspector.schemas.mmad import Question, Sample, SubTask, load_mmad, parse_subtask
 from inspector.schemas.state import InspectionState
 from inspector.utils import metrics
-from inspector.utils.splits import make_split
+from inspector.utils.splits import make_split, sample_per_source
 from inspector.utils.telemetry import Telemetry
 
 models.ALLOW_MODEL_REQUESTS = False  # tests never call a real LLM endpoint
@@ -257,6 +257,15 @@ class Spy(MockExpert):
     def unload(self):
         Spy.events.append("unload")
         super().unload()
+
+
+def test_sample_per_source_is_balanced_and_deterministic():
+    pool = [Sample(image_id=f"{src}/c/{d}/{i}", image_path="x.png", source=src, is_defective=d,
+                   templates=["r.png"], questions=mk_questions(f"{src}/c/{d}/{i}"))
+            for src in ("VisA", "GoodsAD") for d in (False, True) for i in range(5)]
+    a = sample_per_source(pool, 4, seed=0)
+    assert len(a) == 8 and a == sample_per_source(pool, 4, seed=0)
+    assert {(s.source, s.is_defective) for s in a} == {(src, d) for src in ("VisA", "GoodsAD") for d in (False, True)}
 
 
 def test_pass_runner_unloads_each_pass_and_resumes_from_cache(tmp_path):
