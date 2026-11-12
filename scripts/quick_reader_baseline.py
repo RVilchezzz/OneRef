@@ -65,6 +65,7 @@ def main() -> int:
     ap.add_argument("--side", type=int, default=448, help="max image side in pixels")
     ap.add_argument("--expert-run", type=Path, required=True)
     ap.add_argument("--seed", type=int, default=0)
+    ap.add_argument("--bits", type=int, choices=[4, 16], default=4, help="4 = nf4 (6 GB GPU / T4), 16 = bf16 (L4)")
     args = ap.parse_args()
 
     from transformers import AutoModelForImageTextToText, AutoProcessor, BitsAndBytesConfig
@@ -80,12 +81,11 @@ def main() -> int:
     print(f"{len(samples)} images, {n_q} questions x 2 conditions")
 
     proc = AutoProcessor.from_pretrained(args.model)
-    model = AutoModelForImageTextToText.from_pretrained(
-        args.model, device_map="cuda",
-        quantization_config=BitsAndBytesConfig(load_in_4bit=True, bnb_4bit_compute_dtype=torch.bfloat16, bnb_4bit_quant_type="nf4"),
-    ).eval()
+    quant = (dict(quantization_config=BitsAndBytesConfig(load_in_4bit=True, bnb_4bit_compute_dtype=torch.bfloat16, bnb_4bit_quant_type="nf4"))
+             if args.bits == 4 else dict(dtype=torch.bfloat16))
+    model = AutoModelForImageTextToText.from_pretrained(args.model, device_map="cuda", **quant).eval()
 
-    run = f"{args.model.split('/')[-1]}_4bit_{datetime.now():%Y%m%d-%H%M}"
+    run = f"{args.model.split('/')[-1]}_{'4bit' if args.bits == 4 else 'bf16'}_{datetime.now():%Y%m%d-%H%M}"
     out = ROOT / "outputs" / "quick_reader" / run
     out.mkdir(parents=True)
     rows = {"noexpert": [], "expert": []}
@@ -115,7 +115,7 @@ def main() -> int:
                 if done % 25 == 0:
                     print(f"  {done}/{n_q} questions, {(time.time() - t0) / done:.1f} s per question (both conditions)")
 
-    summary = {"model": args.model + " (4-bit nf4)", "n_images": len(samples), "n_questions": n_q, "seconds_per_question_pair": (time.time() - t0) / max(1, done)}
+    summary = {"model": args.model + (" (4-bit nf4)" if args.bits == 4 else " (bf16)"), "gpu": torch.cuda.get_device_name(0), "n_images": len(samples), "n_questions": n_q, "seconds_per_question_pair": (time.time() - t0) / max(1, done)}
     for cond, rs in rows.items():
         lo, hi = metrics.bootstrap_ci(rs)
         summary[cond] = {"mean": metrics.mean_accuracy(rs), "ci95": [lo, hi],
