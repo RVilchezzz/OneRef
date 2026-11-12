@@ -1,0 +1,20 @@
+<section id="planejado" data-transition="fade" style="background:#F6F4EF;color:#15253A;font-family:'IBM Plex Sans', Arial, sans-serif;padding:128px 128px 160px;display:flex;flex-direction:column;gap:40px">
+<div style="display:flex;flex-direction:column;gap:12px">
+<p style="font-size:24px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:#B04A17">Planned vs. done</p>
+<h2 style="font-family:'Source Serif 4', Georgia, serif;font-size:64px;font-weight:600;line-height:1.15;color:#15253A">What the plan promised for Nov 12</h2>
+</div>
+<table style="font-family:'IBM Plex Sans', Arial, sans-serif;font-size:26px;color:#15253A">
+<tr><th style="width:44%;text-align:left">Planned (Delivery I)</th><th style="width:16%;text-align:left">Status</th><th style="width:40%;text-align:left">Detail</th></tr>
+<tr><td>MMAD download</td><td style="color:#2F6B3A"><b>Done</b></td><td>dev subset, 2.1 GB, 2,084 files</td></tr>
+<tr><td>Dev and test splits fixed</td><td style="color:#2F6B3A"><b>Done</b></td><td>835 / 7,531 images, committed</td></tr>
+<tr><td>DINOv3 expert with anomaly maps</td><td style="color:#2F6B3A"><b>Done</b></td><td>all 835 dev images, per-source scores</td></tr>
+<tr><td>Evaluation harness</td><td style="color:#B04A17"><b>Partial</b></td><td>metrics, McNemar, bootstrap coded; check vs official summary.py pending</td></tr>
+<tr><td>B1 and B2 on dev</td><td style="color:#B04A17"><b>Pending</b></td><td>readers coded and tested, not run</td></tr>
+<tr><td>Colab throughput measured</td><td style="color:#B04A17"><b>Pending</b></td><td>first task this week</td></tr>
+</table>
+<div style="display:flex;gap:24px">
+<div style="flex:1;display:flex;flex-direction:column;gap:6px;border-top:4px solid #2F6B3A;padding:16px 0 0"><p style="font-family:'Source Serif 4', Georgia, serif;font-size:56px;font-weight:600;color:#2F6B3A">3 / 6</p><p style="font-size:24px;color:#3D4A58">items done</p></div>
+<div style="flex:1;display:flex;flex-direction:column;gap:6px;border-top:4px solid #B04A17;padding:16px 0 0"><p style="font-family:'Source Serif 4', Georgia, serif;font-size:56px;font-weight:600;color:#B04A17">+ extra</p><p style="font-size:24px;color:#3D4A58">full multi-agent code ahead of plan (planned for Nov 12–19)</p></div>
+</div>
+<aside>Against the plan: data, splits and the visual expert are done. The evaluation code exists but still has to be checked against MMAD's official summary script. The baselines B1 and B2 and the Colab throughput are behind: the reader code is ready and tested, but has not been run on a GPU. On the other hand, the readers, verifier and aggregator were planned for next week and are already coded, so the delay is in running, not in building.</aside>
+</section>
