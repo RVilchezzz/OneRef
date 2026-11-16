@@ -14,7 +14,9 @@ Copie autonome de `src/inspector/` + notebook `OneRef_Colab.ipynb`. Modèles ser
 Les sorties (`outputs/`, `splits/`) sont sur Drive : relancer la cellule après une coupure reprend au dernier cache.
 
 ## Resynchroniser après une modification du code
-Depuis `OneRef/` : `rm -rf Colab/inspector && cp -r src/inspector Colab/inspector && cp tests/test_workflow.py Colab/tests/` (puis supprimer les `__pycache__`).
+MMAD en échantillon : dans la cellule 5, `MMAD_MODE = "sample"` (défaut) télécharge `mmad.json` + un petit zip (DS-MVTec, 1,6 Go) sur Drive, et les cellules d'exécution ajoutent `--available-only`. `"full"` = tout (~28 Go), `"none"` = déjà sur Drive. Le fichier `download_mmad.py` doit rester à la racine de `Colab/`.
+
+Depuis `OneRef/` : `rm -rf Colab/inspector && cp -r src/inspector Colab/inspector && cp tests/test_workflow.py Colab/tests/ && cp scripts/download_mmad.py Colab/` (puis supprimer les `__pycache__`).
 
 ## Non vérifié
 Jamais exécuté sur un vrai Colab : installation de vLLM à côté du torch de Colab (un redémarrage du runtime peut être demandé), mémoire L4/T4, IDs des checkpoints quantifiés, InternVL3 sous vLLM, parser d'outils `hermes`.
