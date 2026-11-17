@@ -131,6 +131,23 @@ def test_reader_agent_retries_on_option_not_offered():
     assert len(calls) == 2 and rec["calls"][0]["raw"] and "tokens_in" in rec
 
 
+@pytest.mark.parametrize("hint", ["full", "none"])
+def test_reader_hint_none_hides_expert_text_and_crop(monkeypatch, hint):
+    import inspector.agents.llm as llm
+    monkeypatch.setattr(llm, "image_part", lambda path, max_side=None: path)  # no image files needed
+    st = mk_state()
+    st.visual_evidence = expert()
+    r = ReaderMLLM(Settings(reader_hint=hint), "m", "reader_a", model=scripted('{"selected_option": "A", "confidence": 0.9}')[0])
+    assert r.image_parts(st) == ([st.query_image_path, st.reference_image_path] + (["c"] if hint == "full" else []))
+    r.image_parts = lambda s: []
+    r.load()
+    try:
+        r._run(st, rec := {})
+    finally:
+        r.unload()
+    assert all(("Visual expert" in c["prompt"]) == (hint == "full") for c in rec["calls"])
+
+
 def test_reader_agent_gives_none_after_retries():
     model, _ = scripted("not json at all")
     st, rec = run_reader(model, mk_state())

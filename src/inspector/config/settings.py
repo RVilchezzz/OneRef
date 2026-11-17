@@ -78,6 +78,9 @@ class Settings(BaseSettings):
     anomaly_norm_low: float = 0.2                     # cosine distance mapped to score 0
     anomaly_norm_high: float = 0.8                    # cosine distance mapped to score 1
     expert_flag_threshold: float = 0.5                # score >= threshold => "defect" vote
+    # What the readers see of the expert: "full" = hint text + zoomed crop; "none" = only the part and
+    # its reference ("no expert" ablation / single-model baseline B1; also set expert_weight_discrimination=0).
+    reader_hint: Literal["full", "none"] = "full"
 
     # ---- protocol ----------------------------------------------------------
     dev_fraction: float = Field(0.10, gt=0, lt=1)

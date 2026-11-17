@@ -48,6 +48,7 @@ class ReaderMLLM(LLMAgent):
         super().__init__(settings, model_name, model)
         self.name = name
         self.reopen = reopen
+        self.show_hint = settings.reader_hint == "full"
 
     def build(self, model: Model) -> Agent[Question, ReaderAnswer]:
         agent = Agent(
@@ -79,7 +80,7 @@ class ReaderMLLM(LLMAgent):
 
     # ---- agent ---------------------------------------------------------------
     async def ask(self, q: Question, state: InspectionState, critique: str | None, images: list, rec: dict[str, Any]) -> ReaderOutput | None:
-        ev = state.visual_evidence
+        ev = state.visual_evidence if self.show_hint else None
         prompt = build_prompt(q, ev.as_text() if ev else None, critique)
         call: dict[str, Any] = {"question_id": q.id, "prompt": prompt}
         rec.setdefault("calls", []).append(call)
@@ -94,6 +95,10 @@ class ReaderMLLM(LLMAgent):
         rec["tokens_in"] = rec.get("tokens_in", 0) + usage.input_tokens
         rec["tokens_out"] = rec.get("tokens_out", 0) + usage.output_tokens
         return ReaderOutput(question_id=q.id, **result.output.model_dump())
+
+    def image_parts(self, state: InspectionState) -> list:
+        parts = super().image_parts(state)
+        return parts if self.show_hint else parts[:2]  # no hint => no expert crop either
 
     def _run(self, state: InspectionState, rec: dict[str, Any]) -> InspectionState:
         store = self._store(state)
