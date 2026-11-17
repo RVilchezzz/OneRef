@@ -480,6 +480,24 @@ def test_pass_runner_unloads_each_pass_and_resumes_from_cache(tmp_path):
     assert any("latency_ms" in json.loads(l) for l in (tmp_path / "t.jsonl").read_text().splitlines())
 
 
+def test_pass_runner_caches_each_image_before_a_crash(tmp_path):
+    class Boom(MockExpert):
+        n = 0
+
+        def _run(self, state, rec):
+            Boom.n += 1
+            if Boom.n == 3:
+                raise RuntimeError("crash")
+            return super()._run(state, rec)
+
+    states = [mk_state(i) for i in range(4)]
+    with pytest.raises(RuntimeError):
+        PassRunner(tmp_path, Telemetry(tmp_path / "t.jsonl")).run([Step("1_expert", Boom)], states)
+    assert len(list((tmp_path / "1_expert").glob("*.json"))) == 2  # the two finished images survived
+    out = PassRunner(tmp_path, Telemetry(tmp_path / "t.jsonl")).run([Step("1_expert", MockExpert)], states)
+    assert all(s.visual_evidence for s in out)
+
+
 def test_full_mock_pipeline_end_to_end(tmp_path):
     s = Settings()
     tel = Telemetry(tmp_path / "t.jsonl")
