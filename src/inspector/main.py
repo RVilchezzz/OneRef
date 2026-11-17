@@ -29,6 +29,8 @@ def main(argv: list[str] | None = None) -> int:
     ap.add_argument("--limit", type=int, default=None, help="use only the first N images of the split")
     ap.add_argument("--per-source", type=int, default=None, help="use only K images per source (half normal, half defective)")
     ap.add_argument("--available-only", action="store_true", help="keep only images present under ONEREF_MMAD_ROOT (sample download)")
+    ap.add_argument("--steps", default=None,
+                    help="comma-separated passes to run, e.g. expert,reader_a,aggregator (single-model baseline); default all")
     ap.add_argument("--run-name", default="run")
     ap.add_argument("--mock", action="store_true", help="GPU-free mock agents (smoke test)")
     ap.add_argument("--frozen-config", action="store_true", help="required for --split test: config is frozen")
@@ -56,7 +58,14 @@ def main(argv: list[str] | None = None) -> int:
     run_dir = Path(s.outputs_dir) / args.run_name
     tel = Telemetry(run_dir / "telemetry.jsonl", run=args.run_name, use_logfire=s.use_logfire)
     states = [InspectionState.from_sample(x, str(s.mmad_root)) for x in chosen]
-    states = PassRunner(run_dir, tel).run(build_steps(s, run_dir, mock=args.mock), states)
+    steps = build_steps(s, run_dir, mock=args.mock)
+    if args.steps:
+        wanted = {w.strip() for w in args.steps.split(",")}
+        steps = [st for st in steps if st.name.split("_", 1)[1] in wanted]
+        if not steps:
+            print(f"--steps {args.steps!r} matches no pass", file=sys.stderr)
+            return 2
+    states = PassRunner(run_dir, tel).run(steps, states)
 
     rows = metrics.build_rows(chosen, states)
     acc = metrics.per_subtask_accuracy(rows)
