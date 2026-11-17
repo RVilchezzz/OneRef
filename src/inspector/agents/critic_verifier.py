@@ -30,7 +30,7 @@ from pydantic_ai.settings import ModelSettings
 
 from inspector.agents.llm import LLMAgent, response_texts
 from inspector.config.settings import Settings
-from inspector.schemas.agent_outputs import CriticOutput, ReaderOutput
+from inspector.schemas.agent_outputs import CriticOutput, CriticReview, ReaderOutput
 from inspector.schemas.mmad import Question, SubTask
 from inspector.schemas.state import InspectionState
 
@@ -42,8 +42,9 @@ _CELLS = [
 CRITIC_PROMPT = (
     "You are the quality-control reviewer of an industrial inspection team. Image 1 is the inspected "
     "part, image 2 a normal reference, image 3 (if present) the region a visual expert found most "
-    "different. Two inspectors answered multiple-choice questions about image 1. First call "
-    "`run_consistency_rules` to get the automatic checks. Then decide which questions must be "
+    "different. Two inspectors answered multiple-choice questions about image 1. The automatic "
+    "consistency checks are listed in the input (also available as the `run_consistency_rules` tool). "
+    "Decide which questions must be "
     "re-asked because an answer contradicts the images, the expert evidence, or another answer of "
     "the same inspector. Only list question ids that appear in the input. Do not re-ask a question "
     "just because the two inspectors disagree."
@@ -83,12 +84,12 @@ class CriticVerifier(LLMAgent):
     def enabled(self) -> bool:
         return self.s.use_llm_critic
 
-    def build(self, model: Model) -> Agent[CriticDeps, CriticOutput]:
+    def build(self, model: Model) -> Agent[CriticDeps, CriticReview]:
         agent = Agent(
             model,
             name="Critic",
             system_prompt=CRITIC_PROMPT,
-            output_type=PromptedOutput([CriticOutput]),
+            output_type=PromptedOutput([CriticReview]),
             deps_type=CriticDeps,
             retries={"output": self.s.json_retries},
             model_settings=ModelSettings(temperature=0.0, max_tokens=self.s.max_new_tokens,
@@ -101,7 +102,7 @@ class CriticVerifier(LLMAgent):
             return "\n".join(ctx.deps.findings) or "No rule violation found."
 
         @agent.output_validator
-        def ids_exist(ctx: RunContext[CriticDeps], out: CriticOutput) -> CriticOutput:
+        def ids_exist(ctx: RunContext[CriticDeps], out: CriticReview) -> CriticReview:
             unknown = set(out.reopen_questions) - ctx.deps.question_ids
             if unknown:
                 raise ModelRetry(f"Unknown question ids {sorted(unknown)}. Valid ids: {sorted(ctx.deps.question_ids)}.")
@@ -162,7 +163,8 @@ class CriticVerifier(LLMAgent):
 
         if self.agent is not None:
             deps = CriticDeps(findings=list(reasons), question_ids={q.id for q in state.questions})
-            prompt = self.describe(state)
+            # Rule findings go in the prompt too: small models (Gemma 4 E2B) answer without calling the tool.
+            prompt = self.describe(state) + "\n\nAutomatic checks:\n" + ("\n".join(reasons) or "No rule violation found.")
             rec["prompt"] = prompt
             with capture_run_messages() as messages:
                 try:

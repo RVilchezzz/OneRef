@@ -262,6 +262,24 @@ def test_critic_logs_its_tool_calls():
     assert rec["tool_calls"] == 1 and "llm" in rec
 
 
+def test_llm_critic_schema_has_only_its_four_fields_and_prompt_has_rule_findings():
+    from inspector.schemas.agent_outputs import CriticReview
+    assert set(CriticReview.model_json_schema()["properties"]) == {"is_valid", "conflict_detected", "reopen_questions", "critique_reason"}
+    st = mk_state()
+    st.visual_evidence = expert(0.9, "top right")
+    q0, q1 = st.questions
+    st.reader_a_responses = st.reader_b_responses = {q0.id: ans(q0.id, "B"), q1.id: ans(q1.id, "B")}
+    model, _ = scripted('{"is_valid": true, "conflict_detected": false, "reopen_questions": [], "critique_reason": ""}')
+    c = CriticVerifier(Settings(), model=model)
+    c.image_parts = lambda s: []
+    c.load()
+    try:
+        c._run(st, rec := {})
+    finally:
+        c.unload()
+    assert "Automatic checks:" in rec["prompt"] and "said no defect" in rec["prompt"] and "llm_error" not in rec
+
+
 def test_llm_critic_failure_keeps_rules_verdict():
     st = mk_state()
     st.visual_evidence = expert(0.9, "top right")
