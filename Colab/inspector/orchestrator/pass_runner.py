@@ -23,6 +23,13 @@ class PassRunner:
     def _cache(self, step: Step, image_id: str) -> Path:
         return self.run_dir / step.name / (image_id.replace("/", "__") + ".json")
 
+    def _save(self, step: Step, state: InspectionState) -> None:
+        p = self._cache(step, state.image_id)
+        p.parent.mkdir(parents=True, exist_ok=True)
+        tmp = p.with_suffix(".tmp")
+        tmp.write_text(state.model_dump_json(), encoding="utf-8")
+        tmp.replace(p)  # atomic: a crash never leaves a half-written cache file
+
     def run(self, steps: list[Step], states: list[InspectionState]) -> list[InspectionState]:
         for step in steps:
             states = self._run_step(step, states)
@@ -46,15 +53,14 @@ class PassRunner:
             try:
                 for s in todo:
                     done[s.image_id] = agent.run(s, self.tel)
+                    self._save(step, done[s.image_id])  # per image: a crash mid-pass loses one image, not the pass
             finally:  # always release the GPU, even on error, before the next pass
                 agent.unload()
         del agent
         free_gpu()
 
         for s in pending:
-            res = done.setdefault(s.image_id, s)  # images the agent skipped pass through unchanged
-            p = self._cache(step, s.image_id)
-            p.parent.mkdir(parents=True, exist_ok=True)
-            p.write_text(res.model_dump_json(), encoding="utf-8")
+            if not self._cache(step, s.image_id).exists():  # images the agent skipped pass through unchanged
+                self._save(step, done.setdefault(s.image_id, s))
         self.tel.write({"event": "pass_end", "step": step.name})
         return [done[s.image_id] for s in states]
