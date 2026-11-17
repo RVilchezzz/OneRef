@@ -2,7 +2,8 @@
 
 * Each reader votes for its option with weight ``Settings.weights[agent][subtask]`` (default 1.0),
   fixed on the dev split.
-* On anomaly discrimination the visual expert votes too (defect if score >= threshold).
+* On anomaly discrimination the visual expert votes too (defect if score >= threshold); weight and
+  threshold can be set per MMAD source (``expert_weight_by_source``, ``expert_threshold_by_source``).
 * Optional third reader (``reader_c``) votes like the others; ``Settings.aggregate_readers`` picks
   which readers count (ablations re-aggregated from cache, no GPU).
 * Optional conflict judge: ``judge_mode="override"`` makes its answer final where it answered,
@@ -45,10 +46,12 @@ class Aggregator(BaseAgent):
                     votes[a.selected_option] += self._w(agent, q.subtask)
                     conf[a.selected_option] += a.confidence
             if ev is not None and q.subtask == SubTask.ANOMALY_DISCRIMINATION:
-                flag = ev.confidence_score >= self.s.expert_flag_threshold
+                w_exp = self.s.expert_weight_by_source.get(state.source, self.s.expert_weight_discrimination)
+                thr = self.s.expert_threshold_by_source.get(state.source, self.s.expert_flag_threshold)
+                flag = ev.confidence_score >= thr
                 for letter in q.options:
-                    if (flag and says_yes_defect(q, letter)) or (not flag and says_no_defect(q, letter)):
-                        votes[letter] += self.s.expert_weight_discrimination
+                    if w_exp and ((flag and says_yes_defect(q, letter)) or (not flag and says_no_defect(q, letter))):
+                        votes[letter] += w_exp
             j = state.judge_answers.get(q.id) if self.s.judge_mode != "off" else None
             if j is not None and self.s.judge_mode == "vote":
                 votes[j.selected_option] += self.s.judge_weight

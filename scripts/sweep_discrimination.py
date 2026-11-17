@@ -30,6 +30,8 @@ def main() -> None:
     ap.add_argument("--thresholds", default="0.3,0.4,0.5,0.6,0.7,0.8,0.9,0.95,1.0")
     ap.add_argument("--weights", default="0,0.5,1,1.5,2,3")
     ap.add_argument("--readers", default="reader_a,reader_b;reader_a;reader_b", help="';'-separated voter sets")
+    ap.add_argument("--by-source", action="store_true",
+                    help="pick, per MMAD source, the (weight, threshold) with the best discrimination balanced accuracy")
     ap.add_argument("--out", type=Path, default=None)
     args = ap.parse_args()
 
@@ -39,7 +41,7 @@ def main() -> None:
     by_id = {s.image_id: s for s in load_mmad(base.mmad_json)}
     print(f"{len(raw)} states from {src}")
 
-    res = []
+    res, per_src = [], []
     for readers in args.readers.split(";"):
         for w in map(float, args.weights.split(",")):
             for t in map(float, args.thresholds.split(",")):
@@ -52,6 +54,13 @@ def main() -> None:
                 rows = metrics.build_rows([by_id[s.image_id] for s in states], states)
                 disc = [r for r in rows if r["subtask"] == SubTask.ANOMALY_DISCRIMINATION]
                 fpr, miss = metrics.fpr_and_miss(disc)
+                if args.by_source:
+                    for src_name in sorted({r["source"] for r in disc}):
+                        d = [r for r in disc if r["source"] == src_name]
+                        f, m = metrics.fpr_and_miss(d)
+                        per_src.append({"readers": readers, "source": src_name, "expert_weight": w,
+                                        "threshold": t if w else None, "n": len(d),
+                                        "disc_bal_acc": metrics.balanced_accuracy(d), "fpr": f, "miss": m})
                 res.append({"readers": readers, "expert_weight": w, "threshold": t if w else None,
                             "disc_bal_acc": metrics.balanced_accuracy(disc), "fpr": fpr, "miss": miss,
                             "mean7": metrics.mean_accuracy(rows)})
@@ -63,11 +72,24 @@ def main() -> None:
         th = "-" if r["threshold"] is None else f"{r['threshold']:.2f}"
         lines.append(f"| {r['readers']} | {r['expert_weight']:g} | {th} | {100*r['disc_bal_acc']:.1f} | "
                      f"{100*r['fpr']:.1f} | {100*r['miss']:.1f} | {100*r['mean7']:.1f} |")
+    if args.by_source:
+        lines += ["", "Best expert vote per source (discrimination balanced accuracy; ties -> lower weight):", "",
+                  "| Readers | Source | n | Expert weight | Threshold | Discrimination (bal.) | FPR | Missed |",
+                  "|---|---|---|---|---|---|---|---|"]
+        for readers in args.readers.split(";"):
+            for src_name in sorted({r["source"] for r in per_src}):
+                cand = [r for r in per_src if r["readers"] == readers and r["source"] == src_name]
+                if not cand:
+                    continue
+                b = max(cand, key=lambda r: (round(r["disc_bal_acc"], 6), -r["expert_weight"]))
+                th = "-" if b["threshold"] is None else f"{b['threshold']:.2f}"
+                lines.append(f"| {readers} | {src_name} | {b['n']} | {b['expert_weight']:g} | {th} | "
+                             f"{100*b['disc_bal_acc']:.1f} | {100*b['fpr']:.1f} | {100*b['miss']:.1f} |")
     md = "\n".join(lines) + "\n"
     print(md)
     if args.out:
         args.out.mkdir(parents=True, exist_ok=True)
-        (args.out / "sweep.json").write_text(json.dumps({"from": str(src), "results": res}, indent=2), encoding="utf-8")
+        (args.out / "sweep.json").write_text(json.dumps({"from": str(src), "results": res, "per_source": per_src}, indent=2), encoding="utf-8")
         (args.out / "sweep.md").write_text(md, encoding="utf-8")
 
 
