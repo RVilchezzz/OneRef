@@ -23,7 +23,7 @@ from dataclasses import dataclass
 from typing import Any
 
 from pydantic_ai import Agent, ModelRetry, PromptedOutput, RunContext, capture_run_messages
-from pydantic_ai.exceptions import UnexpectedModelBehavior
+from pydantic_ai.exceptions import ModelServerError, UnexpectedModelBehavior
 from pydantic_ai.messages import ModelResponse, ToolCallPart
 from pydantic_ai.models import Model
 from pydantic_ai.settings import ModelSettings
@@ -178,7 +178,9 @@ class CriticVerifier(LLMAgent):
                         reasons.append(f"reviewer: {res.output.critique_reason}")
                         for who in why_by_reader:
                             why_by_reader[who].append(f"reviewer: {res.output.critique_reason}")
-                except UnexpectedModelBehavior as e:  # LLM critic failed: the rules-only verdict stands
+                # LLM critic failed (invalid output, or a 5xx such as Ollama's "token repeat limit"):
+                # the rules-only verdict stands, and the failure is logged.
+                except (UnexpectedModelBehavior, ModelServerError) as e:
                     rec["llm_error"] = repr(e)
             rec["raw"] = response_texts(messages)
             rec["tool_calls"] = sum(isinstance(p, ToolCallPart) and p.tool_name == "run_consistency_rules"

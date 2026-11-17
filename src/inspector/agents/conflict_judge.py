@@ -18,7 +18,8 @@ from dataclasses import dataclass
 from typing import Any
 
 from pydantic_ai import Agent, ModelRetry, PromptedOutput, RunContext, capture_run_messages
-from pydantic_ai.exceptions import ModelContextWindowExceededError, ModelRequestRejectedError, UnexpectedModelBehavior
+from pydantic_ai.exceptions import (ModelContextWindowExceededError, ModelRequestRejectedError, ModelServerError,
+                                     UnexpectedModelBehavior)
 from pydantic_ai.models import Model
 from pydantic_ai.settings import ModelSettings
 
@@ -118,7 +119,7 @@ class ConflictJudge(LLMAgent):
         with capture_run_messages() as messages:
             try:
                 result = await self.agent.run([prompt, *images], deps=deps)
-            except (UnexpectedModelBehavior, ModelRequestRejectedError, ModelContextWindowExceededError) as e:
+            except (UnexpectedModelBehavior, ModelRequestRejectedError, ModelContextWindowExceededError, ModelServerError) as e:
                 call.update(raw=response_texts(messages), error=repr(e))
                 return None  # no judgement: the readers' vote stands
         usage = result.usage
