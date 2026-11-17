@@ -294,6 +294,25 @@ def test_llm_critic_failure_keeps_rules_verdict():
     assert st.critic_verdict.reopen_questions == [q0.id] and "llm_error" in rec
 
 
+def test_llm_critic_server_error_keeps_rules_verdict():
+    """A 5xx from the server (Ollama: "token repeat limit reached") must not crash the pass."""
+    from pydantic_ai.exceptions import ModelServerError
+
+    def boom(messages, info):
+        raise ModelServerError("gemma4:e2b", "prediction aborted, token repeat limit reached")
+
+    st = mk_state()
+    st.visual_evidence = expert(0.9, "top right")
+    q0, q1 = st.questions
+    st.reader_a_responses = st.reader_b_responses = {q0.id: ans(q0.id, "B"), q1.id: ans(q1.id, "B")}
+    critic = CriticVerifier(Settings(), model=FunctionModel(boom))
+    critic.image_parts = lambda s: []
+    critic.load()
+    st = critic._run(st, rec := {})
+    critic.unload()
+    assert st.critic_verdict.reopen_questions == [q0.id] and "ModelServerError" in rec["llm_error"]
+
+
 def test_critic_extra_body_reaches_model_settings():
     off = CriticVerifier(Settings(), model=scripted("x")[0]).build(scripted("x")[0])
     assert "extra_body" not in (off.model_settings or {})
