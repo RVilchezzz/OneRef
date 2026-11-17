@@ -1,0 +1,123 @@
+{
+  "runs": {
+    "gemma": {
+      "n_images": 835,
+      "n_questions": 3937,
+      "per_subtask": {
+        "anomaly_discrimination": 0.6142531574033122,
+        "defect_classification": 0.47186147186147187,
+        "defect_localization": 0.5062240663900415,
+        "defect_description": 0.5671641791044776,
+        "defect_analysis": 0.8016877637130801,
+        "object_classification": 0.8446601941747572,
+        "object_analysis": 0.7024070021881839
+      },
+      "mean": 0.6440368335479035,
+      "ci95": [
+        0.6281400264121435,
+        0.6609981521440289
+      ],
+      "fpr": 0.6068111455108359,
+      "miss": 0.16468253968253968,
+      "mean_per_source": {
+        "DS-MVTec": 0.7374953453133049,
+        "GoodsAD": 0.5971768037326556,
+        "MVTec-AD": 0.8888888888888888,
+        "MVTec-LOCO": 0.567790209098333,
+        "VisA": 0.6805076456885298
+      }
+    },
+    "rules": {
+      "n_images": 835,
+      "n_questions": 3937,
+      "per_subtask": {
+        "anomaly_discrimination": 0.6127051697872131,
+        "defect_classification": 0.45021645021645024,
+        "defect_localization": 0.5103734439834025,
+        "defect_description": 0.5628997867803838,
+        "defect_analysis": 0.8016877637130801,
+        "object_classification": 0.8284789644012945,
+        "object_analysis": 0.6991247264770241
+      },
+      "mean": 0.6379266150512641,
+      "ci95": [
+        0.6210871732102335,
+        0.6551743862424111
+      ],
+      "fpr": 0.6099071207430341,
+      "miss": 0.16468253968253968,
+      "mean_per_source": {
+        "DS-MVTec": 0.7255805875391751,
+        "GoodsAD": 0.6005554964888382,
+        "MVTec-AD": 0.8888888888888888,
+        "MVTec-LOCO": 0.5504829756330805,
+        "VisA": 0.6778311010548729
+      }
+    },
+    "noverif": {
+      "n_images": 835,
+      "n_questions": 3937,
+      "per_subtask": {
+        "anomaly_discrimination": 0.6234305125558995,
+        "defect_classification": 0.45021645021645024,
+        "defect_localization": 0.529045643153527,
+        "defect_description": 0.5628997867803838,
+        "defect_analysis": 0.8016877637130801,
+        "object_classification": 0.8284789644012945,
+        "object_analysis": 0.6991247264770241
+      },
+      "mean": 0.6421262638996657,
+      "ci95": [
+        0.6256507070884958,
+        0.6591439660388654
+      ],
+      "fpr": 0.5170278637770898,
+      "miss": 0.2361111111111111,
+      "mean_per_source": {
+        "DS-MVTec": 0.7353798872888812,
+        "GoodsAD": 0.6075846092733034,
+        "MVTec-AD": 0.8888888888888888,
+        "MVTec-LOCO": 0.551940217221901,
+        "VisA": 0.6777057877716649
+      }
+    }
+  },
+  "pairs": {
+    "gemma vs rules": {
+      "paired_questions": 3937,
+      "both_right": 2497,
+      "only_first": 62,
+      "only_second": 43,
+      "both_wrong": 1335,
+      "oracle_acc": 0.6609093218186436,
+      "mcnemar_p": 0.07848502733901798
+    },
+    "gemma vs noverif": {
+      "paired_questions": 3937,
+      "both_right": 2464,
+      "only_first": 95,
+      "only_second": 79,
+      "both_wrong": 1299,
+      "oracle_acc": 0.6700533401066802,
+      "mcnemar_p": 0.25541158164185757
+    },
+    "rules vs noverif": {
+      "paired_questions": 3937,
+      "both_right": 2499,
+      "only_first": 41,
+      "only_second": 44,
+      "both_wrong": 1353,
+      "oracle_acc": 0.6563373126746254,
+      "mcnemar_p": 0.8284232741648999
+    }
+  },
+  "args": {
+    "runs": [
+      "gemma=outputs/dev_full_S",
+      "rules=outputs/dev_full_S_rules",
+      "noverif=outputs/reagg/dev_full_S_pre/AB_noverif"
+    ],
+    "step": "7_aggregator",
+    "out": "results/compare/2026-11-17_dev_full_S/verifier"
+  }
+}
