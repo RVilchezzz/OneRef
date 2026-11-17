@@ -90,7 +90,8 @@ class CriticVerifier(LLMAgent):
             output_type=PromptedOutput([CriticOutput]),
             deps_type=CriticDeps,
             retries={"output": self.s.json_retries},
-            model_settings=ModelSettings(temperature=0.0, max_tokens=self.s.max_new_tokens),
+            model_settings=ModelSettings(temperature=0.0, max_tokens=self.s.max_new_tokens,
+                                         **({"extra_body": self.s.critic_extra_body} if self.s.critic_extra_body else {})),
         )
 
         @agent.tool

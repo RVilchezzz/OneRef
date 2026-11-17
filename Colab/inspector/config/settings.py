@@ -7,7 +7,7 @@ from __future__ import annotations
 
 import re
 from pathlib import Path
-from typing import Literal
+from typing import Any, Literal
 
 from pydantic import AliasChoices, Field, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
@@ -113,6 +113,9 @@ class Settings(BaseSettings):
     # *presence* of questions, which reveals the label in MMAD. Off by default (strict protocol).
     critic_use_question_structure: bool = False
     use_llm_critic: bool = True                       # False = rules-only critic (ablation, no GPU pass)
+    # Extra JSON fields sent with every critic request, e.g. '{"reasoning_effort": "none"}' to turn off
+    # the "thinking" mode that Gemma 4 has on by default in Ollama (slow, and truncated at max_new_tokens).
+    critic_extra_body: dict[str, Any] = {}
 
     # ---- telemetry ---------------------------------------------------------
     use_logfire: bool = False                         # optional; JSONL is always on
