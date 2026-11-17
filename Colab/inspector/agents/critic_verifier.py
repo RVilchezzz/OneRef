@@ -24,6 +24,7 @@ from typing import Any
 
 from pydantic_ai import Agent, ModelRetry, PromptedOutput, RunContext, capture_run_messages
 from pydantic_ai.exceptions import UnexpectedModelBehavior
+from pydantic_ai.messages import ModelResponse, ToolCallPart
 from pydantic_ai.models import Model
 from pydantic_ai.settings import ModelSettings
 
@@ -150,11 +151,14 @@ class CriticVerifier(LLMAgent):
 
     def _run(self, state: InspectionState, rec: dict[str, Any]) -> InspectionState:
         valid, reopen, reasons = True, [], []
+        by_reader: dict[str, set[str]] = {}
+        why_by_reader: dict[str, list[str]] = {}
         for who, ans in (("reader_a", state.reader_a_responses), ("reader_b", state.reader_b_responses)):
             v, r, why = self.check_reader(state, ans, who)
             valid &= v
             reopen += r
             reasons += why
+            by_reader[who], why_by_reader[who] = set(r), list(why)
 
         if self.agent is not None:
             deps = CriticDeps(findings=list(reasons), question_ids={q.id for q in state.questions})
@@ -166,11 +170,17 @@ class CriticVerifier(LLMAgent):
                     usage = res.usage
                     rec.update(llm=res.output.model_dump(), tokens_in=usage.input_tokens, tokens_out=usage.output_tokens)
                     reopen += res.output.reopen_questions
+                    for who in by_reader:  # the reviewer's flags go to both readers
+                        by_reader[who] |= set(res.output.reopen_questions)
                     if res.output.reopen_questions and res.output.critique_reason:
                         reasons.append(f"reviewer: {res.output.critique_reason}")
+                        for who in why_by_reader:
+                            why_by_reader[who].append(f"reviewer: {res.output.critique_reason}")
                 except UnexpectedModelBehavior as e:  # LLM critic failed: the rules-only verdict stands
                     rec["llm_error"] = repr(e)
             rec["raw"] = response_texts(messages)
+            rec["tool_calls"] = sum(isinstance(p, ToolCallPart) and p.tool_name == "run_consistency_rules"
+                                    for m in messages if isinstance(m, ModelResponse) for p in m.parts)
 
         reopen = sorted(set(reopen))
         allowed = state.reopen_count < self.s.max_reopen
@@ -181,6 +191,8 @@ class CriticVerifier(LLMAgent):
             conflict_detected=bool(reopen),
             reopen_questions=reopen if allowed else [],
             critique_reason=" ".join(reasons),
+            reopen_by_reader={w: sorted(ids) if allowed else [] for w, ids in by_reader.items()},
+            reason_by_reader={w: " ".join(r) for w, r in why_by_reader.items()},
         )
         state.critic_verdict = verdict
         rec["verdict"] = verdict.model_dump()

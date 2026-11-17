@@ -174,6 +174,19 @@ def test_reader_samples_majority_vote_for_iso_compute_baseline():
     assert len(calls) == 3 and [c["sampling"]["seed"] for c in rec["calls"]] == [0, 1, 2]
 
 
+def test_reader_accepts_schema_echo_of_internvl():
+    st = mk_state()
+    st.questions = st.questions[:1]
+    echoed = ('{"properties": {"selected_option": "B", "confidence": 0.95, "brief_rationale": "identical"}, '
+              '"required": ["selected_option", "confidence"], "additionalProperties": false}')
+    model, calls = scripted(echoed)
+    st, rec = run_reader(model, st)
+    a = st.reader_a_responses[st.questions[0].id]
+    assert a.selected_option == "B" and a.confidence == 0.95 and len(calls) == 1  # no retry needed
+    from inspector.schemas.agent_outputs import ReaderAnswer
+    assert ReaderAnswer.model_validate({"selected_option": "A", "confidence": 0.5, "properties": {"x": 1}}).selected_option == "A"
+
+
 def test_reader_agent_gives_none_after_retries():
     model, _ = scripted("not json at all")
     st, rec = run_reader(model, mk_state())
@@ -192,9 +205,17 @@ def test_critic_conflict_reopens_once():
     critic = CriticVerifier(s)
     st = critic._run(st, {})
     assert st.critic_verdict.conflict_detected and set(st.critic_verdict.reopen_questions) == {q0.id, q1.id}
+    assert st.critic_verdict.reopen_by_reader == {"reader_a": [q0.id, q1.id], "reader_b": []}  # B was consistent
     assert st.reopen_count == 1
-    st = critic._run(st, {})  # a second critic run must NOT grant another reopen
-    assert st.reopen_count == 1 and st.critic_verdict.reopen_questions == []
+    st2 = critic._run(st.model_copy(deep=True), {})  # a second critic run must NOT grant another reopen
+    assert st2.reopen_count == 1 and st2.critic_verdict.reopen_questions == []
+    a = ReaderMLLM(s, "m", "reader_a_reopen", reopen=True, model=scripted("x")[0])
+    b = ReaderMLLM(s, "m", "reader_b_reopen", reopen=True, model=scripted("x")[0])
+    assert a.applies(st) and not b.applies(st)          # targeted: only reader A re-answers
+    assert "reader_a:" in a._reopen_for_me(st)[1] and "reader_b:" not in a._reopen_for_me(st)[1]
+    legacy = st.model_copy(deep=True)
+    legacy.critic_verdict.reopen_by_reader = {}          # verdict cached before targeted reopen
+    assert b.applies(legacy)
 
 
 def test_critic_flags_missing_answer_as_invalid():
@@ -225,6 +246,20 @@ def test_llm_critic_calls_rule_tool_rejects_unknown_ids_and_merges_with_rules():
     assert "said no defect" in tool_out[0]                       # the rules reached the LLM via the tool
     assert set(st.critic_verdict.reopen_questions) == {q0.id, q1.id}  # rules ∪ LLM, unknown id retried away
     assert "reviewer: loc looks wrong" in st.critic_verdict.critique_reason
+
+
+def test_critic_logs_its_tool_calls():
+    from inspector.agents.mock import MockCritic
+    st = mk_state()
+    q0, q1 = st.questions
+    st.reader_a_responses = st.reader_b_responses = {q0.id: ans(q0.id, "A"), q1.id: ans(q1.id, "B")}
+    c = MockCritic(Settings())
+    c.load()
+    try:
+        c._run(st, rec := {})
+    finally:
+        c.unload()
+    assert rec["tool_calls"] == 1 and "llm" in rec
 
 
 def test_llm_critic_failure_keeps_rules_verdict():
