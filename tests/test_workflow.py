@@ -241,6 +241,14 @@ def test_llm_critic_failure_keeps_rules_verdict():
     assert st.critic_verdict.reopen_questions == [q0.id] and "llm_error" in rec
 
 
+def test_critic_extra_body_reaches_model_settings():
+    off = CriticVerifier(Settings(), model=scripted("x")[0]).build(scripted("x")[0])
+    assert "extra_body" not in (off.model_settings or {})
+    s = Settings(critic_extra_body={"reasoning_effort": "none"})
+    on = CriticVerifier(s, model=scripted("x")[0]).build(scripted("x")[0])
+    assert on.model_settings["extra_body"] == {"reasoning_effort": "none"}
+
+
 def test_cell_in_text_longest_match():
     assert cell_in_text("top-center area") == "top center" and cell_in_text("in the center") == "center"
 
