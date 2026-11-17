@@ -321,6 +321,13 @@ def test_critic_extra_body_reaches_model_settings():
     assert on.model_settings["extra_body"] == {"reasoning_effort": "none"}
 
 
+def test_judge_extra_body_reaches_model_settings():
+    m = scripted("x")[0]
+    assert "extra_body" not in (ConflictJudge(Settings(judge_model="j"), model=m).build(m).model_settings or {})
+    on = ConflictJudge(Settings(judge_model="j", judge_extra_body={"reasoning_effort": "none"}), model=m).build(m)
+    assert on.model_settings["extra_body"] == {"reasoning_effort": "none"}
+
+
 def test_cell_in_text_longest_match():
     assert cell_in_text("top-center area") == "top center" and cell_in_text("in the center") == "center"
 
@@ -346,6 +353,22 @@ def test_aggregator_expert_votes_on_discrimination_and_none_if_no_votes():
     st = Aggregator(Settings(expert_weight_discrimination=2.0))._run(st, {})
     assert st.final_answers[q0.id].selected_option == "A"  # expert "Yes" (weight 2) outvotes reader "No" (1)
     assert st.final_answers[q1.id].selected_option is None
+
+
+def test_aggregator_expert_vote_per_source():
+    st = mk_state()
+    q0, _ = st.questions
+    st.visual_evidence = expert(0.6)
+    st.reader_a_responses = {q0.id: ans(q0.id, "B")}
+    st.reader_b_responses = {}
+    s = Settings(expert_weight_discrimination=2.0)
+    assert Aggregator(s)._run(st.model_copy(deep=True), {}).final_answers[q0.id].selected_option == "A"
+    st.source = "GoodsAD"
+    off = Settings(expert_weight_discrimination=2.0, expert_weight_by_source={"GoodsAD": 0})
+    assert Aggregator(off)._run(st.model_copy(deep=True), {}).final_answers[q0.id].selected_option == "B"
+    hi = Settings(expert_weight_discrimination=2.0, expert_threshold_by_source={"GoodsAD": 0.7})
+    out = Aggregator(hi)._run(st.model_copy(deep=True), {}).final_answers[q0.id]
+    assert out.selected_option == "B" and out.votes["B"] == 3.0  # 0.6 < 0.7: expert says "no defect" too
 
 
 # ---- metrics -----------------------------------------------------------------

@@ -101,12 +101,18 @@ class Settings(BaseSettings):
     default_weight: float = 1.0
     weights: dict[str, dict[str, float]] = Field(default_factory=dict)  # fixed on dev, e.g. {"reader_a": {"defect_localization": 1.3}}
     expert_weight_discrimination: float = 1.0
+    # Per-source overrides of the expert's discrimination vote (dev calibration, frozen before test),
+    # e.g. {"GoodsAD": 0} where the expert is uninformative (unaligned images, AUROC 0.51 on dev).
+    expert_weight_by_source: dict[str, float] = {}
+    expert_threshold_by_source: dict[str, float] = {}
     # Which cached answers the aggregator uses (re-aggregation offline = ablations without the GPU).
     aggregate_readers: list[str] = ["reader_a", "reader_b", "reader_c"]
     # Conflict judge: "override" = its choice is final when it answered; "vote" = one more vote of judge_weight;
     # "off" = ignored (ablation).
     judge_mode: Literal["override", "vote", "off"] = "override"
     judge_weight: float = 1.0
+    # Extra request body for the judge, like critic_extra_body (Gemma 4 in Ollama: {"reasoning_effort": "none"}).
+    judge_extra_body: dict[str, Any] = {}
 
     # ---- critic ------------------------------------------------------------
     # Rule "discrimination=No but the image has defect-localization questions" depends on the
