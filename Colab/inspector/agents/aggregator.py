@@ -3,6 +3,10 @@
 * Each reader votes for its option with weight ``Settings.weights[agent][subtask]`` (default 1.0),
   fixed on the dev split.
 * On anomaly discrimination the visual expert votes too (defect if score >= threshold).
+* Optional third reader (``reader_c``) votes like the others; ``Settings.aggregate_readers`` picks
+  which readers count (ablations re-aggregated from cache, no GPU).
+* Optional conflict judge: ``judge_mode="override"`` makes its answer final where it answered,
+  ``"vote"`` adds it as one vote of ``judge_weight``, ``"off"`` ignores it.
 * Ties: higher summed confidence, then alphabetical letter (deterministic).
 * No valid vote at all -> ``selected_option=None`` (scored as an error).
 """
@@ -33,8 +37,10 @@ class Aggregator(BaseAgent):
         for q in state.questions:
             votes: dict[str, float] = defaultdict(float)
             conf: dict[str, float] = defaultdict(float)
-            for agent, store in (("reader_a", state.reader_a_responses), ("reader_b", state.reader_b_responses)):
-                a = store.get(q.id)
+            stores = {"reader_a": state.reader_a_responses, "reader_b": state.reader_b_responses,
+                      "reader_c": state.reader_c_responses}
+            for agent in self.s.aggregate_readers:
+                a = stores[agent].get(q.id)
                 if a is not None:
                     votes[a.selected_option] += self._w(agent, q.subtask)
                     conf[a.selected_option] += a.confidence
@@ -43,7 +49,13 @@ class Aggregator(BaseAgent):
                 for letter in q.options:
                     if (flag and says_yes_defect(q, letter)) or (not flag and says_no_defect(q, letter)):
                         votes[letter] += self.s.expert_weight_discrimination
+            j = state.judge_answers.get(q.id) if self.s.judge_mode != "off" else None
+            if j is not None and self.s.judge_mode == "vote":
+                votes[j.selected_option] += self.s.judge_weight
+                conf[j.selected_option] += j.confidence
             best = min(votes, key=lambda k: (-votes[k], -conf[k], k)) if votes else None
+            if j is not None and self.s.judge_mode == "override":
+                best = j.selected_option
             state.final_answers[q.id] = FinalAnswer(question_id=q.id, selected_option=best, votes=dict(votes))
         rec["final"] = {k: v.selected_option for k, v in state.final_answers.items()}
         return state

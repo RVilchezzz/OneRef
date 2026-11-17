@@ -19,7 +19,7 @@ from inspector.orchestrator.pass_runner import PassRunner
 from inspector.schemas.mmad import load_mmad
 from inspector.schemas.state import InspectionState
 from inspector.utils import metrics
-from inspector.utils.splits import make_split, sample_per_source, save_split
+from inspector.utils.splits import make_split, sample_per_source, save_split, stratified_subsample
 from inspector.utils.telemetry import Telemetry
 
 
@@ -27,6 +27,8 @@ def main(argv: list[str] | None = None) -> int:
     ap = argparse.ArgumentParser(description="OneRef multi-agent inspector (strict MMAD 1-shot)")
     ap.add_argument("--split", choices=["dev", "test"], default="dev")
     ap.add_argument("--limit", type=int, default=None, help="use only the first N images of the split")
+    ap.add_argument("--sample", type=int, default=None,
+                    help="stratified subsample of N images (source x category x normal/defective, fixed seed), e.g. the 1,000-image test")
     ap.add_argument("--per-source", type=int, default=None, help="use only K images per source (half normal, half defective)")
     ap.add_argument("--available-only", action="store_true", help="keep only images present under ONEREF_MMAD_ROOT (sample download)")
     ap.add_argument("--steps", default=None,
@@ -51,6 +53,8 @@ def main(argv: list[str] | None = None) -> int:
     dev, test = make_split(samples, s.dev_fraction, s.seed)
     save_split(dev, test, s.splits_dir)
     chosen = dev if args.split == "dev" else test
+    if args.sample:
+        chosen = stratified_subsample(chosen, args.sample, s.seed)
     if args.per_source:
         chosen = sample_per_source(chosen, args.per_source, s.seed)
     chosen = chosen[: args.limit]

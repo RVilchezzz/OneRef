@@ -35,8 +35,15 @@ class Settings(BaseSettings):
     reader_a_model: str = "Qwen/Qwen3-VL-8B-Instruct"
     reader_b_model: str = "OpenGVLab/InternVL3-8B"
     critic_model: str = "Qwen/Qwen3-VL-8B-Instruct"  # same weights as reader A, critic prompt
+    # Optional third model (another family), used as a voter, as a conflict judge, or both.
+    # None = pass not built. Both are measured on dev before the freeze.
+    reader_c_model: str | None = None                 # third voter: answers every question, no reopen
+    judge_model: str | None = None                    # judge: only questions whose voters disagree
     max_new_tokens: int = 256
     reader_image_max_side: int = 768                  # images sent to the MLLMs are downscaled to this side (vision-token budget)
+    # Iso-compute baseline B3: k samples per question at reader_temperature, majority vote (1 = greedy, as S).
+    reader_samples: int = Field(1, ge=1)
+    reader_temperature: float = 0.7
     json_retries: int = 1                             # pydantic-ai output retries on bad JSON / option
 
     # ---- LLM endpoint (OpenAI-compatible) ----------------------------------
@@ -81,6 +88,9 @@ class Settings(BaseSettings):
     # What the readers see of the expert: "full" = hint text + zoomed crop; "none" = only the part and
     # its reference ("no expert" ablation / single-model baseline B1; also set expert_weight_discrimination=0).
     reader_hint: Literal["full", "none"] = "full"
+    # Show the hint only for these MMAD sources (empty = all), e.g. ["DS-MVTec", "MVTec-AD", "VisA"]
+    # where the expert is reliable on dev (AUROC). Decided on dev, frozen before the test.
+    reader_hint_sources: list[str] = []
 
     # ---- protocol ----------------------------------------------------------
     dev_fraction: float = Field(0.10, gt=0, lt=1)
@@ -91,6 +101,12 @@ class Settings(BaseSettings):
     default_weight: float = 1.0
     weights: dict[str, dict[str, float]] = Field(default_factory=dict)  # fixed on dev, e.g. {"reader_a": {"defect_localization": 1.3}}
     expert_weight_discrimination: float = 1.0
+    # Which cached answers the aggregator uses (re-aggregation offline = ablations without the GPU).
+    aggregate_readers: list[str] = ["reader_a", "reader_b", "reader_c"]
+    # Conflict judge: "override" = its choice is final when it answered; "vote" = one more vote of judge_weight;
+    # "off" = ignored (ablation).
+    judge_mode: Literal["override", "vote", "off"] = "override"
+    judge_weight: float = 1.0
 
     # ---- critic ------------------------------------------------------------
     # Rule "discrimination=No but the image has defect-localization questions" depends on the
@@ -100,6 +116,10 @@ class Settings(BaseSettings):
 
     # ---- telemetry ---------------------------------------------------------
     use_logfire: bool = False                         # optional; JSONL is always on
+
+    def hint_on(self, source: str) -> bool:
+        """Do the readers and the judge see the expert's text and crop for an image of this source?"""
+        return self.reader_hint == "full" and (not self.reader_hint_sources or source in self.reader_hint_sources)
 
     @staticmethod
     def split_keys(raw: str) -> list[str]:
