@@ -298,6 +298,8 @@ These are on the "Four real cases" slide. All quotes are reader A's rationale as
 ---
 
 ## 10. How to reproduce
+These are the commands that were run on Nov 10–11. Since PR #4 (merged Nov 16) the repo is managed with uv: `uv sync` installs the same dependencies from `pyproject.toml`, and `uv run python ...` replaces `.venv/bin/python ...`. Ollama is now reached with `ONEREF_LLM_BASE_URL` (already in the config), because the default provider became the Hugging Face router.
+
 ```bash
 # environment (once)
 python3 -m venv .venv
