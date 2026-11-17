@@ -75,10 +75,20 @@ class ReaderMLLM(LLMAgent):
         return {"reader_a": state.reader_a_responses, "reader_b": state.reader_b_responses,
                 "reader_c": state.reader_c_responses}[role]
 
+    def _reopen_for_me(self, state: InspectionState) -> tuple[set[str], str | None]:
+        """Questions this reader must re-answer and the reasons that concern it (targeted reopen)."""
+        v = state.critic_verdict
+        if v is None:
+            return set(), None
+        role = self.name.removesuffix("_reopen")
+        if v.reopen_by_reader:
+            return set(v.reopen_by_reader.get(role, [])), v.reason_by_reader.get(role) or v.critique_reason
+        return set(v.reopen_questions), v.critique_reason  # verdict cached before targeted reopen
+
     def applies(self, state: InspectionState) -> bool:
         if not self.reopen:
             return True
-        return bool(state.critic_verdict and state.critic_verdict.reopen_questions)
+        return bool(self._reopen_for_me(state)[0])
 
     # ---- agent ---------------------------------------------------------------
     async def ask_once(self, q: Question, prompt: str, images: list, rec: dict[str, Any],
@@ -129,8 +139,7 @@ class ReaderMLLM(LLMAgent):
     def _run(self, state: InspectionState, rec: dict[str, Any]) -> InspectionState:
         store = self._store(state)
         if self.reopen:
-            ids = set(state.critic_verdict.reopen_questions) if state.critic_verdict else set()
-            critique = state.critic_verdict.critique_reason if state.critic_verdict else None
+            ids, critique = self._reopen_for_me(state)
             todo = [q for q in state.questions if q.id in ids]
         else:
             critique, todo = None, state.questions
