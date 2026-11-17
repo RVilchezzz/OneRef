@@ -1,0 +1,46 @@
+{
+  "gemma": {
+    "images": 835,
+    "images_flagged": 421,
+    "reader_a": {
+      "reopened": 652,
+      "changed": 236,
+      "fixed": 100,
+      "broken": 88,
+      "recovered": 0,
+      "lost": 0,
+      "wrong_to_wrong": 48
+    },
+    "reader_b": {
+      "reopened": 805,
+      "changed": 318,
+      "fixed": 181,
+      "broken": 85,
+      "recovered": 10,
+      "lost": 27,
+      "wrong_to_wrong": 52
+    }
+  },
+  "rules": {
+    "images": 835,
+    "images_flagged": 375,
+    "reader_a": {
+      "reopened": 190,
+      "changed": 111,
+      "fixed": 53,
+      "broken": 52,
+      "recovered": 0,
+      "lost": 0,
+      "wrong_to_wrong": 6
+    },
+    "reader_b": {
+      "reopened": 418,
+      "changed": 57,
+      "fixed": 37,
+      "broken": 16,
+      "recovered": 15,
+      "lost": 1,
+      "wrong_to_wrong": 4
+    }
+  }
+}

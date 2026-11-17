@@ -1,0 +1,39 @@
+{
+  "runs": {
+    "S": {
+      "n_images": 835,
+      "n_questions": 3937,
+      "per_subtask": {
+        "anomaly_discrimination": 0.6142531574033122,
+        "defect_classification": 0.47186147186147187,
+        "defect_localization": 0.5062240663900415,
+        "defect_description": 0.5671641791044776,
+        "defect_analysis": 0.8016877637130801,
+        "object_classification": 0.8446601941747572,
+        "object_analysis": 0.7024070021881839
+      },
+      "mean": 0.6440368335479035,
+      "ci95": [
+        0.6281400264121435,
+        0.6609981521440289
+      ],
+      "fpr": 0.6068111455108359,
+      "miss": 0.16468253968253968,
+      "mean_per_source": {
+        "DS-MVTec": 0.7374953453133049,
+        "GoodsAD": 0.5971768037326556,
+        "MVTec-AD": 0.8888888888888888,
+        "MVTec-LOCO": 0.567790209098333,
+        "VisA": 0.6805076456885298
+      }
+    }
+  },
+  "pairs": {},
+  "args": {
+    "runs": [
+      "S=outputs/dev_full_S"
+    ],
+    "step": "7_aggregator",
+    "out": "results/compare/2026-11-17_dev_full_S/S"
+  }
+}
