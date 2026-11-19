@@ -32,9 +32,10 @@ Format: the same as Delivery II.
 - B4. The official-metric table per dataset.
 - B5. Threats to validity: sample vs full split, 4-bit quantization, judge designed on dev.
 
-## Figures to generate (script: `scripts/make_figures.py`, to do after the test)
-1. Means with CIs, dev + test: slide 7, report §6.1.
-2. FPR × missed scatter: slide 8.
-3. Source × system heatmap: slide 10, report §6.2.
-4. Error categories stacked bar: slide 11, report §6.4.
+## Figures (`scripts/make_figures.py`; dev versions in `results/figures/dev/`, test versions written by `run_test.sh` step 6 to `results/figures/test/`)
+1. `means.png`: means with CIs, dev + test: slide 7, report §6.1.
+2. `tradeoff.png`: FPR × missed scatter: slide 8.
+   `ablations.png`: S and its ablations with McNemar p: slide 9, report §6.3.
+3. `sources.png`: source × system heatmap: slide 10, report §6.2.
+4. `errors.png`: error categories stacked bar: slide 11, report §6.4.
 5. Updated pipeline diagram (manual): slide 4, report §3.1.

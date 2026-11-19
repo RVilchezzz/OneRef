@@ -11,6 +11,7 @@
 # 3. B3 on the same images: reader A sampled k = 3 times (reuses S's expert pass).
 # 4. Comparison table with McNemar and bootstrap CIs.
 # 5. Official MMAD metric and the 100-failure error-analysis sheet (results/error_analysis/test_S).
+# 6. Figures (results/figures/test).
 set -euo pipefail
 cd "$(dirname "$0")/.."
 export PYTHONPATH=src:scripts PYDANTIC_AI_NO_BANNER=1
@@ -66,4 +67,7 @@ $PY scripts/compare_runs.py S=$R/post/S B1_qwen=$R/pre/B1_qwen B3_k3=$B3 B2_inte
 $PY scripts/official_summary.py S=$R/post/S B1_qwen=$R/pre/B1_qwen B3_k3=$B3 B2_internvl=$R/pre/B2_internvl \
   --out "$OUT/official"
 $PY scripts/error_analysis.py $S --final-dir $R/post/S/7_aggregator --out results/error_analysis/test_S
+# 6. Figures for the report and slides (test bars, dev in grey). Skipped if matplotlib is missing.
+$PY scripts/make_figures.py --dev results/compare/2026-11-19_dev_frozen/summary.json --test "$OUT/summary.json" \
+  --errors results/error_analysis/test_S/traces.json --out results/figures/test || echo "figures skipped"
 echo "$(date '+%F %T') done: $OUT"
