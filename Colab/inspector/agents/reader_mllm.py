@@ -14,7 +14,7 @@ import asyncio
 from typing import Any
 
 from pydantic_ai import Agent, ModelRetry, PromptedOutput, RunContext, capture_run_messages
-from pydantic_ai.exceptions import UnexpectedModelBehavior
+from pydantic_ai.exceptions import ModelContextWindowExceededError, ModelRequestRejectedError, UnexpectedModelBehavior
 from pydantic_ai.models import Model
 from pydantic_ai.settings import ModelSettings
 
@@ -86,7 +86,7 @@ class ReaderMLLM(LLMAgent):
         with capture_run_messages() as messages:
             try:
                 result = await self.agent.run([prompt, *images], deps=q)
-            except UnexpectedModelBehavior as e:  # invalid after retries => counted as an error
+            except (UnexpectedModelBehavior, ModelRequestRejectedError, ModelContextWindowExceededError) as e:  # invalid after retries or request refused => counted as an error
                 call.update(raw=response_texts(messages), error=repr(e))
                 return None
         usage = result.usage

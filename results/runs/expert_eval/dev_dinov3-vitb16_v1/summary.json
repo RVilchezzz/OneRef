@@ -1,0 +1,79 @@
+{
+  "split": "dev",
+  "model": "facebook/dinov3-vitb16-pretrain-lvd1689m",
+  "input_px": 448,
+  "seconds_per_image": 0.35291600313015326,
+  "calibration": {
+    "norm_low": 0.2,
+    "norm_high": 0.8,
+    "flag_threshold": 0.5
+  },
+  "overall": {
+    "n_images": 835,
+    "n_normal": 328,
+    "n_defective": 507,
+    "auroc_peak": 0.5880117381055467,
+    "balanced_acc_at_threshold": 0.4864428488959446,
+    "peak_in_mask_rate": 0.40039447731755423,
+    "n_masks": 507,
+    "peak_normal_median": 0.21101102232933044,
+    "peak_defective_median": 0.3084069490432739
+  },
+  "by_source": {
+    "DS-MVTec": {
+      "n_images": 166,
+      "n_normal": 44,
+      "n_defective": 122,
+      "auroc_peak": 0.8433308494783904,
+      "balanced_acc_at_threshold": 0.5286885245901639,
+      "peak_in_mask_rate": 0.7704918032786885,
+      "n_masks": 122,
+      "peak_normal_median": 0.1572580337524414,
+      "peak_defective_median": 0.3115459680557251
+    },
+    "GoodsAD": {
+      "n_images": 296,
+      "n_normal": 130,
+      "n_defective": 166,
+      "auroc_peak": 0.5130676552363299,
+      "balanced_acc_at_threshold": 0.4949953660797034,
+      "peak_in_mask_rate": 0.10240963855421686,
+      "n_masks": 166,
+      "peak_normal_median": 0.5071973502635956,
+      "peak_defective_median": 0.5073773264884949
+    },
+    "MVTec-AD": {
+      "n_images": 2,
+      "n_normal": 2,
+      "n_defective": 0,
+      "auroc_peak": NaN,
+      "balanced_acc_at_threshold": 1.0,
+      "peak_in_mask_rate": NaN,
+      "n_masks": 0,
+      "peak_normal_median": 0.13223233819007874,
+      "peak_defective_median": NaN
+    },
+    "MVTec-LOCO": {
+      "n_images": 156,
+      "n_normal": 57,
+      "n_defective": 99,
+      "auroc_peak": 0.622186780081517,
+      "balanced_acc_at_threshold": 0.5,
+      "peak_in_mask_rate": 0.43434343434343436,
+      "n_masks": 99,
+      "peak_normal_median": 0.16958355903625488,
+      "peak_defective_median": 0.19398653507232666
+    },
+    "VisA": {
+      "n_images": 215,
+      "n_normal": 95,
+      "n_defective": 120,
+      "auroc_peak": 0.7832456140350877,
+      "balanced_acc_at_threshold": 0.5,
+      "peak_in_mask_rate": 0.4083333333333333,
+      "n_masks": 120,
+      "peak_normal_median": 0.112099289894104,
+      "peak_defective_median": 0.1717790961265564
+    }
+  }
+}

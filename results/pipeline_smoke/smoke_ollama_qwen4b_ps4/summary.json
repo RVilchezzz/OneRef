@@ -1,0 +1,48 @@
+{
+  "run": "smoke_ollama_qwen4b_ps4",
+  "n_images": 18,
+  "n_questions": 88,
+  "by_source_images": {
+    "DS-MVTec": 4,
+    "GoodsAD": 4,
+    "MVTec-AD": 2,
+    "MVTec-LOCO": 4,
+    "VisA": 4
+  },
+  "defective_images": 8,
+  "per_subtask": {
+    "anomaly_discrimination": 0.525,
+    "defect_classification": 0.625,
+    "defect_localization": 0.5,
+    "defect_description": 0.625,
+    "defect_analysis": 0.875,
+    "object_classification": 1.0,
+    "object_analysis": 0.8333
+  },
+  "mean_7": 0.7119,
+  "ci95": [
+    0.5238,
+    0.8516
+  ],
+  "discrimination_fpr": 0.7,
+  "discrimination_miss_rate": 0.25,
+  "pass_seconds": {
+    "1_expert": 18.0,
+    "2_reader_a": 322.9,
+    "3_reader_b": 322.0,
+    "4_critic": 0.4,
+    "5_reader_a_reopen": 15.7,
+    "6_reader_b_reopen": 5.7,
+    "7_aggregator": 0.4
+  },
+  "reader_calls": 184,
+  "reader_call_errors": 0,
+  "avg_input_tokens_per_call": 3476,
+  "images_reopened": 4,
+  "questions_reopened": 4,
+  "reader_agreement": [
+    87,
+    88
+  ],
+  "seconds_per_question_per_reader": 3.67
+}

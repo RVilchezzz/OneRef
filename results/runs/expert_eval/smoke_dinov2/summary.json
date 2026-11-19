@@ -1,0 +1,35 @@
+{
+  "split": "dev",
+  "model": "facebook/dinov2-base",
+  "input_px": 448,
+  "seconds_per_image": 0.3573395133018494,
+  "calibration": {
+    "norm_low": 0.2,
+    "norm_high": 0.8,
+    "flag_threshold": 0.5
+  },
+  "overall": {
+    "n_images": 20,
+    "n_normal": 8,
+    "n_defective": 12,
+    "auroc_peak": 0.9791666666666666,
+    "balanced_acc_at_threshold": 0.8333333333333333,
+    "peak_in_mask_rate": 0.6666666666666666,
+    "n_masks": 12,
+    "peak_normal_median": 0.4598812162876129,
+    "peak_defective_median": 0.6150599122047424
+  },
+  "by_source": {
+    "DS-MVTec": {
+      "n_images": 20,
+      "n_normal": 8,
+      "n_defective": 12,
+      "auroc_peak": 0.9791666666666666,
+      "balanced_acc_at_threshold": 0.8333333333333333,
+      "peak_in_mask_rate": 0.6666666666666666,
+      "n_masks": 12,
+      "peak_normal_median": 0.4598812162876129,
+      "peak_defective_median": 0.6150599122047424
+    }
+  }
+}

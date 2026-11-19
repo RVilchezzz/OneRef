@@ -1,0 +1,35 @@
+<section id="leitor" data-transition="fade" style="background:#EAE6DC;color:#15253A;font-family:'IBM Plex Sans', Arial, sans-serif;padding:128px 128px 160px;display:flex;flex-direction:column;gap:36px">
+<div style="display:flex;flex-direction:column;gap:12px">
+<p style="font-size:24px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:#B04A17">Development · first end-to-end run</p>
+<h2 style="font-family:'Source Serif 4', Georgia, serif;font-size:64px;font-weight:600;line-height:1.15;color:#15253A">All five agents ran on real MMAD images</h2>
+</div>
+<div style="display:flex;gap:10px;align-items:center">
+<p style="font-size:24px;background:#FBEBDD;border:2px solid #B04A17;padding:12px 16px;border-radius:999px;white-space:nowrap">Expert 18 s</p>
+<x-connector head="end" style="width:32px;color:#5B6673"></x-connector>
+<p style="font-size:24px;background:#FFFDF8;padding:12px 16px;border-radius:999px;white-space:nowrap">Reader A 323 s</p>
+<x-connector head="end" style="width:32px;color:#5B6673"></x-connector>
+<p style="font-size:24px;background:#FFFDF8;padding:12px 16px;border-radius:999px;white-space:nowrap">Reader B 322 s</p>
+<x-connector head="end" style="width:32px;color:#5B6673"></x-connector>
+<p style="font-size:24px;background:#FFFDF8;padding:12px 16px;border-radius:999px;white-space:nowrap">Verifier: 4 reopened</p>
+<x-connector head="end" style="width:32px;color:#5B6673"></x-connector>
+<p style="font-size:24px;color:#F6F4EF;background:#15253A;padding:12px 16px;border-radius:999px;white-space:nowrap">Vote</p>
+</div>
+<div style="display:flex;gap:48px;flex:1">
+<table style="font-family:'IBM Plex Sans', Arial, sans-serif;font-size:26px;color:#15253A;width:820px">
+<tr><th style="width:70%;text-align:left">Subtask (88 questions)</th><th style="width:30%;text-align:right">Accuracy</th></tr>
+<tr><td>Anomaly discrimination (balanced)</td><td style="text-align:right">52.5%</td></tr>
+<tr><td>Defect classification · description</td><td style="text-align:right">62.5% · 62.5%</td></tr>
+<tr><td>Defect localization</td><td style="text-align:right">50.0%</td></tr>
+<tr><td>Defect analysis</td><td style="text-align:right">87.5%</td></tr>
+<tr><td>Object classification · analysis</td><td style="text-align:right">100% · 83.3%</td></tr>
+<tr style="background:#FFFDF8"><td><b>Mean of 7</b></td><td style="text-align:right"><b>71.2%</b></td></tr>
+</table>
+<div style="flex:1;display:flex;flex-direction:column;gap:16px">
+<div style="display:flex;flex-direction:column;gap:6px;background:#FFFDF8;padding:22px;border-radius:12px"><p style="font-size:24px;font-weight:600">0 errors in 184 calls</p><p style="font-size:24px;color:#3D4A58">all answers valid JSON; ~3.7 s per question</p></div>
+<div style="display:flex;flex-direction:column;gap:6px;background:#FFFDF8;padding:22px;border-radius:12px"><p style="font-size:24px;font-weight:600">Readers agree 87/88</p><p style="font-size:24px;color:#3D4A58">same model twice: why we need two different families</p></div>
+<div style="display:flex;flex-direction:column;gap:6px;background:#FBEBDD;padding:22px;border-radius:12px"><p style="font-size:24px;font-weight:600;color:#B04A17">95% CI [54%, 86%]</p><p style="font-size:24px;color:#3D4A58">18 images: a working pipeline, not a result</p></div>
+</div>
+</div>
+<p style="position:absolute;left:128px;bottom:64px;width:1664px;font-size:24px;color:#5B6673">Smoke test on the laptop (RTX 3060, 6 GB): 18 dev images, 2–4 per source; both readers = Qwen3-VL-4B quantized (Ollama); rules-only verifier. The 8B readers run on Colab.</p>
+<aside>This is the first time the whole multi-agent workflow ran on real MMAD data, today, on the laptop. Eighteen dev images from all four sources, half normal and half defective, 88 questions. Each agent ran as its own pass and freed the GPU: expert, reader A, reader B, the verifier, which reopened four images it found inconsistent, and the vote. 184 model calls and no invalid answers. Object questions are easy; discrimination and localization are the weak spots, which is exactly where the expert should help once calibrated. With 18 images the confidence interval goes from 54 to 86 percent, so this proves the pipeline works, not that it beats anything. The two readers agreed on 87 of 88 questions because they were the same small model: that is why the real system uses two different model families.</aside>
+</section>
