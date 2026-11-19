@@ -11,10 +11,12 @@ with the critic's reason added to the prompt.
 from __future__ import annotations
 
 import asyncio
+from collections import Counter
 from typing import Any
 
 from pydantic_ai import Agent, ModelRetry, PromptedOutput, RunContext, capture_run_messages
-from pydantic_ai.exceptions import ModelContextWindowExceededError, ModelRequestRejectedError, UnexpectedModelBehavior
+from pydantic_ai.exceptions import (ModelContextWindowExceededError, ModelRequestRejectedError, ModelServerError,
+                                     UnexpectedModelBehavior)
 from pydantic_ai.models import Model
 from pydantic_ai.settings import ModelSettings
 
@@ -70,36 +72,75 @@ class ReaderMLLM(LLMAgent):
 
     # ---- which dict of the state this reader owns ---------------------------
     def _store(self, state: InspectionState) -> dict[str, ReaderOutput | None]:
-        return state.reader_a_responses if "reader_a" in self.name else state.reader_b_responses
+        role = self.name.removesuffix("_reopen")
+        return {"reader_a": state.reader_a_responses, "reader_b": state.reader_b_responses,
+                "reader_c": state.reader_c_responses}[role]
+
+    def _reopen_for_me(self, state: InspectionState) -> tuple[set[str], str | None]:
+        """Questions this reader must re-answer and the reasons that concern it (targeted reopen)."""
+        v = state.critic_verdict
+        if v is None:
+            return set(), None
+        role = self.name.removesuffix("_reopen")
+        if v.reopen_by_reader:
+            return set(v.reopen_by_reader.get(role, [])), v.reason_by_reader.get(role) or v.critique_reason
+        return set(v.reopen_questions), v.critique_reason  # verdict cached before targeted reopen
 
     def applies(self, state: InspectionState) -> bool:
         if not self.reopen:
             return True
-        return bool(state.critic_verdict and state.critic_verdict.reopen_questions)
+        return bool(self._reopen_for_me(state)[0])
 
     # ---- agent ---------------------------------------------------------------
-    async def ask(self, q: Question, state: InspectionState, critique: str | None, images: list, rec: dict[str, Any]) -> ReaderOutput | None:
-        ev = state.visual_evidence
-        prompt = build_prompt(q, ev.as_text() if ev else None, critique)
+    async def ask_once(self, q: Question, prompt: str, images: list, rec: dict[str, Any],
+                       settings: ModelSettings | None = None) -> ReaderAnswer | None:
         call: dict[str, Any] = {"question_id": q.id, "prompt": prompt}
+        if settings:
+            call["sampling"] = dict(settings)
         rec.setdefault("calls", []).append(call)
         with capture_run_messages() as messages:
             try:
-                result = await self.agent.run([prompt, *images], deps=q)
-            except (UnexpectedModelBehavior, ModelRequestRejectedError, ModelContextWindowExceededError) as e:  # invalid after retries or request refused => counted as an error
+                result = await self.agent.run([prompt, *images], deps=q, model_settings=settings)
+            except (UnexpectedModelBehavior, ModelRequestRejectedError, ModelContextWindowExceededError, ModelServerError) as e:  # invalid after retries or request refused => counted as an error
                 call.update(raw=response_texts(messages), error=repr(e))
                 return None
         usage = result.usage
         call.update(raw=response_texts(messages), tokens_in=usage.input_tokens, tokens_out=usage.output_tokens)
         rec["tokens_in"] = rec.get("tokens_in", 0) + usage.input_tokens
         rec["tokens_out"] = rec.get("tokens_out", 0) + usage.output_tokens
-        return ReaderOutput(question_id=q.id, **result.output.model_dump())
+        return result.output
+
+    async def ask(self, q: Question, state: InspectionState, critique: str | None, images: list, rec: dict[str, Any]) -> ReaderOutput | None:
+        ev = state.visual_evidence if self.s.hint_on(state.source) else None
+        prompt = build_prompt(q, ev.as_text() if ev else None, critique)
+        k = self.s.reader_samples
+        if k == 1:  # greedy (temperature 0), the setting of every system except B3
+            out = await self.ask_once(q, prompt, images, rec)
+            return ReaderOutput(question_id=q.id, **out.model_dump()) if out else None
+        # B3: k sampled answers (seeds 0..k-1), majority vote; tie -> higher summed confidence, then letter
+        outs = [await self.ask_once(q, prompt, images, rec, ModelSettings(temperature=self.s.reader_temperature, seed=i,
+                                                                            max_tokens=self.s.max_new_tokens))
+                for i in range(k)]
+        valid = [o for o in outs if o is not None]
+        if not valid:
+            return None
+        count = Counter(o.selected_option for o in valid)
+        conf = Counter()
+        for o in valid:
+            conf[o.selected_option] += o.confidence
+        best = min(count, key=lambda x: (-count[x], -conf[x], x))
+        first = next(o for o in valid if o.selected_option == best)
+        return ReaderOutput(question_id=q.id, selected_option=best, confidence=conf[best] / count[best],
+                            brief_rationale=f"vote {count[best]}/{k}: {first.brief_rationale}")
+
+    def image_parts(self, state: InspectionState) -> list:
+        parts = super().image_parts(state)
+        return parts if self.s.hint_on(state.source) else parts[:2]  # no hint => no expert crop either
 
     def _run(self, state: InspectionState, rec: dict[str, Any]) -> InspectionState:
         store = self._store(state)
         if self.reopen:
-            ids = set(state.critic_verdict.reopen_questions) if state.critic_verdict else set()
-            critique = state.critic_verdict.critique_reason if state.critic_verdict else None
+            ids, critique = self._reopen_for_me(state)
             todo = [q for q in state.questions if q.id in ids]
         else:
             critique, todo = None, state.questions

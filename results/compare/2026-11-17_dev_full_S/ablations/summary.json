@@ -1,0 +1,397 @@
+{
+  "runs": {
+    "S": {
+      "n_images": 835,
+      "n_questions": 3937,
+      "per_subtask": {
+        "anomaly_discrimination": 0.6142531574033122,
+        "defect_classification": 0.47186147186147187,
+        "defect_localization": 0.5062240663900415,
+        "defect_description": 0.5671641791044776,
+        "defect_analysis": 0.8016877637130801,
+        "object_classification": 0.8446601941747572,
+        "object_analysis": 0.7024070021881839
+      },
+      "mean": 0.6440368335479035,
+      "ci95": [
+        0.6281400264121435,
+        0.6609981521440289
+      ],
+      "fpr": 0.6068111455108359,
+      "miss": 0.16468253968253968,
+      "mean_per_source": {
+        "DS-MVTec": 0.7374953453133049,
+        "GoodsAD": 0.5971768037326556,
+        "MVTec-AD": 0.8888888888888888,
+        "MVTec-LOCO": 0.567790209098333,
+        "VisA": 0.6805076456885298
+      }
+    },
+    "B1_qwen": {
+      "n_images": 835,
+      "n_questions": 3937,
+      "per_subtask": {
+        "anomaly_discrimination": 0.632359083984471,
+        "defect_classification": 0.4653679653679654,
+        "defect_localization": 0.549792531120332,
+        "defect_description": 0.579957356076759,
+        "defect_analysis": 0.7953586497890295,
+        "object_classification": 0.8802588996763754,
+        "object_analysis": 0.7067833698030634
+      },
+      "mean": 0.6585539794025709,
+      "ci95": [
+        0.6429107920964972,
+        0.6749160292638375
+      ],
+      "fpr": 0.5170278637770898,
+      "miss": 0.21825396825396826,
+      "mean_per_source": {
+        "DS-MVTec": 0.764032527131568,
+        "GoodsAD": 0.6147746634207907,
+        "MVTec-AD": 0.7777777777777778,
+        "MVTec-LOCO": 0.5611189454003808,
+        "VisA": 0.6978949338407955
+      }
+    },
+    "B2_internvl": {
+      "n_images": 835,
+      "n_questions": 3937,
+      "per_subtask": {
+        "anomaly_discrimination": 0.5954838075581109,
+        "defect_classification": 0.42207792207792205,
+        "defect_localization": 0.5062240663900415,
+        "defect_description": 0.5501066098081023,
+        "defect_analysis": 0.7953586497890295,
+        "object_classification": 0.686084142394822,
+        "object_analysis": 0.661925601750547
+      },
+      "mean": 0.6024658285383679,
+      "ci95": [
+        0.5853670593602318,
+        0.6191551634553675
+      ],
+      "fpr": 0.2693498452012384,
+      "miss": 0.5396825396825397,
+      "mean_per_source": {
+        "DS-MVTec": 0.6569447239334699,
+        "GoodsAD": 0.5676290384378738,
+        "MVTec-AD": 0.8888888888888888,
+        "MVTec-LOCO": 0.5268252109267685,
+        "VisA": 0.6497397604558789
+      }
+    },
+    "AB_noverif": {
+      "n_images": 835,
+      "n_questions": 3937,
+      "per_subtask": {
+        "anomaly_discrimination": 0.6234305125558995,
+        "defect_classification": 0.45021645021645024,
+        "defect_localization": 0.529045643153527,
+        "defect_description": 0.5628997867803838,
+        "defect_analysis": 0.8016877637130801,
+        "object_classification": 0.8284789644012945,
+        "object_analysis": 0.6991247264770241
+      },
+      "mean": 0.6421262638996657,
+      "ci95": [
+        0.6256507070884958,
+        0.6591439660388654
+      ],
+      "fpr": 0.5170278637770898,
+      "miss": 0.2361111111111111,
+      "mean_per_source": {
+        "DS-MVTec": 0.7353798872888812,
+        "GoodsAD": 0.6075846092733034,
+        "MVTec-AD": 0.8888888888888888,
+        "MVTec-LOCO": 0.551940217221901,
+        "VisA": 0.6777057877716649
+      }
+    },
+    "AB_noverif_noexpertvote": {
+      "n_images": 835,
+      "n_questions": 3937,
+      "per_subtask": {
+        "anomaly_discrimination": 0.598561354366308,
+        "defect_classification": 0.45021645021645024,
+        "defect_localization": 0.529045643153527,
+        "defect_description": 0.5628997867803838,
+        "defect_analysis": 0.8016877637130801,
+        "object_classification": 0.8284789644012945,
+        "object_analysis": 0.6991247264770241
+      },
+      "mean": 0.6385735270154382,
+      "ci95": [
+        0.6217946597837711,
+        0.6556101692177083
+      ],
+      "fpr": 0.4179566563467492,
+      "miss": 0.38492063492063494,
+      "mean_per_source": {
+        "DS-MVTec": 0.7271033277828135,
+        "GoodsAD": 0.6120403498517434,
+        "MVTec-AD": 0.8888888888888888,
+        "MVTec-LOCO": 0.5455986056171315,
+        "VisA": 0.6704689456664017
+      }
+    },
+    "S_noexpertvote": {
+      "n_images": 835,
+      "n_questions": 3937,
+      "per_subtask": {
+        "anomaly_discrimination": 0.6187865497076023,
+        "defect_classification": 0.47186147186147187,
+        "defect_localization": 0.5062240663900415,
+        "defect_description": 0.5671641791044776,
+        "defect_analysis": 0.8016877637130801,
+        "object_classification": 0.8446601941747572,
+        "object_analysis": 0.7024070021881839
+      },
+      "mean": 0.6446844610199449,
+      "ci95": [
+        0.6283881268807823,
+        0.6624328589000622
+      ],
+      "fpr": 0.5263157894736842,
+      "miss": 0.2361111111111111,
+      "mean_per_source": {
+        "DS-MVTec": 0.7457985175509033,
+        "GoodsAD": 0.5986807476415075,
+        "MVTec-AD": 0.8888888888888888,
+        "MVTec-LOCO": 0.5659294967113048,
+        "VisA": 0.6787532597236176
+      }
+    },
+    "S_A_only": {
+      "n_images": 835,
+      "n_questions": 3937,
+      "per_subtask": {
+        "anomaly_discrimination": 0.6279024767801857,
+        "defect_classification": 0.4805194805194805,
+        "defect_localization": 0.529045643153527,
+        "defect_description": 0.5756929637526652,
+        "defect_analysis": 0.7953586497890295,
+        "object_classification": 0.883495145631068,
+        "object_analysis": 0.7089715536105032
+      },
+      "mean": 0.6572837018909228,
+      "ci95": [
+        0.6411149112431007,
+        0.6733473333957497
+      ],
+      "fpr": 0.6191950464396285,
+      "miss": 0.125,
+      "mean_per_source": {
+        "DS-MVTec": 0.7607714573432679,
+        "GoodsAD": 0.6036087139680608,
+        "MVTec-AD": 0.7777777777777778,
+        "MVTec-LOCO": 0.5748758095017207,
+        "VisA": 0.6990028933194156
+      }
+    }
+  },
+  "pairs": {
+    "S vs B1_qwen": {
+      "paired_questions": 3937,
+      "both_right": 2342,
+      "only_first": 217,
+      "only_second": 255,
+      "both_wrong": 1123,
+      "oracle_acc": 0.714757429514859,
+      "mcnemar_p": 0.08844928962135963
+    },
+    "S vs B2_internvl": {
+      "paired_questions": 3937,
+      "both_right": 2077,
+      "only_first": 482,
+      "only_second": 282,
+      "both_wrong": 1096,
+      "oracle_acc": 0.7216154432308864,
+      "mcnemar_p": 4.47040360108001e-13
+    },
+    "S vs AB_noverif": {
+      "paired_questions": 3937,
+      "both_right": 2464,
+      "only_first": 95,
+      "only_second": 79,
+      "both_wrong": 1299,
+      "oracle_acc": 0.6700533401066802,
+      "mcnemar_p": 0.25541158164185757
+    },
+    "S vs AB_noverif_noexpertvote": {
+      "paired_questions": 3937,
+      "both_right": 2387,
+      "only_first": 172,
+      "only_second": 113,
+      "both_wrong": 1265,
+      "oracle_acc": 0.6786893573787147,
+      "mcnemar_p": 0.000567602254024183
+    },
+    "S vs S_noexpertvote": {
+      "paired_questions": 3937,
+      "both_right": 2521,
+      "only_first": 38,
+      "only_second": 28,
+      "both_wrong": 1350,
+      "oracle_acc": 0.6570993141986284,
+      "mcnemar_p": 0.2678116648465871
+    },
+    "S vs S_A_only": {
+      "paired_questions": 3937,
+      "both_right": 2425,
+      "only_first": 134,
+      "only_second": 184,
+      "both_wrong": 1194,
+      "oracle_acc": 0.6967233934467869,
+      "mcnemar_p": 0.005913497263726628
+    },
+    "B1_qwen vs B2_internvl": {
+      "paired_questions": 3937,
+      "both_right": 1957,
+      "only_first": 640,
+      "only_second": 402,
+      "both_wrong": 938,
+      "oracle_acc": 0.761747523495047,
+      "mcnemar_p": 1.6600512267040623e-13
+    },
+    "B1_qwen vs AB_noverif": {
+      "paired_questions": 3937,
+      "both_right": 2384,
+      "only_first": 213,
+      "only_second": 159,
+      "both_wrong": 1181,
+      "oracle_acc": 0.7000254000508,
+      "mcnemar_p": 0.005923550972334213
+    },
+    "B1_qwen vs AB_noverif_noexpertvote": {
+      "paired_questions": 3937,
+      "both_right": 2324,
+      "only_first": 273,
+      "only_second": 176,
+      "both_wrong": 1164,
+      "oracle_acc": 0.7043434086868173,
+      "mcnemar_p": 5.436023089417386e-06
+    },
+    "B1_qwen vs S_noexpertvote": {
+      "paired_questions": 3937,
+      "both_right": 2330,
+      "only_first": 267,
+      "only_second": 219,
+      "both_wrong": 1121,
+      "oracle_acc": 0.7152654305308611,
+      "mcnemar_p": 0.032903155561156375
+    },
+    "B1_qwen vs S_A_only": {
+      "paired_questions": 3937,
+      "both_right": 2509,
+      "only_first": 88,
+      "only_second": 100,
+      "both_wrong": 1240,
+      "oracle_acc": 0.6850393700787402,
+      "mcnemar_p": 0.42247890957583895
+    },
+    "B2_internvl vs AB_noverif": {
+      "paired_questions": 3937,
+      "both_right": 2116,
+      "only_first": 243,
+      "only_second": 427,
+      "both_wrong": 1151,
+      "oracle_acc": 0.7076454152908306,
+      "mcnemar_p": 1.125765197005537e-12
+    },
+    "B2_internvl vs AB_noverif_noexpertvote": {
+      "paired_questions": 3937,
+      "both_right": 2133,
+      "only_first": 226,
+      "only_second": 367,
+      "both_wrong": 1211,
+      "oracle_acc": 0.6924053848107696,
+      "mcnemar_p": 7.67054365439625e-09
+    },
+    "B2_internvl vs S_noexpertvote": {
+      "paired_questions": 3937,
+      "both_right": 2100,
+      "only_first": 259,
+      "only_second": 449,
+      "both_wrong": 1129,
+      "oracle_acc": 0.713233426466853,
+      "mcnemar_p": 8.966722761585292e-13
+    },
+    "B2_internvl vs S_A_only": {
+      "paired_questions": 3937,
+      "both_right": 1957,
+      "only_first": 402,
+      "only_second": 652,
+      "both_wrong": 926,
+      "oracle_acc": 0.7647955295910592,
+      "mcnemar_p": 1.3032998061439867e-14
+    },
+    "AB_noverif vs AB_noverif_noexpertvote": {
+      "paired_questions": 3937,
+      "both_right": 2466,
+      "only_first": 77,
+      "only_second": 34,
+      "both_wrong": 1360,
+      "oracle_acc": 0.6545593091186183,
+      "mcnemar_p": 5.494816250271447e-05
+    },
+    "AB_noverif vs S_noexpertvote": {
+      "paired_questions": 3937,
+      "both_right": 2449,
+      "only_first": 94,
+      "only_second": 100,
+      "both_wrong": 1294,
+      "oracle_acc": 0.6713233426466853,
+      "mcnemar_p": 0.7197120938004633
+    },
+    "AB_noverif vs S_A_only": {
+      "paired_questions": 3937,
+      "both_right": 2340,
+      "only_first": 203,
+      "only_second": 269,
+      "both_wrong": 1125,
+      "oracle_acc": 0.714249428498857,
+      "mcnemar_p": 0.0027346029867826816
+    },
+    "AB_noverif_noexpertvote vs S_noexpertvote": {
+      "paired_questions": 3937,
+      "both_right": 2415,
+      "only_first": 85,
+      "only_second": 134,
+      "both_wrong": 1303,
+      "oracle_acc": 0.6690373380746761,
+      "mcnemar_p": 0.0011319429538577171
+    },
+    "AB_noverif_noexpertvote vs S_A_only": {
+      "paired_questions": 3937,
+      "both_right": 2265,
+      "only_first": 235,
+      "only_second": 344,
+      "both_wrong": 1093,
+      "oracle_acc": 0.7223774447548895,
+      "mcnemar_p": 6.768144436478625e-06
+    },
+    "S_noexpertvote vs S_A_only": {
+      "paired_questions": 3937,
+      "both_right": 2389,
+      "only_first": 160,
+      "only_second": 220,
+      "both_wrong": 1168,
+      "oracle_acc": 0.7033274066548133,
+      "mcnemar_p": 0.0024285919578829374
+    }
+  },
+  "args": {
+    "runs": [
+      "S=outputs/reagg/dev_full_S_post/S",
+      "B1_qwen=outputs/reagg/dev_full_S_pre/B1_qwen",
+      "B2_internvl=outputs/reagg/dev_full_S_pre/B2_internvl",
+      "AB_noverif=outputs/reagg/dev_full_S_pre/AB_noverif",
+      "AB_noverif_noexpertvote=outputs/reagg/dev_full_S_pre/AB_noverif_noexpertvote",
+      "S_noexpertvote=outputs/reagg/dev_full_S_post/S_noexpertvote",
+      "S_A_only=outputs/reagg/dev_full_S_post/S_A_only"
+    ],
+    "step": "7_aggregator",
+    "out": "results/compare/2026-11-17_dev_full_S/ablations"
+  }
+}

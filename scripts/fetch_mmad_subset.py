@@ -7,6 +7,7 @@ and then fetch just the members I need: the query images of the split, their sin
     python scripts/fetch_mmad_subset.py --split dev               # dev images + references
     python scripts/fetch_mmad_subset.py --split dev --masks       # + masks, to score the expert
     python scripts/fetch_mmad_subset.py --split test --limit 50   # first 50 test images
+    python scripts/fetch_mmad_subset.py --split test --sample 2000 --masks   # the images of main.py --sample 2000
 
 Files land in ``data/MMAD/<source>/...`` (the same layout as the official zips). Already present
 files are skipped, so the script can be re-run after a disconnect. Needs ``data/MMAD/mmad.json``
@@ -105,10 +106,25 @@ def wanted_files(mmad: dict, ids: set[str], masks: bool) -> set[str]:
     return files
 
 
+def sample_ids(mmad_json: Path, split: str, n: int) -> list[str]:
+    """Image ids of ``inspector.main --split <split> --sample <n>``: same loader, split and subsample."""
+    sys.path.insert(0, str(ROOT / "src"))
+    from inspector.config.settings import get_settings
+    from inspector.schemas.mmad import load_mmad
+    from inspector.utils.splits import make_split, stratified_subsample
+
+    s = get_settings()
+    dev, test = make_split(load_mmad(mmad_json), s.dev_fraction, s.seed)
+    return [x.image_id for x in stratified_subsample(dev if split == "dev" else test, n, s.seed)]
+
+
 def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     ap.add_argument("--split", choices=["dev", "test"], default="dev")
     ap.add_argument("--limit", type=int, default=None, help="only the first N images of the split")
+    ap.add_argument("--sample", type=int, default=None,
+                    help="the same stratified N-image subsample as `inspector.main --sample N` (fixed seed); "
+                         "its ids are saved to <splits-dir>/<split>_sample<N>_ids.json")
     ap.add_argument("--masks", action="store_true", help="also fetch masks (evaluation only, never an input)")
     ap.add_argument("--root", type=Path, default=ROOT / "data" / "MMAD")
     ap.add_argument("--splits-dir", type=Path, default=ROOT / "data" / "splits")
@@ -116,7 +132,14 @@ def main() -> int:
     args = ap.parse_args()
 
     mmad = json.loads((args.root / "mmad.json").read_text(encoding="utf-8"))
-    ids = json.loads((args.splits_dir / f"{args.split}_ids.json").read_text(encoding="utf-8"))[: args.limit]
+    if args.sample:
+        ids = sample_ids(args.root / "mmad.json", args.split, args.sample)
+        out = args.splits_dir / f"{args.split}_sample{args.sample}_ids.json"
+        out.write_text(json.dumps(ids), encoding="utf-8")
+        print(f"--sample {args.sample}: ids saved to {out}")
+    else:
+        ids = json.loads((args.splits_dir / f"{args.split}_ids.json").read_text(encoding="utf-8"))
+    ids = ids[: args.limit]
     files = wanted_files(mmad, set(ids), args.masks)
     todo = sorted(f for f in files if not (args.root / f).exists())
     print(f"{args.split}: {len(ids)} images -> {len(files)} files, {len(todo)} to download")

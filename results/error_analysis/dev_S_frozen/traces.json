@@ -1,0 +1,66 @@
+{
+  "**all**": {
+    "lost_at_judge": 341,
+    "nobody_right": 871,
+    "lost_at_reopen": 104
+  },
+  "DS-MVTec": {
+    "lost_at_judge": 68,
+    "nobody_right": 122,
+    "lost_at_reopen": 10
+  },
+  "GoodsAD": {
+    "nobody_right": 306,
+    "lost_at_reopen": 55,
+    "lost_at_judge": 112
+  },
+  "MVTec-AD": {
+    "lost_at_judge": 2,
+    "nobody_right": 1
+  },
+  "MVTec-LOCO": {
+    "nobody_right": 229,
+    "lost_at_reopen": 17,
+    "lost_at_judge": 68
+  },
+  "VisA": {
+    "nobody_right": 213,
+    "lost_at_reopen": 22,
+    "lost_at_judge": 91
+  },
+  "anomaly_discrimination": {
+    "lost_at_judge": 94,
+    "nobody_right": 135,
+    "lost_at_reopen": 45
+  },
+  "defect_analysis": {
+    "lost_at_judge": 22,
+    "nobody_right": 58,
+    "lost_at_reopen": 2
+  },
+  "defect_classification": {
+    "lost_at_judge": 64,
+    "nobody_right": 169,
+    "lost_at_reopen": 16
+  },
+  "defect_description": {
+    "nobody_right": 126,
+    "lost_at_judge": 47,
+    "lost_at_reopen": 8
+  },
+  "defect_localization": {
+    "nobody_right": 182,
+    "lost_at_judge": 25,
+    "lost_at_reopen": 19
+  },
+  "object_analysis": {
+    "lost_at_judge": 71,
+    "nobody_right": 175,
+    "lost_at_reopen": 13
+  },
+  "object_classification": {
+    "lost_at_judge": 18,
+    "nobody_right": 26,
+    "lost_at_reopen": 1
+  }
+}

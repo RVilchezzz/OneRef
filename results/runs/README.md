@@ -1,4 +1,4 @@
-# Run outputs (snapshot of `outputs/`, Nov 10–11, 2026)
+# Run outputs (shareable snapshots of `outputs/`)
 
 `outputs/` is gitignored, so this folder is a shareable copy of every run made on Peter's laptop.
 The full story and the numbers are in [`docs/reports/2026-11-11_first_end_to_end_run.md`](../../docs/reports/2026-11-11_first_end_to_end_run.md).
@@ -10,6 +10,7 @@ The full story and the numbers are in [`docs/reports/2026-11-11_first_end_to_end
 
 | Folder | What it is |
 |---|---|
+| `2026-11-17_dev_full_S/` | **The full 4B system S on all dev** (Nov 16–17): states of every pass as `states.tar.xz`, logs, re-aggregation variants. See its own `README.md` |
 | `expert_eval/dev_dinov3-vitb16_v1/` | Visual expert alone, DINOv3 ViT-B/16, 835 dev images: `per_image.jsonl`, `summary.json`, `gallery/` |
 | `expert_eval/dev_dinov2-base_v1/` | Same with DINOv2-base |
 | `expert_eval/smoke_dinov2/` | First 20-image smoke test of `scripts/eval_expert.py` |

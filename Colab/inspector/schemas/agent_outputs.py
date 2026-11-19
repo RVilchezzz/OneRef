@@ -1,9 +1,9 @@
 """Typed messages exchanged between agents. Every inter-agent payload is validated here."""
 from __future__ import annotations
 
-from typing import Literal
+from typing import Any, Literal
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 from inspector.schemas.mmad import OptionLetter
 
@@ -44,6 +44,18 @@ class ReaderAnswer(BaseModel):
     confidence: float = Field(ge=0.0, le=1.0)
     brief_rationale: str = ""
 
+    @model_validator(mode="before")
+    @classmethod
+    def unwrap_schema_echo(cls, data: Any) -> Any:
+        """Format normalization, content unchanged: some small models (InternVL3.5-4B GGUF in Ollama)
+        echo the JSON-schema layout, ``{"properties": {"selected_option": ...}, "required": [...]}``.
+        If the answer sits under ``properties`` and not at the top level, use it."""
+        if isinstance(data, dict) and "selected_option" not in data:
+            inner = data.get("properties")
+            if isinstance(inner, dict) and "selected_option" in inner:
+                return inner
+        return data
+
 
 class ReaderOutput(ReaderAnswer):
     """One MLLM answer to one question, tagged with the question it answers."""
@@ -51,11 +63,29 @@ class ReaderOutput(ReaderAnswer):
     question_id: str
 
 
+class CriticReview(BaseModel):
+    """What the LLM critic itself returns (its pydantic-ai ``output_type``): the 4 fields it fills.
+    Kept apart from ``CriticOutput`` so internal fields never enter the schema the model must follow."""
+
+    model_config = ConfigDict(extra="ignore")
+
+    is_valid: bool
+    conflict_detected: bool
+    reopen_questions: list[str] = Field(default_factory=list)
+    critique_reason: str = ""
+
+
 class CriticOutput(BaseModel):
+    """The critic's verdict stored in the state (rules + LLM review)."""
+
     is_valid: bool                       # schema/format checks passed
     conflict_detected: bool              # logical inconsistency found
-    reopen_questions: list[str] = Field(default_factory=list)  # question ids
+    reopen_questions: list[str] = Field(default_factory=list)  # question ids (union over readers)
     critique_reason: str = ""
+    # Targeted reopen: each reader re-answers only its own flagged questions, with its own reasons.
+    # Empty dict = verdict from an older cache -> readers fall back to reopen_questions.
+    reopen_by_reader: dict[str, list[str]] = Field(default_factory=dict)
+    reason_by_reader: dict[str, str] = Field(default_factory=dict)
 
 
 class FinalAnswer(BaseModel):

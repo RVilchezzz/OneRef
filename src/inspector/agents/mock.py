@@ -14,6 +14,7 @@ from pydantic_ai.messages import ModelMessage, ModelRequest, ModelResponse, Text
 from pydantic_ai.models.function import AgentInfo, FunctionModel
 
 from inspector.agents.base import BaseAgent
+from inspector.agents.conflict_judge import ConflictJudge
 from inspector.agents.critic_verifier import CriticVerifier
 from inspector.agents.reader_mllm import ReaderMLLM
 from inspector.config.settings import Settings
@@ -86,6 +87,24 @@ class MockReader(ReaderMLLM):
 class MockCritic(CriticVerifier):
     def __init__(self, settings: Settings):
         super().__init__(settings, model=critic_model())
+
+    def image_parts(self, state: InspectionState) -> list:
+        return []
+
+
+def judge_model() -> FunctionModel:
+    """Picks the first candidate option listed in the prompt."""
+
+    def fn(messages: list[ModelMessage], info: AgentInfo) -> ModelResponse:
+        letters = _OPTION_RE.findall(_user_text(messages)) or ["A"]
+        return ModelResponse(parts=[TextPart(json.dumps({"selected_option": letters[0], "confidence": 0.6, "brief_rationale": "mock"}))])
+
+    return FunctionModel(fn)
+
+
+class MockJudge(ConflictJudge):
+    def __init__(self, settings: Settings):
+        super().__init__(settings, model=judge_model())
 
     def image_parts(self, state: InspectionState) -> list:
         return []
