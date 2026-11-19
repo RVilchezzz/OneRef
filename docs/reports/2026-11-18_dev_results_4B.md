@@ -32,6 +32,11 @@ All rows use the frozen aggregation settings (re-aggregated from the same cache,
 Per source (S): DS-MVTec 75.7 · VisA 69.4 · GoodsAD 62.9 · MVTec-LOCO 58.5. MVTec-AD has only 2 dev images,
 so its number is not meaningful.
 
+Check against MMAD's official `summary.py` (`scripts/official_summary.py`, `results/compare/2026-11-18_official_check/`).
+The official script averages per dataset (DS-MVTec and MVTec-AD merged) and drops invalid answers. Our
+re-implementation matches it to two decimals: S 66.63 · B1 65.95 · B2 60.25 · S without judge 64.61.
+That is within 0.2 points of our pooled metric, so the conclusions do not depend on the averaging.
+
 ## 3. What each component does (ablations, dev)
 - **The conflict judge is the only component with a significant gain**: +1.9 points over S without the judge
   (p = 0.009). It mainly lowers the false-positive rate, from 55 % to 44 %.
@@ -44,6 +49,14 @@ so its number is not meaningful.
   expert's AUROC is 0.51 (chance).
 - **Heterogeneous readers**: InternVL is 5.7 points below Qwen, so the A + B vote costs more than it gains. Their
   errors are complementary, though: the oracle reaches 76.2 %. The judge recovers part of that gap.
+
+Error traces on dev (`scripts/error_analysis.py`, `results/error_analysis/dev_S_frozen/`). S gets 1,316 of the
+3,937 questions wrong. In 34 % of those failures some agent had the right answer at some point:
+- 26 % are lost at the judge: it sides with the wrong voter;
+- 8 % are lost at the reopen: a reader changes a right answer.
+
+The remaining 66 % were never answered right by any agent (perception or reasoning). The 100-case labelling
+sheet is in `sheet.html` / `sheet.csv`.
 
 ## 4. Reading so far
 At 4B, the multi-agent system **matches** the best single model but does not beat it significantly
