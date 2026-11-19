@@ -10,6 +10,8 @@
 | `speaker_script_delivery_I.en.md` / `.fr.md` | Word-for-word 15-min script per slide (EN / FR), speaker split, slide improvements and jury Q&A |
 | `OneRef – Preliminary Results (Delivery II).pdf` | Delivery II deck (11 slides, Nov 12) |
 | `speaker_script_delivery_II.en.md` / `.fr.md` / `.es.md` | Word-for-word 10-min script for the Delivery II deck (EN / FR / ES), speaker split, slide improvements and jury Q&A |
+| `delivery_I_vs_II_comparison.fr.md` | Delivery I announced vs Delivery II delivered (FR): implementation differences, difficulties predicted and not predicted, D1 statements to nuance, jury Q&A |
+| `pipeline_run_explained_delivery_II.fr.md` | Step-by-step explanation (FR) of the pipeline that produced the Delivery II numbers: 7 passes, exact config of the 18-image run, rules, vote, metrics |
 | `charles_part_delivery_II.fr.md` | Charles's part of Delivery II in detail (FR): what the GPU-free tests, the 18-image run and the four cases actually did, limits, jury Q&A |
 | `../../../IA025 – Final Project Plan (Delivery I) – notes EN.pptx` / `notes FR.pptx` | Copies of the final deck with the script in the speaker notes (project folder, outside the repo) |
 

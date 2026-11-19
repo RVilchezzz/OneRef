@@ -97,11 +97,12 @@ Porque la pregunta es cuánto del 85,2 % de SiGMA sobrevive con un protocolo est
 - Pie: JSON validado con Pydantic entre agentes, un reintento y luego error; código en github.com/RVilchezzz/OneRef
 
 ### Guion oral — Charles (~60 s, ~140 palabras)
-Primer mensaje: todo lo que estaba en el plan ya existe como código. Cinco componentes. El experto visual DINOv3. Los lectores A y B, Qwen3-VL e InternVL3, servidos con vLLM. El verificador, que combina reglas fijas con un crítico LLM y puede reabrir un conflicto una sola vez como máximo. El agregador, un voto ponderado por subtarea. Y el orquestador, que carga un solo modelo por pasada, guarda cada salida en disco y puede reanudar después de una caída. Los agentes solo intercambian JSON validado con Pydantic: una respuesta inválida se reintenta una vez y luego cuenta como error. Tres números: 21 tests pasan sin GPU; dev y test están fijados en 835 y 7 531 imágenes, estratificadas, con una semilla commiteada; y descargamos 2,1 gigabytes para dev en lugar de 28, leyendo solo los archivos necesarios dentro de los zips remotos. Peter va a mostrar ahora lo que hace el experto con los datos reales.
+Primer mensaje: todo lo que estaba en el plan ya existe como código. Cinco componentes. El experto visual DINOv3. Los lectores A y B, previstos como Qwen3-VL e InternVL3; por ahora corrió un Qwen 4B, a través de Ollama. El verificador, que combina reglas fijas con un crítico LLM y puede reabrir un conflicto una sola vez como máximo. El agregador, un voto ponderado por subtarea. Y el orquestador, que carga un solo modelo por pasada, guarda cada salida en disco y puede reanudar después de una caída. Los agentes solo intercambian JSON validado con Pydantic: una respuesta inválida se reintenta una vez y luego cuenta como error. Tres números: 21 tests pasan sin GPU; dev y test están fijados en 835 y 7 531 imágenes, estratificadas, con una semilla commiteada; y descargamos 2,1 gigabytes para dev en lugar de 28, leyendo solo los archivos necesarios dentro de los zips remotos. Peter va a mostrar ahora lo que hace el experto con los datos reales.
 
 ### Añadir / mejorar
 - "Ran on real data" en los lectores y el verificador es cierto, pero necesita una aclaración: escribir "ran on real data (4B, 18 images)". Si no, el jurado pensará que los lectores 8B ya corrieron.
-- Alinear el número de tests con la diapositiva 6 (21 aquí, 20 allá): ver el punto 5 de "Para saber de memoria".
+- Alinear el número de tests con la diapositiva 6 (21 aquí, 20 allá): ver el punto 5 de "Para saber de memoria". El informe de Peter (`docs/reports/2026-11-11_first_end_to_end_run.md`, §5) cuenta **22 tests aprobados** hoy: 20 antes, + el test del cargador, + el test de `--per-source`.
+- La tarjeta dice "InternVL3 via vLLM": ninguno de los dos corrió todavía. La ejecución usó Qwen3-VL-4B Q4 con Ollama para ambos lectores, y el verificador solo con reglas.
 
 ### Pregunta del jurado
 **"¿Por qué un modelo por pasada en lugar de un pipeline en tiempo real?"**
@@ -189,16 +190,20 @@ Es un ajuste en dev, y para eso sirve dev: el protocolo prohíbe ajustar en el t
 - Pie: prueba de humo en la laptop, RTX 3060 6 GB, 18 imágenes de dev (2 a 4 por fuente), ambos lectores = Qwen3-VL-4B cuantizado (Ollama), verificador solo con reglas; los lectores de 8B corren en Colab
 
 ### Guion oral — Charles (~70 s, ~165 palabras)
-Gracias, Peter. Esta es nuestra primera ejecución de punta a punta: los cinco agentes, sobre imágenes reales de MMAD, en la GPU de 6 gigabytes de la laptop. Dieciocho imágenes de dev, de dos a cuatro por fuente, 88 preguntas. Para que entrara en memoria, ambos lectores fueron el mismo modelo pequeño, Qwen3-VL-4B cuantizado, y el verificador usó solo reglas. Arriba: 18 segundos para el experto, unos 320 segundos por lector, y el verificador reabrió cuatro conflictos. A la izquierda, la precisión por subtarea, con una media de 71,2 %. La discriminación está en 52,5 % balanceada, cerca del azar, lo que coincide con el AUROC bajo del experto. A la derecha, lo que realmente aprendimos. Cero errores en 184 llamadas: cada respuesta fue un JSON válido. Los dos lectores coincidieron en 87 de 88 preguntas, porque era el mismo modelo dos veces, y justamente por eso el sistema real usa dos familias distintas. Y el intervalo de confianza va de 54 a 86 %: esto es un pipeline que funciona, no un resultado.
+Gracias, Peter. Esta es nuestra primera ejecución de punta a punta: los cinco agentes, sobre imágenes reales de MMAD, en la GPU de 6 gigabytes de la laptop. Dieciocho imágenes de dev, de dos a cuatro por fuente, 88 preguntas. Para que entrara en memoria, ambos lectores fueron el mismo modelo pequeño, Qwen3-VL-4B cuantizado, y el verificador usó solo reglas. Arriba: 18 segundos para el experto, unos 320 segundos por lector, y el verificador reabrió cuatro preguntas, en cuatro imágenes. A la izquierda, la precisión por subtarea, con una media de 71,2 %. La discriminación está en 52,5 % balanceada: el sí o no final siguió la bandera del experto en 17 de 18 imágenes, así que se rechazaron siete de las diez piezas sanas. A la derecha, lo que realmente aprendimos. Cero errores en 184 llamadas: cada respuesta fue un JSON válido. Los dos lectores coincidieron en 87 de 88 preguntas, porque era el mismo modelo dos veces, y justamente por eso el sistema real usa dos familias distintas. Y el intervalo de confianza va de 54 a 86 %: esto es un pipeline que funciona, no un resultado.
 
 ### Añadir / mejorar
 - Agregar el número de preguntas por subtarea junto a cada puntaje: con 88 preguntas, algunas celdas tienen menos de diez, y 100 % en clasificación de objeto dice poco.
 - Escribir "~3.7 s per reader call" en lugar de "per question" (323 + 322 s para 176 llamadas).
 - Poner una línea punteada en 50 % junto al puntaje de discriminación.
+- Preguntas por subtarea (según `results/pipeline_smoke/smoke_ollama_qwen4b_ps4/per_question.csv`): discriminación 18, clasificación del defecto 8, localización 6, descripción 8, análisis 8, clasificación de objeto 10, análisis de objeto 30. "100 %" son 10 preguntas; "50 %" son 3 de 6.
+- Agregar los dos errores de inspección junto a la discriminación: **piezas sanas rechazadas 70 %** (7 de 10), **defectos no detectados 25 %** (2 de 8).
+- El IC: la CLI mostró [53,8; 85,6], redondeado a [54, 86] en la diapositiva; el informe de Peter recalcula [52,4; 85,2]. Misma media, el bootstrap remuestrea las imágenes en otro orden. Decir "entre 52 y 86 % aproximadamente" si lo preguntan.
+- La diapositiva omite las dos pasadas de reapertura: 15,7 s (lector A) y 5,7 s (lector B). Duración total ~11 min.
 
 ### Pregunta del jurado
 **"Con 52,5 % en discriminación, ¿el experto no empeora las cosas?"**
-No se puede saber con 18 imágenes, y eso es exactamente lo que mide la ablación "sin experto". Lo que sabemos es que el experto es confiable en fotos alineadas y está al nivel del azar en GoodsAD, así que su voto se ponderará por subtarea según su confiabilidad en dev. Si aun así empeora los resultados, la ablación lo mostrará y lo reportaremos.
+En estas 18 imágenes, el sí o no final coincide con la bandera del experto 17 veces de 18. Las seis piezas sanas que el experto marcó fueron todas rechazadas, y los dos defectos que no vio tampoco se detectaron. Los lectores siguen la pista en lugar de verificarla. Como todavía no hay una ejecución "sin experto", su efecto neto no está medido: es una prueba de dependencia, no una pérdida medida. Por eso su peso, y si se muestra o no la pista, se fijarán por subtarea y por fuente en dev.
 
 ---
 
@@ -213,7 +218,7 @@ No se puede saber con 18 imágenes, y eso es exactamente lo que mide la ablació
 - Takeaway: la pista del experto es poderosa en ambos sentidos, así que su peso debe depender de su confiabilidad en dev
 
 ### Guion oral — Charles (~55 s, ~140 palabras)
-Cuatro casos reales de esa ejecución, y cuatro comportamientos distintos. Cada tarjeta muestra la referencia, la pieza y, en naranja, el zoom que el experto envió a los lectores. Arriba a la izquierda, un cable de MVTec AD: cinco preguntas de cinco correctas, con la respuesta "componente faltante, en la parte central". Arriba a la derecha, una baldosa: los lectores dijeron abajo a la izquierda, el experto abajo al centro. El verificador detectó el conflicto y lo reabrió, pero la respuesta final siguió siendo incorrecta: el defecto está en el centro a la izquierda. Abajo a la izquierda, una lata de GoodsAD: falsa alarma, porque la referencia es otra marca. Abajo a la derecha, chinches de LOCO: el lector escribió "la pista del experto indica arriba a la derecha" y la siguió hasta el lugar equivocado. La conclusión: la pista del experto es poderosa en ambos sentidos, así que su peso debe depender de su confiabilidad en dev. ¿Peter?
+Cuatro casos reales de esa ejecución, y cuatro comportamientos distintos. Cada tarjeta muestra la referencia, la pieza y, en naranja, el zoom que el experto envió a los lectores. Arriba a la izquierda, un cable de MVTec AD: cinco preguntas de cinco correctas, con la respuesta "componente faltante, en la parte central". Arriba a la derecha, una baldosa: los lectores dijeron abajo a la izquierda, el experto abajo al centro. El verificador detectó el conflicto y lo reabrió, pero la respuesta final siguió siendo incorrecta: el defecto está en el centro a la izquierda. Abajo a la izquierda, una lata de GoodsAD: falsa alarma, porque la referencia es otra marca. Abajo a la derecha, chinches de LOCO: el lector escribió "la pista del experto indica arriba a la derecha" y la siguió hasta el lugar equivocado; el puntaje del experto estaba por debajo del umbral, así que el verificador no intervino. La conclusión: la pista del experto es poderosa en ambos sentidos, así que su peso debe depender de su confiabilidad en dev. ¿Peter?
 
 ### Añadir / mejorar
 - En la tarjeta de la baldosa, agregar la posición real ("truth: center-left") en otro color, para que la historia de la reapertura se lea de un vistazo.
@@ -221,7 +226,7 @@ Cuatro casos reales de esa ejecución, y cuatro comportamientos distintos. Cada 
 
 ### Pregunta del jurado
 **"El verificador reabrió la baldosa y la respuesta siguió mal. ¿Para qué sirve?"**
-Su trabajo es detectar un desacuerdo y forzar una segunda mirada, no saber la respuesta. En esta ejecución usaba solo reglas y los dos lectores eran el mismo modelo 4B, así que la segunda mirada no aportaba mucho nuevo. Con dos familias de modelos y el crítico LLM, la ablación "sin verificador" medirá lo que aporta; cuatro reaperturas en 88 preguntas también muestran que no entra en bucle.
+Su trabajo es detectar un desacuerdo y forzar una segunda mirada, no saber la respuesta. En esta ejecución usaba solo reglas y los dos lectores eran el mismo modelo 4B, así que la segunda mirada no aportaba mucho nuevo. Con dos familias de modelos y el crítico LLM, la ablación "sin verificador" medirá lo que aporta; cuatro reaperturas en 88 preguntas también muestran que no entra en bucle. En esta ejecución, las cuatro reaperturas corrigieron una respuesta (chinches 071, "no" → "sí"), rompieron otra (una alfombra sana, "no" → "sí") y dos siguieron mal (baldosa, macarrones): balance nulo.
 
 ---
 
@@ -311,10 +316,13 @@ Una región 3×3, un zoom alrededor del pico y un puntaje. En las ablaciones tam
 El caso de las chinches muestra que a veces lo hacen. La ablación "sin experto" mide el efecto neto, y el análisis de errores contará cuántas veces una pista equivocada llevó a una respuesta equivocada, con las categorías de MAST para los fallos de orquestación.
 
 **"¿Por qué Ollama en local y vLLM en Colab?"**
-vLLM no corre en Windows y 6 GB no alcanzan para un modelo de 8B en bf16. Ollama sirve un modelo 4B cuantizado con la misma API compatible con OpenAI, así que el código es idéntico; solo cambia la dirección del servidor.
+6 GB no alcanzan para un modelo de 8B en bf16, y la descarga de los pesos bf16 del 4B desde Hugging Face (8,9 GB) iba a unos 2 MB/s. Ollama sirve un modelo 4B cuantizado de 3,3 GB con la misma API compatible con OpenAI, así que el código es idéntico; solo cambia la dirección del servidor.
 
 **"¿18 imágenes alcanzan para decir algo?"**
 Solo que el pipeline funciona: cero errores de formato en 184 llamadas, el verificador reabre sin entrar en bucle y los logs están completos. Las cifras de precisión no son un resultado, por eso la diapositiva muestra el intervalo de confianza [54 %, 86 %].
 
 **"¿El test está realmente intacto?"**
 Sí. Está fijado por una semilla commiteada, separado de dev, y la CLI rechaza `--split test` sin una configuración congelada. Se correrá una sola vez, después del 19 de noviembre.
+
+**"¿Qué cambió desde la Delivery I?"**
+El orden del trabajo: habíamos planeado las líneas base y el rendimiento de Colab para hoy y el workflow completo para la semana siguiente, y hicimos lo contrario. El workflow está codificado y corrió de punta a punta; B1, B2 y la medición de Colab no están hechos (3 de 6 ítems). Algunas decisiones también difieren del plan: un verificador solo con reglas en esta corrida (el crítico LLM está codificado, todavía no probado con imágenes reales), pesos de agregación aún en 1,0, un único umbral global para el experto en lugar de un filtro de regiones, y lectores servidos por un endpoint compatible con OpenAI en lugar de llamados directamente. La corrida usó el mismo modelo 4B dos veces, no dos familias. Comparación completa: `delivery_I_vs_II_comparison.fr.md`.

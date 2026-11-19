@@ -97,11 +97,12 @@ Because the question is how much of SiGMA's 85.2 % survives under a strict proto
 - Footer: Pydantic-validated JSON between agents, one retry then error; code on github.com/RVilchezzz/OneRef
 
 ### Script — Charles (~60 s, ~135 words)
-First message: everything in the plan now exists as code. Five components. The DINOv3 visual expert. Readers A and B, Qwen3-VL and InternVL3, served through vLLM. The verifier, which combines fixed rules with an LLM critic and can reopen a conflict once at most. The aggregator, a weighted vote per subtask. And the orchestrator, which loads one model per pass, saves every output to disk and can resume after a crash. Agents only exchange JSON validated with Pydantic: an invalid answer is retried once, then counted as an error. Three numbers: 21 tests pass without a GPU; dev and test are fixed at 835 and 7,531 images, stratified, with a committed seed; and we download 2.1 gigabytes for dev instead of 28, by reading only the needed files from the remote zips. Peter will now show what the expert does on real data.
+First message: everything in the plan now exists as code. Five components. The DINOv3 visual expert. Readers A and B, planned as Qwen3-VL and InternVL3; so far a 4B Qwen has run, through Ollama. The verifier, which combines fixed rules with an LLM critic and can reopen a conflict once at most. The aggregator, a weighted vote per subtask. And the orchestrator, which loads one model per pass, saves every output to disk and can resume after a crash. Agents only exchange JSON validated with Pydantic: an invalid answer is retried once, then counted as an error. Three numbers: 21 tests pass without a GPU; dev and test are fixed at 835 and 7,531 images, stratified, with a committed seed; and we download 2.1 gigabytes for dev instead of 28, by reading only the needed files from the remote zips. Peter will now show what the expert does on real data.
 
 ### To add / improve
 - "Ran on real data" on the readers and verifier is true but needs a qualifier: write "ran on real data (4B, 18 images)". Otherwise the jury will think the 8B readers have run.
-- Make the test count match slide 6 (21 here, 20 there): see "Know by heart" point 5.
+- Make the test count match slide 6 (21 here, 20 there): see "Know by heart" point 5. Peter's report (`docs/reports/2026-11-11_first_end_to_end_run.md`, §5) counts **22 passed** today: 20 before, + the loader test, + the `--per-source` test.
+- The card says "InternVL3 via vLLM": neither has run yet. The run used Qwen3-VL-4B Q4 through Ollama for both readers, and the verifier ran with rules only.
 
 ### Jury question
 **"Why one model per pass instead of a real-time pipeline?"**
@@ -189,16 +190,20 @@ It is fitting on dev, which is what dev is for: the protocol forbids tuning on t
 - Footer: laptop smoke test, RTX 3060 6 GB, 18 dev images (2–4 per source), both readers = Qwen3-VL-4B quantized (Ollama), rules-only verifier; the 8B readers run on Colab
 
 ### Script — Charles (~70 s, ~155 words)
-Thanks, Peter. This is our first end-to-end run: all five agents, on real MMAD images, on the laptop's 6-gigabyte GPU. Eighteen dev images, two to four per source, 88 questions. To fit in memory, both readers were the same small model, Qwen3-VL-4B quantized, and the verifier used rules only. At the top: 18 seconds for the expert, about 320 seconds per reader, and the verifier reopened four conflicts. On the left, accuracy per subtask, with a mean of 71.2 %. Discrimination is 52.5 % balanced, close to chance, which matches the expert's weak AUROC. On the right is what we actually learned. Zero errors in 184 calls: every answer was valid JSON. The two readers agreed on 87 of 88 questions, because it was the same model twice, which is exactly why the real system uses two different families. And the confidence interval goes from 54 to 86 %: this is a working pipeline, not a result.
+Thanks, Peter. This is our first end-to-end run: all five agents, on real MMAD images, on the laptop's 6-gigabyte GPU. Eighteen dev images, two to four per source, 88 questions. To fit in memory, both readers were the same small model, Qwen3-VL-4B quantized, and the verifier used rules only. At the top: 18 seconds for the expert, about 320 seconds per reader, and the verifier reopened four questions, on four images. On the left, accuracy per subtask, with a mean of 71.2 %. Discrimination is 52.5 % balanced: the final yes-or-no followed the expert's flag on 17 of 18 images, so seven of the ten good parts were rejected. On the right is what we actually learned. Zero errors in 184 calls: every answer was valid JSON. The two readers agreed on 87 of 88 questions, because it was the same model twice, which is exactly why the real system uses two different families. And the confidence interval goes from 54 to 86 %: this is a working pipeline, not a result.
 
 ### To add / improve
 - Add the number of questions per subtask next to each score: with 88 questions, some cells hold fewer than ten questions, and 100 % on object classification means little.
 - Write "~3.7 s per reader call" instead of "per question" (323 + 322 s over 176 calls).
 - Put a dashed 50 % line next to the discrimination score.
+- Questions per subtask (from `results/pipeline_smoke/smoke_ollama_qwen4b_ps4/per_question.csv`): discrimination 18, defect classification 8, localization 6, description 8, analysis 8, object classification 10, object analysis 30. "100 %" is 10 questions; "50 %" is 3 of 6.
+- Add the two inspection errors next to discrimination: **good parts rejected 70 %** (7 of 10), **defects missed 25 %** (2 of 8).
+- The CI: the CLI printed [53.8, 85.6], rounded to [54, 86] on the slide; Peter's report recomputes [52.4, 85.2]. Same mean, the bootstrap resamples in a different order. Say "about 52 to 86 %" if asked.
+- The slide omits the two reopen passes: 15.7 s (reader A) and 5.7 s (reader B). Total wall time ~11 min.
 
 ### Jury question
 **"With 52.5 % on discrimination, isn't the expert making things worse?"**
-We cannot tell from 18 images, and that is precisely what the "no expert" ablation measures. What we know is that the expert is reliable on aligned photos and at chance on GoodsAD, so its vote will be weighted per subtask and per its dev reliability. If it still hurts, the ablation will show it and we will report it.
+On these 18 images the final yes-or-no matched the expert's flag 17 times out of 18. All six good parts the expert flagged were rejected, and both defects it missed were missed. So the readers are following the hint, not checking it. With no "no expert" run yet, its net effect is not measured, so this is evidence of dependence, not a measured loss. That is why its weight, and whether to show the hint at all, will be set per subtask and per source on dev.
 
 ---
 
@@ -213,7 +218,7 @@ We cannot tell from 18 images, and that is precisely what the "no expert" ablati
 - Takeaway: the expert's hint is powerful both ways, so its weight must depend on how reliable it was on dev
 
 ### Script — Charles (~55 s, ~130 words)
-Four real cases from that run, and four different behaviours. Each card shows the reference, the part, and in orange the zoom that the expert sent to the readers. Top left, a cable from MVTec AD: five questions out of five right, with the answer "missing component, in the central part". Top right, a tile: the readers said bottom-left, the expert said bottom-center. The verifier caught the conflict and reopened it, but the final answer was still wrong: the defect is center-left. Bottom left, a can from GoodsAD: a false alarm, because the reference is another brand. Bottom right, pushpins from LOCO: the reader wrote "the expert hint indicates the top right" and followed it to the wrong place. The takeaway: the expert's hint is powerful in both directions, so its weight must depend on how reliable it was on dev. Peter?
+Four real cases from that run, and four different behaviours. Each card shows the reference, the part, and in orange the zoom that the expert sent to the readers. Top left, a cable from MVTec AD: five questions out of five right, with the answer "missing component, in the central part". Top right, a tile: the readers said bottom-left, the expert said bottom-center. The verifier caught the conflict and reopened it, but the final answer was still wrong: the defect is center-left. Bottom left, a can from GoodsAD: a false alarm, because the reference is another brand. Bottom right, pushpins from LOCO: the reader wrote "the expert hint indicates the top right" and followed it to the wrong place; the expert's score was under the flag, so the verifier stayed silent. The takeaway: the expert's hint is powerful in both directions, so its weight must depend on how reliable it was on dev. Peter?
 
 ### To add / improve
 - On the tile card, add the true location ("truth: center-left") in a different colour, so the reopen story reads at a glance.
@@ -221,7 +226,7 @@ Four real cases from that run, and four different behaviours. Each card shows th
 
 ### Jury question
 **"The verifier reopened the tile and the answer stayed wrong. What is the verifier for?"**
-Its job is to detect disagreement and force a second look, not to know the answer. In this run it was rules-only and both readers were the same 4B model, so a second look had little new to say. With two model families and the LLM critic, the "no verifier" ablation will measure what it adds; four reopens out of 88 questions also show it is not looping.
+Its job is to detect disagreement and force a second look, not to know the answer. In this run it was rules-only and both readers were the same 4B model, so a second look had little new to say. With two model families and the LLM critic, the "no verifier" ablation will measure what it adds; four reopens out of 88 questions also show it is not looping. In this run the four reopens fixed one answer (pushpins 071, "no" → "yes") and broke one (a good carpet, "no" → "yes"), and two stayed wrong (tile, macaroni): net zero.
 
 ---
 
@@ -311,10 +316,13 @@ A 3×3 region, a zoomed crop around the peak and a score. In the ablations we al
 The pushpins case shows they sometimes do. The "no expert" ablation measures the net effect, and the error analysis will count how often a wrong hint led to a wrong answer, with MAST categories for orchestration failures.
 
 **"Why Ollama locally and vLLM on Colab?"**
-vLLM does not run on Windows and 6 GB cannot hold an 8B model in bf16. Ollama serves a quantized 4B model through the same OpenAI-compatible API, so the code is identical; only the endpoint changes.
+6 GB cannot hold an 8B model in bf16, and downloading the bf16 4B weights from Hugging Face (8.9 GB) ran at about 2 MB/s. Ollama serves a 3.3 GB quantized 4B model through the same OpenAI-compatible API, so the code is identical; only the endpoint changes.
 
 **"Is 18 images enough to say anything?"**
 Only that the pipeline works: zero format errors in 184 calls, the verifier reopens without looping, and logs are complete. The accuracy figures are not a result, which is why we show the confidence interval [54 %, 86 %] on the slide.
 
 **"Is the test set really untouched?"**
 Yes. It is fixed by a committed seed, disjoint from dev, and the CLI refuses `--split test` without a frozen configuration. It will run once, after Nov 19.
+
+**"What changed since Delivery I?"**
+The order of work: we planned baselines and Colab throughput for today and the full workflow for next week, and did the reverse. The workflow is coded and ran end to end; B1, B2 and the Colab measurement are not done (3 of 6 items). Some choices also differ from the plan: a rules-only verifier for this run (the LLM critic is coded, not yet run on real images), all aggregator weights still at 1.0, a single global threshold for the expert instead of a region filter, and the readers served through an OpenAI-compatible endpoint instead of called directly. The run used the same 4B model twice, not two families. Full comparison: `delivery_I_vs_II_comparison.fr.md`.
