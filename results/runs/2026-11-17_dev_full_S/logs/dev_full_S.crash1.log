@@ -1,0 +1,140 @@
+[transformers] `torch_dtype` is deprecated! Use `dtype` instead!
+Loading weights:   0%|          | 0/211 [00:00<?, ?it/s]Loading weights:  35%|███▍      | 73/211 [00:00<00:00, 700.60it/s]Loading weights:  69%|██████▊   | 145/211 [00:00<00:00, 711.14it/s]Loading weights: 100%|██████████| 211/211 [00:00<00:00, 792.07it/s]
+                 pydantic-ai v2.66.0 • Python 3.14.8
+
+      / \        agent: reader_a • model: openai:qwen3-vl:4b-instruct
+     /   \         output: PromptedOutput(outputs=[<class 'inspect… • tools: 0 • capabilities: 0
+   /___.___\
+  /    |    \    observability: off — see every model and tool call live, with cost
+/      |      \    set it up free with Pydantic Logfire: https://pydantic.dev/ai-setup.md
+`---.._|_..---'    or use any OpenTelemetry backend: https://pydantic.dev/docs/ai/logfire/#otel
+
+                 goes away once observability is on — or PYDANTIC_AI_NO_BANNER=1
+Traceback (most recent call last):
+  File "/home/chocho/PROYECTOS/BRAZIL/UNICAMP/DEEP_LEARNING/MULTIAGENT_INSPECTOR/.venv/lib/python3.14/site-packages/pydantic_ai/models/openai.py", line 307, in _map_api_errors
+    yield
+  File "/home/chocho/PROYECTOS/BRAZIL/UNICAMP/DEEP_LEARNING/MULTIAGENT_INSPECTOR/.venv/lib/python3.14/site-packages/pydantic_ai/models/openai.py", line 1884, in _completions_create
+    return await with_max_retries(self.client, model_settings).chat.completions.create(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<37 lines>...
+    )
+    ^
+  File "/home/chocho/PROYECTOS/BRAZIL/UNICAMP/DEEP_LEARNING/MULTIAGENT_INSPECTOR/.venv/lib/python3.14/site-packages/openai/resources/chat/completions/completions.py", line 3414, in create
+    return await self._post(
+           ^^^^^^^^^^^^^^^^^
+    ...<55 lines>...
+    )
+    ^
+  File "/home/chocho/PROYECTOS/BRAZIL/UNICAMP/DEEP_LEARNING/MULTIAGENT_INSPECTOR/.venv/lib/python3.14/site-packages/openai/_base_client.py", line 2085, in post
+    return await self.request(cast_to, opts, stream=stream, stream_cls=stream_cls)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/chocho/PROYECTOS/BRAZIL/UNICAMP/DEEP_LEARNING/MULTIAGENT_INSPECTOR/.venv/lib/python3.14/site-packages/openai/_base_client.py", line 1870, in request
+    raise self._make_status_error_from_response(err.response) from None
+openai.InternalServerError: Error code: 500 - prediction aborted, token repeat limit reached
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "<frozen runpy>", line 203, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "/home/chocho/PROYECTOS/BRAZIL/UNICAMP/DEEP_LEARNING/MULTIAGENT_INSPECTOR/src/inspector/main.py", line 85, in <module>
+    raise SystemExit(main())
+                     ~~~~^^
+  File "/home/chocho/PROYECTOS/BRAZIL/UNICAMP/DEEP_LEARNING/MULTIAGENT_INSPECTOR/src/inspector/main.py", line 72, in main
+    states = PassRunner(run_dir, tel).run(steps, states)
+  File "/home/chocho/PROYECTOS/BRAZIL/UNICAMP/DEEP_LEARNING/MULTIAGENT_INSPECTOR/src/inspector/orchestrator/pass_runner.py", line 35, in run
+    states = self._run_step(step, states)
+  File "/home/chocho/PROYECTOS/BRAZIL/UNICAMP/DEEP_LEARNING/MULTIAGENT_INSPECTOR/src/inspector/orchestrator/pass_runner.py", line 55, in _run_step
+    done[s.image_id] = agent.run(s, self.tel)
+                       ~~~~~~~~~^^^^^^^^^^^^^
+  File "/home/chocho/PROYECTOS/BRAZIL/UNICAMP/DEEP_LEARNING/MULTIAGENT_INSPECTOR/src/inspector/agents/base.py", line 47, in run
+    state = self._run(state, rec)
+  File "/home/chocho/PROYECTOS/BRAZIL/UNICAMP/DEEP_LEARNING/MULTIAGENT_INSPECTOR/src/inspector/agents/critic_verifier.py", line 171, in _run
+    res = self.run_async(self.agent.run([prompt, *self.image_parts(state)], deps=deps))
+  File "/home/chocho/PROYECTOS/BRAZIL/UNICAMP/DEEP_LEARNING/MULTIAGENT_INSPECTOR/src/inspector/agents/llm.py", line 174, in run_async
+    return self.loop.run_until_complete(coro)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^
+  File "/usr/lib/python3.14/asyncio/base_events.py", line 720, in run_until_complete
+    return future.result()
+           ~~~~~~~~~~~~~^^
+  File "/home/chocho/PROYECTOS/BRAZIL/UNICAMP/DEEP_LEARNING/MULTIAGENT_INSPECTOR/.venv/lib/python3.14/site-packages/pydantic_ai/agent/abstract.py", line 696, in run
+    node = await agent_run.next(node)  # pyright: ignore[reportArgumentType]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/chocho/PROYECTOS/BRAZIL/UNICAMP/DEEP_LEARNING/MULTIAGENT_INSPECTOR/.venv/lib/python3.14/site-packages/pydantic_ai/run.py", line 714, in next
+    return await self._run_node_with_hooks(node, self._stream_and_advance)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/chocho/PROYECTOS/BRAZIL/UNICAMP/DEEP_LEARNING/MULTIAGENT_INSPECTOR/.venv/lib/python3.14/site-packages/pydantic_ai/run.py", line 624, in _run_node_with_hooks
+    result = await lifecycle(node)
+             ^^^^^^^^^^^^^^^^^^^^^
+  File "/home/chocho/PROYECTOS/BRAZIL/UNICAMP/DEEP_LEARNING/MULTIAGENT_INSPECTOR/.venv/lib/python3.14/site-packages/pydantic_ai/run.py", line 604, in lifecycle
+    result = await step_fn(lifecycle_node)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/chocho/PROYECTOS/BRAZIL/UNICAMP/DEEP_LEARNING/MULTIAGENT_INSPECTOR/.venv/lib/python3.14/site-packages/pydantic_ai/run.py", line 732, in _stream_and_advance
+    return await self._advance_graph(node)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/chocho/PROYECTOS/BRAZIL/UNICAMP/DEEP_LEARNING/MULTIAGENT_INSPECTOR/.venv/lib/python3.14/site-packages/pydantic_ai/run.py", line 513, in _advance_graph
+    task = await self._graph_run.next(task)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/chocho/PROYECTOS/BRAZIL/UNICAMP/DEEP_LEARNING/MULTIAGENT_INSPECTOR/.venv/lib/python3.14/site-packages/pydantic_graph/graph_builder.py", line 603, in next
+    return await anext(self)
+           ^^^^^^^^^^^^^^^^^
+  File "/home/chocho/PROYECTOS/BRAZIL/UNICAMP/DEEP_LEARNING/MULTIAGENT_INSPECTOR/.venv/lib/python3.14/site-packages/pydantic_graph/graph_builder.py", line 576, in __anext__
+    raise self._next.error
+  File "/home/chocho/PROYECTOS/BRAZIL/UNICAMP/DEEP_LEARNING/MULTIAGENT_INSPECTOR/.venv/lib/python3.14/site-packages/pydantic_graph/graph_builder.py", line 873, in _run_tracked_task
+    result = await self._run_task(t_)
+             ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/chocho/PROYECTOS/BRAZIL/UNICAMP/DEEP_LEARNING/MULTIAGENT_INSPECTOR/.venv/lib/python3.14/site-packages/pydantic_graph/graph_builder.py", line 931, in _run_task
+    output = await node.call(step_context)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/chocho/PROYECTOS/BRAZIL/UNICAMP/DEEP_LEARNING/MULTIAGENT_INSPECTOR/.venv/lib/python3.14/site-packages/pydantic_graph/step.py", line 253, in _call_node
+    return await node.run(GraphRunContext(state=ctx.state, deps=ctx.deps))
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/chocho/PROYECTOS/BRAZIL/UNICAMP/DEEP_LEARNING/MULTIAGENT_INSPECTOR/.venv/lib/python3.14/site-packages/pydantic_ai/_agent_graph.py", line 2315, in run
+    return await self._make_request(ctx)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/chocho/PROYECTOS/BRAZIL/UNICAMP/DEEP_LEARNING/MULTIAGENT_INSPECTOR/.venv/lib/python3.14/site-packages/pydantic_ai/_agent_graph.py", line 2735, in _make_request
+    model_response = await _outside_attempts(model_handler(request_context))
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/chocho/PROYECTOS/BRAZIL/UNICAMP/DEEP_LEARNING/MULTIAGENT_INSPECTOR/.venv/lib/python3.14/site-packages/pydantic_ai/_agent_graph.py", line 2216, in _outside_attempts
+    return await awaitable
+           ^^^^^^^^^^^^^^^
+  File "/home/chocho/PROYECTOS/BRAZIL/UNICAMP/DEEP_LEARNING/MULTIAGENT_INSPECTOR/.venv/lib/python3.14/site-packages/pydantic_ai/_agent_graph.py", line 2721, in model_handler
+    return await self._request_attempts(ctx, run_context, req_ctx, state)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/chocho/PROYECTOS/BRAZIL/UNICAMP/DEEP_LEARNING/MULTIAGENT_INSPECTOR/.venv/lib/python3.14/site-packages/pydantic_ai/_agent_graph.py", line 2804, in _request_attempts
+    return await self._request_attempt(ctx, run_context, request_context, state, failed)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/chocho/PROYECTOS/BRAZIL/UNICAMP/DEEP_LEARNING/MULTIAGENT_INSPECTOR/.venv/lib/python3.14/site-packages/pydantic_ai/_agent_graph.py", line 2860, in _request_attempt
+    recovered = await self._recover_model_request_error(ctx, run_context, request_context, e, failed, start)
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/chocho/PROYECTOS/BRAZIL/UNICAMP/DEEP_LEARNING/MULTIAGENT_INSPECTOR/.venv/lib/python3.14/site-packages/pydantic_ai/_agent_graph.py", line 3664, in _recover_model_request_error
+    raise error
+  File "/home/chocho/PROYECTOS/BRAZIL/UNICAMP/DEEP_LEARNING/MULTIAGENT_INSPECTOR/.venv/lib/python3.14/site-packages/pydantic_ai/_agent_graph.py", line 2836, in _request_attempt
+    outcome = await model_request(
+              ^^^^^^^^^^^^^^^^^^^^
+    ...<5 lines>...
+    )
+    ^
+  File "/home/chocho/PROYECTOS/BRAZIL/UNICAMP/DEEP_LEARNING/MULTIAGENT_INSPECTOR/.venv/lib/python3.14/site-packages/pydantic_ai/_agent_graph.py", line 1938, in model_request
+    new_response = await model.request(
+                   ^^^^^^^^^^^^^^^^^^^^
+        messages, request_context.model_settings, request_context.model_request_parameters
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/home/chocho/PROYECTOS/BRAZIL/UNICAMP/DEEP_LEARNING/MULTIAGENT_INSPECTOR/.venv/lib/python3.14/site-packages/pydantic_ai/models/openai.py", line 1746, in request
+    response = await self._completions_create(
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        messages, False, cast(OpenAIChatModelSettings, model_settings or {}), model_request_parameters
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/home/chocho/PROYECTOS/BRAZIL/UNICAMP/DEEP_LEARNING/MULTIAGENT_INSPECTOR/.venv/lib/python3.14/site-packages/pydantic_ai/models/openai.py", line 1875, in _completions_create
+    with _map_api_errors(self.model_name, self._provider.model_id_namespace), map_decode_errors(self.model_name):
+         ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.14/contextlib.py", line 162, in __exit__
+    self.gen.throw(value)
+    ~~~~~~~~~~~~~~^^^^^^^
+  File "/home/chocho/PROYECTOS/BRAZIL/UNICAMP/DEEP_LEARNING/MULTIAGENT_INSPECTOR/.venv/lib/python3.14/site-packages/pydantic_ai/models/openai.py", line 310, in _map_api_errors
+    raise _map_status_error(e, model_name, model_id_namespace) from e
+pydantic_ai.exceptions.ModelServerError: status_code: 500, model_name: gemma4:e2b, body: {'message': 'prediction aborted, token repeat limit reached', 'type': 'api_error', 'param': None, 'code': None}

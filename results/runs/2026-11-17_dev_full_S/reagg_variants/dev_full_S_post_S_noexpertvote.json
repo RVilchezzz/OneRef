@@ -1,0 +1,6 @@
+{
+  "from": "outputs/dev_full_S/6_reader_b_reopen",
+  "overrides": {
+    "expert_weight_discrimination": 0
+  }
+}
