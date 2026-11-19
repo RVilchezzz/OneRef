@@ -1,0 +1,6 @@
+{
+  "from": "outputs/dev_full_S/3_reader_b",
+  "overrides": {
+    "expert_weight_discrimination": 0
+  }
+}
