@@ -26,7 +26,7 @@ def download_mmad(dest: str | Path = "data/MMAD", zips: list[str] | None = None,
     dest.mkdir(parents=True, exist_ok=True)
     token = os.environ.get("HF_TOKEN") or None
     hf_hub_download(REPO, "mmad.json", repo_type="dataset", local_dir=dest, token=token)
-    for name in zips or ["DS-MVTec.zip"]:
+    for name in ["DS-MVTec.zip"] if zips is None else zips:
         z = Path(hf_hub_download(REPO, name, repo_type="dataset", local_dir=dest, token=token))
         with zipfile.ZipFile(z) as f:
             f.extractall(dest)

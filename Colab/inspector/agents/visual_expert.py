@@ -73,6 +73,7 @@ class VisualExpert(BaseAgent):
                 break
             except Exception as e:  # noqa: BLE001
                 last_err = e
+                print(f"WARNING: expert {model_id} failed to load ({e!r}); trying the fallback", flush=True)
         if self.model is None:
             raise RuntimeError(f"Could not load expert model: {last_err!r}")
         cfg = self.model.config
