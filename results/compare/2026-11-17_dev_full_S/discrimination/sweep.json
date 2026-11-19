@@ -1,0 +1,1247 @@
+{
+  "from": "outputs/dev_full_S/6_reader_b_reopen",
+  "results": [
+    {
+      "readers": "reader_a",
+      "expert_weight": 0.0,
+      "threshold": null,
+      "disc_bal_acc": 0.6279024767801857,
+      "fpr": 0.6191950464396285,
+      "miss": 0.125,
+      "mean7": 0.6572837018909228
+    },
+    {
+      "readers": "reader_a",
+      "expert_weight": 0.5,
+      "threshold": 0.3,
+      "disc_bal_acc": 0.6279024767801857,
+      "fpr": 0.6191950464396285,
+      "miss": 0.125,
+      "mean7": 0.6572837018909228
+    },
+    {
+      "readers": "reader_a",
+      "expert_weight": 0.5,
+      "threshold": 0.4,
+      "disc_bal_acc": 0.6279024767801857,
+      "fpr": 0.6191950464396285,
+      "miss": 0.125,
+      "mean7": 0.6572837018909228
+    },
+    {
+      "readers": "reader_a",
+      "expert_weight": 0.5,
+      "threshold": 0.5,
+      "disc_bal_acc": 0.6279024767801857,
+      "fpr": 0.6191950464396285,
+      "miss": 0.125,
+      "mean7": 0.6572837018909228
+    },
+    {
+      "readers": "reader_a",
+      "expert_weight": 0.5,
+      "threshold": 0.6,
+      "disc_bal_acc": 0.6279024767801857,
+      "fpr": 0.6191950464396285,
+      "miss": 0.125,
+      "mean7": 0.6572837018909228
+    },
+    {
+      "readers": "reader_a",
+      "expert_weight": 0.5,
+      "threshold": 0.7,
+      "disc_bal_acc": 0.6279024767801857,
+      "fpr": 0.6191950464396285,
+      "miss": 0.125,
+      "mean7": 0.6572837018909228
+    },
+    {
+      "readers": "reader_a",
+      "expert_weight": 0.5,
+      "threshold": 0.8,
+      "disc_bal_acc": 0.6279024767801857,
+      "fpr": 0.6191950464396285,
+      "miss": 0.125,
+      "mean7": 0.6572837018909228
+    },
+    {
+      "readers": "reader_a",
+      "expert_weight": 0.5,
+      "threshold": 0.9,
+      "disc_bal_acc": 0.6279024767801857,
+      "fpr": 0.6191950464396285,
+      "miss": 0.125,
+      "mean7": 0.6572837018909228
+    },
+    {
+      "readers": "reader_a",
+      "expert_weight": 0.5,
+      "threshold": 0.95,
+      "disc_bal_acc": 0.6279024767801857,
+      "fpr": 0.6191950464396285,
+      "miss": 0.125,
+      "mean7": 0.6572837018909228
+    },
+    {
+      "readers": "reader_a",
+      "expert_weight": 0.5,
+      "threshold": 1.0,
+      "disc_bal_acc": 0.6279024767801857,
+      "fpr": 0.6191950464396285,
+      "miss": 0.125,
+      "mean7": 0.6572837018909228
+    },
+    {
+      "readers": "reader_a",
+      "expert_weight": 1.0,
+      "threshold": 0.3,
+      "disc_bal_acc": 0.6279024767801857,
+      "fpr": 0.6191950464396285,
+      "miss": 0.125,
+      "mean7": 0.6572837018909228
+    },
+    {
+      "readers": "reader_a",
+      "expert_weight": 1.0,
+      "threshold": 0.4,
+      "disc_bal_acc": 0.6279024767801857,
+      "fpr": 0.6191950464396285,
+      "miss": 0.125,
+      "mean7": 0.6572837018909228
+    },
+    {
+      "readers": "reader_a",
+      "expert_weight": 1.0,
+      "threshold": 0.5,
+      "disc_bal_acc": 0.6279024767801857,
+      "fpr": 0.6191950464396285,
+      "miss": 0.125,
+      "mean7": 0.6572837018909228
+    },
+    {
+      "readers": "reader_a",
+      "expert_weight": 1.0,
+      "threshold": 0.6,
+      "disc_bal_acc": 0.6279024767801857,
+      "fpr": 0.6191950464396285,
+      "miss": 0.125,
+      "mean7": 0.6572837018909228
+    },
+    {
+      "readers": "reader_a",
+      "expert_weight": 1.0,
+      "threshold": 0.7,
+      "disc_bal_acc": 0.6279024767801857,
+      "fpr": 0.6191950464396285,
+      "miss": 0.125,
+      "mean7": 0.6572837018909228
+    },
+    {
+      "readers": "reader_a",
+      "expert_weight": 1.0,
+      "threshold": 0.8,
+      "disc_bal_acc": 0.6279024767801857,
+      "fpr": 0.6191950464396285,
+      "miss": 0.125,
+      "mean7": 0.6572837018909228
+    },
+    {
+      "readers": "reader_a",
+      "expert_weight": 1.0,
+      "threshold": 0.9,
+      "disc_bal_acc": 0.6279024767801857,
+      "fpr": 0.6191950464396285,
+      "miss": 0.125,
+      "mean7": 0.6572837018909228
+    },
+    {
+      "readers": "reader_a",
+      "expert_weight": 1.0,
+      "threshold": 0.95,
+      "disc_bal_acc": 0.6279024767801857,
+      "fpr": 0.6191950464396285,
+      "miss": 0.125,
+      "mean7": 0.6572837018909228
+    },
+    {
+      "readers": "reader_a",
+      "expert_weight": 1.0,
+      "threshold": 1.0,
+      "disc_bal_acc": 0.6279024767801857,
+      "fpr": 0.6191950464396285,
+      "miss": 0.125,
+      "mean7": 0.6572837018909228
+    },
+    {
+      "readers": "reader_a",
+      "expert_weight": 1.5,
+      "threshold": 0.5,
+      "disc_bal_acc": 0.6095324094550101,
+      "fpr": 0.5944272445820433,
+      "miss": 0.1865079365079365,
+      "mean7": 0.6546594065587549
+    },
+    {
+      "readers": "reader_a",
+      "expert_weight": 2.0,
+      "threshold": 0.5,
+      "disc_bal_acc": 0.6095324094550101,
+      "fpr": 0.5944272445820433,
+      "miss": 0.1865079365079365,
+      "mean7": 0.6546594065587549
+    },
+    {
+      "readers": "reader_a",
+      "expert_weight": 3.0,
+      "threshold": 0.5,
+      "disc_bal_acc": 0.6095324094550101,
+      "fpr": 0.5944272445820433,
+      "miss": 0.1865079365079365,
+      "mean7": 0.6546594065587549
+    },
+    {
+      "readers": "reader_a",
+      "expert_weight": 1.5,
+      "threshold": 0.7,
+      "disc_bal_acc": 0.598312570642292,
+      "fpr": 0.5077399380804953,
+      "miss": 0.29563492063492064,
+      "mean7": 0.6530565724426521
+    },
+    {
+      "readers": "reader_a",
+      "expert_weight": 2.0,
+      "threshold": 0.7,
+      "disc_bal_acc": 0.598312570642292,
+      "fpr": 0.5077399380804953,
+      "miss": 0.29563492063492064,
+      "mean7": 0.6530565724426521
+    },
+    {
+      "readers": "reader_a",
+      "expert_weight": 3.0,
+      "threshold": 0.7,
+      "disc_bal_acc": 0.598312570642292,
+      "fpr": 0.5077399380804953,
+      "miss": 0.29563492063492064,
+      "mean7": 0.6530565724426521
+    },
+    {
+      "readers": "reader_a",
+      "expert_weight": 1.5,
+      "threshold": 0.6,
+      "disc_bal_acc": 0.5970379379822104,
+      "fpr": 0.5479876160990712,
+      "miss": 0.25793650793650796,
+      "mean7": 0.6528744820626405
+    },
+    {
+      "readers": "reader_a",
+      "expert_weight": 2.0,
+      "threshold": 0.6,
+      "disc_bal_acc": 0.5970379379822104,
+      "fpr": 0.5479876160990712,
+      "miss": 0.25793650793650796,
+      "mean7": 0.6528744820626405
+    },
+    {
+      "readers": "reader_a",
+      "expert_weight": 3.0,
+      "threshold": 0.6,
+      "disc_bal_acc": 0.5970379379822104,
+      "fpr": 0.5479876160990712,
+      "miss": 0.25793650793650796,
+      "mean7": 0.6528744820626405
+    },
+    {
+      "readers": "reader_a",
+      "expert_weight": 1.5,
+      "threshold": 0.4,
+      "disc_bal_acc": 0.5934106098579783,
+      "fpr": 0.6842105263157895,
+      "miss": 0.12896825396825398,
+      "mean7": 0.6523562923306073
+    },
+    {
+      "readers": "reader_a",
+      "expert_weight": 2.0,
+      "threshold": 0.4,
+      "disc_bal_acc": 0.5934106098579783,
+      "fpr": 0.6842105263157895,
+      "miss": 0.12896825396825398,
+      "mean7": 0.6523562923306073
+    },
+    {
+      "readers": "reader_a",
+      "expert_weight": 3.0,
+      "threshold": 0.4,
+      "disc_bal_acc": 0.5934106098579783,
+      "fpr": 0.6842105263157895,
+      "miss": 0.12896825396825398,
+      "mean7": 0.6523562923306073
+    },
+    {
+      "readers": "reader_a",
+      "expert_weight": 1.5,
+      "threshold": 0.8,
+      "disc_bal_acc": 0.5908982013858175,
+      "fpr": 0.4551083591331269,
+      "miss": 0.3630952380952381,
+      "mean7": 0.6519973768345845
+    },
+    {
+      "readers": "reader_a",
+      "expert_weight": 2.0,
+      "threshold": 0.8,
+      "disc_bal_acc": 0.5908982013858175,
+      "fpr": 0.4551083591331269,
+      "miss": 0.3630952380952381,
+      "mean7": 0.6519973768345845
+    },
+    {
+      "readers": "reader_a",
+      "expert_weight": 3.0,
+      "threshold": 0.8,
+      "disc_bal_acc": 0.5908982013858175,
+      "fpr": 0.4551083591331269,
+      "miss": 0.3630952380952381,
+      "mean7": 0.6519973768345845
+    },
+    {
+      "readers": "reader_a",
+      "expert_weight": 1.5,
+      "threshold": 0.9,
+      "disc_bal_acc": 0.587092731829574,
+      "fpr": 0.42105263157894735,
+      "miss": 0.40476190476190477,
+      "mean7": 0.6514537383265496
+    },
+    {
+      "readers": "reader_a",
+      "expert_weight": 2.0,
+      "threshold": 0.9,
+      "disc_bal_acc": 0.587092731829574,
+      "fpr": 0.42105263157894735,
+      "miss": 0.40476190476190477,
+      "mean7": 0.6514537383265496
+    },
+    {
+      "readers": "reader_a",
+      "expert_weight": 3.0,
+      "threshold": 0.9,
+      "disc_bal_acc": 0.587092731829574,
+      "fpr": 0.42105263157894735,
+      "miss": 0.40476190476190477,
+      "mean7": 0.6514537383265496
+    },
+    {
+      "readers": "reader_a",
+      "expert_weight": 1.5,
+      "threshold": 0.3,
+      "disc_bal_acc": 0.5802650007371369,
+      "fpr": 0.7739938080495357,
+      "miss": 0.06547619047619048,
+      "mean7": 0.6504783481704871
+    },
+    {
+      "readers": "reader_a",
+      "expert_weight": 2.0,
+      "threshold": 0.3,
+      "disc_bal_acc": 0.5802650007371369,
+      "fpr": 0.7739938080495357,
+      "miss": 0.06547619047619048,
+      "mean7": 0.6504783481704871
+    },
+    {
+      "readers": "reader_a",
+      "expert_weight": 3.0,
+      "threshold": 0.3,
+      "disc_bal_acc": 0.5802650007371369,
+      "fpr": 0.7739938080495357,
+      "miss": 0.06547619047619048,
+      "mean7": 0.6504783481704871
+    },
+    {
+      "readers": "reader_a",
+      "expert_weight": 1.5,
+      "threshold": 1.0,
+      "disc_bal_acc": 0.5782839451570101,
+      "fpr": 0.4148606811145511,
+      "miss": 0.42857142857142855,
+      "mean7": 0.650195340230469
+    },
+    {
+      "readers": "reader_a",
+      "expert_weight": 2.0,
+      "threshold": 1.0,
+      "disc_bal_acc": 0.5782839451570101,
+      "fpr": 0.4148606811145511,
+      "miss": 0.42857142857142855,
+      "mean7": 0.650195340230469
+    },
+    {
+      "readers": "reader_a",
+      "expert_weight": 3.0,
+      "threshold": 1.0,
+      "disc_bal_acc": 0.5782839451570101,
+      "fpr": 0.4148606811145511,
+      "miss": 0.42857142857142855,
+      "mean7": 0.650195340230469
+    },
+    {
+      "readers": "reader_a",
+      "expert_weight": 1.5,
+      "threshold": 0.95,
+      "disc_bal_acc": 0.5781641604010025,
+      "fpr": 0.42105263157894735,
+      "miss": 0.4226190476190476,
+      "mean7": 0.650178228122468
+    },
+    {
+      "readers": "reader_a",
+      "expert_weight": 2.0,
+      "threshold": 0.95,
+      "disc_bal_acc": 0.5781641604010025,
+      "fpr": 0.42105263157894735,
+      "miss": 0.4226190476190476,
+      "mean7": 0.650178228122468
+    },
+    {
+      "readers": "reader_a",
+      "expert_weight": 3.0,
+      "threshold": 0.95,
+      "disc_bal_acc": 0.5781641604010025,
+      "fpr": 0.42105263157894735,
+      "miss": 0.4226190476190476,
+      "mean7": 0.650178228122468
+    },
+    {
+      "readers": "reader_a,reader_b",
+      "expert_weight": 0.5,
+      "threshold": 0.8,
+      "disc_bal_acc": 0.6254914246400314,
+      "fpr": 0.5386996904024768,
+      "miss": 0.21031746031746032,
+      "mean7": 0.6456423002960062
+    },
+    {
+      "readers": "reader_a,reader_b",
+      "expert_weight": 1.0,
+      "threshold": 0.8,
+      "disc_bal_acc": 0.6254914246400314,
+      "fpr": 0.5386996904024768,
+      "miss": 0.21031746031746032,
+      "mean7": 0.6456423002960062
+    },
+    {
+      "readers": "reader_a,reader_b",
+      "expert_weight": 0.5,
+      "threshold": 0.7,
+      "disc_bal_acc": 0.6227118040198536,
+      "fpr": 0.5541795665634675,
+      "miss": 0.2003968253968254,
+      "mean7": 0.6452452116359808
+    },
+    {
+      "readers": "reader_a,reader_b",
+      "expert_weight": 1.0,
+      "threshold": 0.7,
+      "disc_bal_acc": 0.6227118040198536,
+      "fpr": 0.5541795665634675,
+      "miss": 0.2003968253968254,
+      "mean7": 0.6452452116359808
+    },
+    {
+      "readers": "reader_a,reader_b",
+      "expert_weight": 1.5,
+      "threshold": 0.8,
+      "disc_bal_acc": 0.6225152341638409,
+      "fpr": 0.5386996904024768,
+      "miss": 0.21626984126984128,
+      "mean7": 0.645217130227979
+    },
+    {
+      "readers": "reader_a,reader_b",
+      "expert_weight": 2.0,
+      "threshold": 0.8,
+      "disc_bal_acc": 0.6225152341638409,
+      "fpr": 0.5386996904024768,
+      "miss": 0.21626984126984128,
+      "mean7": 0.645217130227979
+    },
+    {
+      "readers": "reader_a,reader_b",
+      "expert_weight": 0.5,
+      "threshold": 0.3,
+      "disc_bal_acc": 0.6222664504398251,
+      "fpr": 0.628482972136223,
+      "miss": 0.12698412698412698,
+      "mean7": 0.6451815896959767
+    },
+    {
+      "readers": "reader_a,reader_b",
+      "expert_weight": 1.0,
+      "threshold": 0.3,
+      "disc_bal_acc": 0.6222664504398251,
+      "fpr": 0.628482972136223,
+      "miss": 0.12698412698412698,
+      "mean7": 0.6451815896959767
+    },
+    {
+      "readers": "reader_a,reader_b",
+      "expert_weight": 1.5,
+      "threshold": 0.3,
+      "disc_bal_acc": 0.620718462823726,
+      "fpr": 0.631578947368421,
+      "miss": 0.12698412698412698,
+      "mean7": 0.6449604486079625
+    },
+    {
+      "readers": "reader_a,reader_b",
+      "expert_weight": 2.0,
+      "threshold": 0.3,
+      "disc_bal_acc": 0.620718462823726,
+      "fpr": 0.631578947368421,
+      "miss": 0.12698412698412698,
+      "mean7": 0.6449604486079625
+    },
+    {
+      "readers": "reader_a,reader_b",
+      "expert_weight": 0.5,
+      "threshold": 0.4,
+      "disc_bal_acc": 0.6199659688436778,
+      "fpr": 0.6191950464396285,
+      "miss": 0.14087301587301587,
+      "mean7": 0.6448529494679558
+    },
+    {
+      "readers": "reader_a,reader_b",
+      "expert_weight": 1.0,
+      "threshold": 0.4,
+      "disc_bal_acc": 0.6199659688436778,
+      "fpr": 0.6191950464396285,
+      "miss": 0.14087301587301587,
+      "mean7": 0.6448529494679558
+    },
+    {
+      "readers": "reader_a,reader_b",
+      "expert_weight": 1.5,
+      "threshold": 0.4,
+      "disc_bal_acc": 0.6199659688436778,
+      "fpr": 0.6191950464396285,
+      "miss": 0.14087301587301587,
+      "mean7": 0.6448529494679558
+    },
+    {
+      "readers": "reader_a,reader_b",
+      "expert_weight": 2.0,
+      "threshold": 0.4,
+      "disc_bal_acc": 0.6199659688436778,
+      "fpr": 0.6191950464396285,
+      "miss": 0.14087301587301587,
+      "mean7": 0.6448529494679558
+    },
+    {
+      "readers": "reader_a,reader_b",
+      "expert_weight": 1.5,
+      "threshold": 0.7,
+      "disc_bal_acc": 0.619735613543663,
+      "fpr": 0.5541795665634675,
+      "miss": 0.20634920634920634,
+      "mean7": 0.6448200415679536
+    },
+    {
+      "readers": "reader_a,reader_b",
+      "expert_weight": 2.0,
+      "threshold": 0.7,
+      "disc_bal_acc": 0.619735613543663,
+      "fpr": 0.5541795665634675,
+      "miss": 0.20634920634920634,
+      "mean7": 0.6448200415679536
+    },
+    {
+      "readers": "reader_a,reader_b",
+      "expert_weight": 0.0,
+      "threshold": null,
+      "disc_bal_acc": 0.6187865497076023,
+      "fpr": 0.5263157894736842,
+      "miss": 0.2361111111111111,
+      "mean7": 0.6446844610199449
+    },
+    {
+      "readers": "reader_a,reader_b",
+      "expert_weight": 0.5,
+      "threshold": 0.9,
+      "disc_bal_acc": 0.618546980195587,
+      "fpr": 0.5386996904024768,
+      "miss": 0.22420634920634921,
+      "mean7": 0.6446502368039427
+    },
+    {
+      "readers": "reader_a,reader_b",
+      "expert_weight": 1.0,
+      "threshold": 0.9,
+      "disc_bal_acc": 0.618546980195587,
+      "fpr": 0.5386996904024768,
+      "miss": 0.22420634920634921,
+      "mean7": 0.6446502368039427
+    },
+    {
+      "readers": "reader_a,reader_b",
+      "expert_weight": 0.5,
+      "threshold": 1.0,
+      "disc_bal_acc": 0.6166826379674677,
+      "fpr": 0.5325077399380805,
+      "miss": 0.23412698412698413,
+      "mean7": 0.6443839021999257
+    },
+    {
+      "readers": "reader_a,reader_b",
+      "expert_weight": 1.0,
+      "threshold": 1.0,
+      "disc_bal_acc": 0.6166826379674677,
+      "fpr": 0.5325077399380805,
+      "miss": 0.23412698412698413,
+      "mean7": 0.6443839021999257
+    },
+    {
+      "readers": "reader_a,reader_b",
+      "expert_weight": 1.5,
+      "threshold": 0.9,
+      "disc_bal_acc": 0.6155707897193965,
+      "fpr": 0.5386996904024768,
+      "miss": 0.23015873015873015,
+      "mean7": 0.6442250667359156
+    },
+    {
+      "readers": "reader_a,reader_b",
+      "expert_weight": 2.0,
+      "threshold": 0.9,
+      "disc_bal_acc": 0.6155707897193965,
+      "fpr": 0.5386996904024768,
+      "miss": 0.23015873015873015,
+      "mean7": 0.6442250667359156
+    },
+    {
+      "readers": "reader_a,reader_b",
+      "expert_weight": 0.5,
+      "threshold": 0.95,
+      "disc_bal_acc": 0.614578726227333,
+      "fpr": 0.5386996904024768,
+      "miss": 0.23214285714285715,
+      "mean7": 0.6440833433799064
+    },
+    {
+      "readers": "reader_a,reader_b",
+      "expert_weight": 1.0,
+      "threshold": 0.95,
+      "disc_bal_acc": 0.614578726227333,
+      "fpr": 0.5386996904024768,
+      "miss": 0.23214285714285715,
+      "mean7": 0.6440833433799064
+    },
+    {
+      "readers": "reader_a,reader_b",
+      "expert_weight": 0.5,
+      "threshold": 0.6,
+      "disc_bal_acc": 0.614296157059315,
+      "fpr": 0.5789473684210527,
+      "miss": 0.19246031746031747,
+      "mean7": 0.6440429763559038
+    },
+    {
+      "readers": "reader_a,reader_b",
+      "expert_weight": 1.0,
+      "threshold": 0.6,
+      "disc_bal_acc": 0.614296157059315,
+      "fpr": 0.5789473684210527,
+      "miss": 0.19246031746031747,
+      "mean7": 0.6440429763559038
+    },
+    {
+      "readers": "reader_a,reader_b",
+      "expert_weight": 0.5,
+      "threshold": 0.5,
+      "disc_bal_acc": 0.6142531574033122,
+      "fpr": 0.6068111455108359,
+      "miss": 0.16468253968253968,
+      "mean7": 0.6440368335479035
+    },
+    {
+      "readers": "reader_a,reader_b",
+      "expert_weight": 1.0,
+      "threshold": 0.5,
+      "disc_bal_acc": 0.6142531574033122,
+      "fpr": 0.6068111455108359,
+      "miss": 0.16468253968253968,
+      "mean7": 0.6440368335479035
+    },
+    {
+      "readers": "reader_a,reader_b",
+      "expert_weight": 1.5,
+      "threshold": 0.5,
+      "disc_bal_acc": 0.6142531574033122,
+      "fpr": 0.6068111455108359,
+      "miss": 0.16468253968253968,
+      "mean7": 0.6440368335479035
+    },
+    {
+      "readers": "reader_a,reader_b",
+      "expert_weight": 2.0,
+      "threshold": 0.5,
+      "disc_bal_acc": 0.6142531574033122,
+      "fpr": 0.6068111455108359,
+      "miss": 0.16468253968253968,
+      "mean7": 0.6440368335479035
+    },
+    {
+      "readers": "reader_a,reader_b",
+      "expert_weight": 1.5,
+      "threshold": 1.0,
+      "disc_bal_acc": 0.6137064474912772,
+      "fpr": 0.5325077399380805,
+      "miss": 0.2400793650793651,
+      "mean7": 0.6439587321318985
+    },
+    {
+      "readers": "reader_a,reader_b",
+      "expert_weight": 2.0,
+      "threshold": 1.0,
+      "disc_bal_acc": 0.6137064474912772,
+      "fpr": 0.5325077399380805,
+      "miss": 0.2400793650793651,
+      "mean7": 0.6439587321318985
+    },
+    {
+      "readers": "reader_a,reader_b",
+      "expert_weight": 1.5,
+      "threshold": 0.95,
+      "disc_bal_acc": 0.6116025357511425,
+      "fpr": 0.5386996904024768,
+      "miss": 0.23809523809523808,
+      "mean7": 0.6436581733118792
+    },
+    {
+      "readers": "reader_a,reader_b",
+      "expert_weight": 2.0,
+      "threshold": 0.95,
+      "disc_bal_acc": 0.6116025357511425,
+      "fpr": 0.5386996904024768,
+      "miss": 0.23809523809523808,
+      "mean7": 0.6436581733118792
+    },
+    {
+      "readers": "reader_a,reader_b",
+      "expert_weight": 1.5,
+      "threshold": 0.6,
+      "disc_bal_acc": 0.6113199665831245,
+      "fpr": 0.5789473684210527,
+      "miss": 0.1984126984126984,
+      "mean7": 0.6436178062878766
+    },
+    {
+      "readers": "reader_a,reader_b",
+      "expert_weight": 2.0,
+      "threshold": 0.6,
+      "disc_bal_acc": 0.6113199665831245,
+      "fpr": 0.5789473684210527,
+      "miss": 0.1984126984126984,
+      "mean7": 0.6436178062878766
+    },
+    {
+      "readers": "reader_a,reader_b",
+      "expert_weight": 3.0,
+      "threshold": 0.5,
+      "disc_bal_acc": 0.6095324094550101,
+      "fpr": 0.5944272445820433,
+      "miss": 0.1865079365079365,
+      "mean7": 0.6433624409838604
+    },
+    {
+      "readers": "reader_a,reader_b",
+      "expert_weight": 3.0,
+      "threshold": 0.7,
+      "disc_bal_acc": 0.598312570642292,
+      "fpr": 0.5077399380804953,
+      "miss": 0.29563492063492064,
+      "mean7": 0.6417596068677577
+    },
+    {
+      "readers": "reader_a,reader_b",
+      "expert_weight": 3.0,
+      "threshold": 0.6,
+      "disc_bal_acc": 0.5970379379822104,
+      "fpr": 0.5479876160990712,
+      "miss": 0.25793650793650796,
+      "mean7": 0.6415775164877461
+    },
+    {
+      "readers": "reader_a,reader_b",
+      "expert_weight": 3.0,
+      "threshold": 0.4,
+      "disc_bal_acc": 0.5934106098579783,
+      "fpr": 0.6842105263157895,
+      "miss": 0.12896825396825398,
+      "mean7": 0.6410593267557129
+    },
+    {
+      "readers": "reader_a,reader_b",
+      "expert_weight": 3.0,
+      "threshold": 0.8,
+      "disc_bal_acc": 0.5908982013858175,
+      "fpr": 0.4551083591331269,
+      "miss": 0.3630952380952381,
+      "mean7": 0.64070041125969
+    },
+    {
+      "readers": "reader_a,reader_b",
+      "expert_weight": 3.0,
+      "threshold": 0.9,
+      "disc_bal_acc": 0.587092731829574,
+      "fpr": 0.42105263157894735,
+      "miss": 0.40476190476190477,
+      "mean7": 0.6401567727516552
+    },
+    {
+      "readers": "reader_a,reader_b",
+      "expert_weight": 3.0,
+      "threshold": 0.3,
+      "disc_bal_acc": 0.5802650007371369,
+      "fpr": 0.7739938080495357,
+      "miss": 0.06547619047619048,
+      "mean7": 0.6391813825955927
+    },
+    {
+      "readers": "reader_a,reader_b",
+      "expert_weight": 3.0,
+      "threshold": 1.0,
+      "disc_bal_acc": 0.5782839451570101,
+      "fpr": 0.4148606811145511,
+      "miss": 0.42857142857142855,
+      "mean7": 0.6388983746555745
+    },
+    {
+      "readers": "reader_a,reader_b",
+      "expert_weight": 3.0,
+      "threshold": 0.95,
+      "disc_bal_acc": 0.5781641604010025,
+      "fpr": 0.42105263157894735,
+      "miss": 0.4226190476190476,
+      "mean7": 0.6388812625475735
+    },
+    {
+      "readers": "reader_b",
+      "expert_weight": 0.5,
+      "threshold": 0.4,
+      "disc_bal_acc": 0.6283662587842155,
+      "fpr": 0.39009287925696595,
+      "miss": 0.3531746031746032,
+      "mean7": 0.6195779701741391
+    },
+    {
+      "readers": "reader_b",
+      "expert_weight": 0.5,
+      "threshold": 0.5,
+      "disc_bal_acc": 0.6283662587842155,
+      "fpr": 0.39009287925696595,
+      "miss": 0.3531746031746032,
+      "mean7": 0.6195779701741391
+    },
+    {
+      "readers": "reader_b",
+      "expert_weight": 1.0,
+      "threshold": 0.4,
+      "disc_bal_acc": 0.6283662587842155,
+      "fpr": 0.39009287925696595,
+      "miss": 0.3531746031746032,
+      "mean7": 0.6195779701741391
+    },
+    {
+      "readers": "reader_b",
+      "expert_weight": 1.0,
+      "threshold": 0.5,
+      "disc_bal_acc": 0.6283662587842155,
+      "fpr": 0.39009287925696595,
+      "miss": 0.3531746031746032,
+      "mean7": 0.6195779701741391
+    },
+    {
+      "readers": "reader_b",
+      "expert_weight": 0.0,
+      "threshold": null,
+      "disc_bal_acc": 0.6268182711681164,
+      "fpr": 0.3931888544891641,
+      "miss": 0.3531746031746032,
+      "mean7": 0.6193568290861249
+    },
+    {
+      "readers": "reader_b",
+      "expert_weight": 0.5,
+      "threshold": 0.3,
+      "disc_bal_acc": 0.6268182711681164,
+      "fpr": 0.3931888544891641,
+      "miss": 0.3531746031746032,
+      "mean7": 0.6193568290861249
+    },
+    {
+      "readers": "reader_b",
+      "expert_weight": 1.0,
+      "threshold": 0.3,
+      "disc_bal_acc": 0.6268182711681164,
+      "fpr": 0.3931888544891641,
+      "miss": 0.3531746031746032,
+      "mean7": 0.6193568290861249
+    },
+    {
+      "readers": "reader_b",
+      "expert_weight": 0.5,
+      "threshold": 0.6,
+      "disc_bal_acc": 0.625390068308025,
+      "fpr": 0.39009287925696595,
+      "miss": 0.35912698412698413,
+      "mean7": 0.6191528001061118
+    },
+    {
+      "readers": "reader_b",
+      "expert_weight": 0.5,
+      "threshold": 0.7,
+      "disc_bal_acc": 0.625390068308025,
+      "fpr": 0.39009287925696595,
+      "miss": 0.35912698412698413,
+      "mean7": 0.6191528001061118
+    },
+    {
+      "readers": "reader_b",
+      "expert_weight": 0.5,
+      "threshold": 0.8,
+      "disc_bal_acc": 0.625390068308025,
+      "fpr": 0.39009287925696595,
+      "miss": 0.35912698412698413,
+      "mean7": 0.6191528001061118
+    },
+    {
+      "readers": "reader_b",
+      "expert_weight": 0.5,
+      "threshold": 0.9,
+      "disc_bal_acc": 0.625390068308025,
+      "fpr": 0.39009287925696595,
+      "miss": 0.35912698412698413,
+      "mean7": 0.6191528001061118
+    },
+    {
+      "readers": "reader_b",
+      "expert_weight": 0.5,
+      "threshold": 0.95,
+      "disc_bal_acc": 0.625390068308025,
+      "fpr": 0.39009287925696595,
+      "miss": 0.35912698412698413,
+      "mean7": 0.6191528001061118
+    },
+    {
+      "readers": "reader_b",
+      "expert_weight": 0.5,
+      "threshold": 1.0,
+      "disc_bal_acc": 0.625390068308025,
+      "fpr": 0.39009287925696595,
+      "miss": 0.35912698412698413,
+      "mean7": 0.6191528001061118
+    },
+    {
+      "readers": "reader_b",
+      "expert_weight": 1.0,
+      "threshold": 0.6,
+      "disc_bal_acc": 0.625390068308025,
+      "fpr": 0.39009287925696595,
+      "miss": 0.35912698412698413,
+      "mean7": 0.6191528001061118
+    },
+    {
+      "readers": "reader_b",
+      "expert_weight": 1.0,
+      "threshold": 0.7,
+      "disc_bal_acc": 0.625390068308025,
+      "fpr": 0.39009287925696595,
+      "miss": 0.35912698412698413,
+      "mean7": 0.6191528001061118
+    },
+    {
+      "readers": "reader_b",
+      "expert_weight": 1.0,
+      "threshold": 0.8,
+      "disc_bal_acc": 0.625390068308025,
+      "fpr": 0.39009287925696595,
+      "miss": 0.35912698412698413,
+      "mean7": 0.6191528001061118
+    },
+    {
+      "readers": "reader_b",
+      "expert_weight": 1.0,
+      "threshold": 0.9,
+      "disc_bal_acc": 0.625390068308025,
+      "fpr": 0.39009287925696595,
+      "miss": 0.35912698412698413,
+      "mean7": 0.6191528001061118
+    },
+    {
+      "readers": "reader_b",
+      "expert_weight": 1.0,
+      "threshold": 0.95,
+      "disc_bal_acc": 0.625390068308025,
+      "fpr": 0.39009287925696595,
+      "miss": 0.35912698412698413,
+      "mean7": 0.6191528001061118
+    },
+    {
+      "readers": "reader_b",
+      "expert_weight": 1.0,
+      "threshold": 1.0,
+      "disc_bal_acc": 0.625390068308025,
+      "fpr": 0.39009287925696595,
+      "miss": 0.35912698412698413,
+      "mean7": 0.6191528001061118
+    },
+    {
+      "readers": "reader_b",
+      "expert_weight": 1.5,
+      "threshold": 0.5,
+      "disc_bal_acc": 0.6095324094550101,
+      "fpr": 0.5944272445820433,
+      "miss": 0.1865079365079365,
+      "mean7": 0.6168874202699669
+    },
+    {
+      "readers": "reader_b",
+      "expert_weight": 2.0,
+      "threshold": 0.5,
+      "disc_bal_acc": 0.6095324094550101,
+      "fpr": 0.5944272445820433,
+      "miss": 0.1865079365079365,
+      "mean7": 0.6168874202699669
+    },
+    {
+      "readers": "reader_b",
+      "expert_weight": 3.0,
+      "threshold": 0.5,
+      "disc_bal_acc": 0.6095324094550101,
+      "fpr": 0.5944272445820433,
+      "miss": 0.1865079365079365,
+      "mean7": 0.6168874202699669
+    },
+    {
+      "readers": "reader_b",
+      "expert_weight": 1.5,
+      "threshold": 0.7,
+      "disc_bal_acc": 0.598312570642292,
+      "fpr": 0.5077399380804953,
+      "miss": 0.29563492063492064,
+      "mean7": 0.6152845861538643
+    },
+    {
+      "readers": "reader_b",
+      "expert_weight": 2.0,
+      "threshold": 0.7,
+      "disc_bal_acc": 0.598312570642292,
+      "fpr": 0.5077399380804953,
+      "miss": 0.29563492063492064,
+      "mean7": 0.6152845861538643
+    },
+    {
+      "readers": "reader_b",
+      "expert_weight": 3.0,
+      "threshold": 0.7,
+      "disc_bal_acc": 0.598312570642292,
+      "fpr": 0.5077399380804953,
+      "miss": 0.29563492063492064,
+      "mean7": 0.6152845861538643
+    },
+    {
+      "readers": "reader_b",
+      "expert_weight": 1.5,
+      "threshold": 0.6,
+      "disc_bal_acc": 0.5970379379822104,
+      "fpr": 0.5479876160990712,
+      "miss": 0.25793650793650796,
+      "mean7": 0.6151024957738527
+    },
+    {
+      "readers": "reader_b",
+      "expert_weight": 2.0,
+      "threshold": 0.6,
+      "disc_bal_acc": 0.5970379379822104,
+      "fpr": 0.5479876160990712,
+      "miss": 0.25793650793650796,
+      "mean7": 0.6151024957738527
+    },
+    {
+      "readers": "reader_b",
+      "expert_weight": 3.0,
+      "threshold": 0.6,
+      "disc_bal_acc": 0.5970379379822104,
+      "fpr": 0.5479876160990712,
+      "miss": 0.25793650793650796,
+      "mean7": 0.6151024957738527
+    },
+    {
+      "readers": "reader_b",
+      "expert_weight": 1.5,
+      "threshold": 0.4,
+      "disc_bal_acc": 0.5934106098579783,
+      "fpr": 0.6842105263157895,
+      "miss": 0.12896825396825398,
+      "mean7": 0.6145843060418195
+    },
+    {
+      "readers": "reader_b",
+      "expert_weight": 2.0,
+      "threshold": 0.4,
+      "disc_bal_acc": 0.5934106098579783,
+      "fpr": 0.6842105263157895,
+      "miss": 0.12896825396825398,
+      "mean7": 0.6145843060418195
+    },
+    {
+      "readers": "reader_b",
+      "expert_weight": 3.0,
+      "threshold": 0.4,
+      "disc_bal_acc": 0.5934106098579783,
+      "fpr": 0.6842105263157895,
+      "miss": 0.12896825396825398,
+      "mean7": 0.6145843060418195
+    },
+    {
+      "readers": "reader_b",
+      "expert_weight": 1.5,
+      "threshold": 0.8,
+      "disc_bal_acc": 0.5908982013858175,
+      "fpr": 0.4551083591331269,
+      "miss": 0.3630952380952381,
+      "mean7": 0.6142253905457966
+    },
+    {
+      "readers": "reader_b",
+      "expert_weight": 2.0,
+      "threshold": 0.8,
+      "disc_bal_acc": 0.5908982013858175,
+      "fpr": 0.4551083591331269,
+      "miss": 0.3630952380952381,
+      "mean7": 0.6142253905457966
+    },
+    {
+      "readers": "reader_b",
+      "expert_weight": 3.0,
+      "threshold": 0.8,
+      "disc_bal_acc": 0.5908982013858175,
+      "fpr": 0.4551083591331269,
+      "miss": 0.3630952380952381,
+      "mean7": 0.6142253905457966
+    },
+    {
+      "readers": "reader_b",
+      "expert_weight": 1.5,
+      "threshold": 0.9,
+      "disc_bal_acc": 0.587092731829574,
+      "fpr": 0.42105263157894735,
+      "miss": 0.40476190476190477,
+      "mean7": 0.6136817520377618
+    },
+    {
+      "readers": "reader_b",
+      "expert_weight": 2.0,
+      "threshold": 0.9,
+      "disc_bal_acc": 0.587092731829574,
+      "fpr": 0.42105263157894735,
+      "miss": 0.40476190476190477,
+      "mean7": 0.6136817520377618
+    },
+    {
+      "readers": "reader_b",
+      "expert_weight": 3.0,
+      "threshold": 0.9,
+      "disc_bal_acc": 0.587092731829574,
+      "fpr": 0.42105263157894735,
+      "miss": 0.40476190476190477,
+      "mean7": 0.6136817520377618
+    },
+    {
+      "readers": "reader_b",
+      "expert_weight": 1.5,
+      "threshold": 0.3,
+      "disc_bal_acc": 0.5802650007371369,
+      "fpr": 0.7739938080495357,
+      "miss": 0.06547619047619048,
+      "mean7": 0.6127063618816992
+    },
+    {
+      "readers": "reader_b",
+      "expert_weight": 2.0,
+      "threshold": 0.3,
+      "disc_bal_acc": 0.5802650007371369,
+      "fpr": 0.7739938080495357,
+      "miss": 0.06547619047619048,
+      "mean7": 0.6127063618816992
+    },
+    {
+      "readers": "reader_b",
+      "expert_weight": 3.0,
+      "threshold": 0.3,
+      "disc_bal_acc": 0.5802650007371369,
+      "fpr": 0.7739938080495357,
+      "miss": 0.06547619047619048,
+      "mean7": 0.6127063618816992
+    },
+    {
+      "readers": "reader_b",
+      "expert_weight": 1.5,
+      "threshold": 1.0,
+      "disc_bal_acc": 0.5782839451570101,
+      "fpr": 0.4148606811145511,
+      "miss": 0.42857142857142855,
+      "mean7": 0.6124233539416811
+    },
+    {
+      "readers": "reader_b",
+      "expert_weight": 2.0,
+      "threshold": 1.0,
+      "disc_bal_acc": 0.5782839451570101,
+      "fpr": 0.4148606811145511,
+      "miss": 0.42857142857142855,
+      "mean7": 0.6124233539416811
+    },
+    {
+      "readers": "reader_b",
+      "expert_weight": 3.0,
+      "threshold": 1.0,
+      "disc_bal_acc": 0.5782839451570101,
+      "fpr": 0.4148606811145511,
+      "miss": 0.42857142857142855,
+      "mean7": 0.6124233539416811
+    },
+    {
+      "readers": "reader_b",
+      "expert_weight": 1.5,
+      "threshold": 0.95,
+      "disc_bal_acc": 0.5781641604010025,
+      "fpr": 0.42105263157894735,
+      "miss": 0.4226190476190476,
+      "mean7": 0.6124062418336801
+    },
+    {
+      "readers": "reader_b",
+      "expert_weight": 2.0,
+      "threshold": 0.95,
+      "disc_bal_acc": 0.5781641604010025,
+      "fpr": 0.42105263157894735,
+      "miss": 0.4226190476190476,
+      "mean7": 0.6124062418336801
+    },
+    {
+      "readers": "reader_b",
+      "expert_weight": 3.0,
+      "threshold": 0.95,
+      "disc_bal_acc": 0.5781641604010025,
+      "fpr": 0.42105263157894735,
+      "miss": 0.4226190476190476,
+      "mean7": 0.6124062418336801
+    }
+  ]
+}

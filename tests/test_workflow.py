@@ -8,6 +8,7 @@ from pydantic_ai.messages import ModelResponse, TextPart, ToolCallPart, ToolRetu
 from pydantic_ai.models.function import FunctionModel
 
 from inspector.agents.aggregator import Aggregator
+from inspector.agents.conflict_judge import ConflictJudge, conflicts
 from inspector.agents.critic_verifier import CriticVerifier, cell_in_text
 from inspector.agents.llm import make_model, make_role_model
 from inspector.agents.mock import MockExpert
@@ -19,7 +20,7 @@ from inspector.schemas.agent_outputs import ReaderOutput, VisualExpertOutput
 from inspector.schemas.mmad import Question, Sample, SubTask, load_mmad, parse_subtask
 from inspector.schemas.state import InspectionState
 from inspector.utils import metrics
-from inspector.utils.splits import make_split, sample_per_source
+from inspector.utils.splits import make_split, sample_per_source, stratified_subsample
 from inspector.utils.telemetry import Telemetry
 
 
@@ -131,6 +132,61 @@ def test_reader_agent_retries_on_option_not_offered():
     assert len(calls) == 2 and rec["calls"][0]["raw"] and "tokens_in" in rec
 
 
+@pytest.mark.parametrize("hint", ["full", "none"])
+def test_reader_hint_none_hides_expert_text_and_crop(monkeypatch, hint):
+    import inspector.agents.llm as llm
+    monkeypatch.setattr(llm, "image_part", lambda path, max_side=None: path)  # no image files needed
+    st = mk_state()
+    st.visual_evidence = expert()
+    r = ReaderMLLM(Settings(reader_hint=hint), "m", "reader_a", model=scripted('{"selected_option": "A", "confidence": 0.9}')[0])
+    assert r.image_parts(st) == ([st.query_image_path, st.reference_image_path] + (["c"] if hint == "full" else []))
+    r.image_parts = lambda s: []
+    r.load()
+    try:
+        r._run(st, rec := {})
+    finally:
+        r.unload()
+    assert all(("Visual expert" in c["prompt"]) == (hint == "full") for c in rec["calls"])
+
+
+def test_hint_gated_by_source():
+    s = Settings(reader_hint_sources=["VisA"])
+    assert s.hint_on("VisA") and not s.hint_on("GoodsAD")
+    assert Settings().hint_on("GoodsAD") and not Settings(reader_hint="none").hint_on("VisA")
+    assert InspectionState.from_sample(Sample(image_id="i", image_path="i.png", source="VisA", templates=["r.png"],
+                                              questions=[])).source == "VisA"
+
+
+def test_reader_samples_majority_vote_for_iso_compute_baseline():
+    st = mk_state()
+    st.questions = st.questions[1:]
+    model, calls = scripted('{"selected_option": "B", "confidence": 0.9}', '{"selected_option": "C", "confidence": 0.6}',
+                            '{"selected_option": "C", "confidence": 0.8}')
+    r = ReaderMLLM(Settings(reader_samples=3), "m", "reader_a", model=model)
+    r.image_parts = lambda s: []
+    r.load()
+    try:
+        st = r._run(st, rec := {})
+    finally:
+        r.unload()
+    a = st.reader_a_responses[st.questions[0].id]
+    assert a.selected_option == "C" and abs(a.confidence - 0.7) < 1e-9 and a.brief_rationale.startswith("vote 2/3")
+    assert len(calls) == 3 and [c["sampling"]["seed"] for c in rec["calls"]] == [0, 1, 2]
+
+
+def test_reader_accepts_schema_echo_of_internvl():
+    st = mk_state()
+    st.questions = st.questions[:1]
+    echoed = ('{"properties": {"selected_option": "B", "confidence": 0.95, "brief_rationale": "identical"}, '
+              '"required": ["selected_option", "confidence"], "additionalProperties": false}')
+    model, calls = scripted(echoed)
+    st, rec = run_reader(model, st)
+    a = st.reader_a_responses[st.questions[0].id]
+    assert a.selected_option == "B" and a.confidence == 0.95 and len(calls) == 1  # no retry needed
+    from inspector.schemas.agent_outputs import ReaderAnswer
+    assert ReaderAnswer.model_validate({"selected_option": "A", "confidence": 0.5, "properties": {"x": 1}}).selected_option == "A"
+
+
 def test_reader_agent_gives_none_after_retries():
     model, _ = scripted("not json at all")
     st, rec = run_reader(model, mk_state())
@@ -149,9 +205,17 @@ def test_critic_conflict_reopens_once():
     critic = CriticVerifier(s)
     st = critic._run(st, {})
     assert st.critic_verdict.conflict_detected and set(st.critic_verdict.reopen_questions) == {q0.id, q1.id}
+    assert st.critic_verdict.reopen_by_reader == {"reader_a": [q0.id, q1.id], "reader_b": []}  # B was consistent
     assert st.reopen_count == 1
-    st = critic._run(st, {})  # a second critic run must NOT grant another reopen
-    assert st.reopen_count == 1 and st.critic_verdict.reopen_questions == []
+    st2 = critic._run(st.model_copy(deep=True), {})  # a second critic run must NOT grant another reopen
+    assert st2.reopen_count == 1 and st2.critic_verdict.reopen_questions == []
+    a = ReaderMLLM(s, "m", "reader_a_reopen", reopen=True, model=scripted("x")[0])
+    b = ReaderMLLM(s, "m", "reader_b_reopen", reopen=True, model=scripted("x")[0])
+    assert a.applies(st) and not b.applies(st)          # targeted: only reader A re-answers
+    assert "reader_a:" in a._reopen_for_me(st)[1] and "reader_b:" not in a._reopen_for_me(st)[1]
+    legacy = st.model_copy(deep=True)
+    legacy.critic_verdict.reopen_by_reader = {}          # verdict cached before targeted reopen
+    assert b.applies(legacy)
 
 
 def test_critic_flags_missing_answer_as_invalid():
@@ -184,6 +248,38 @@ def test_llm_critic_calls_rule_tool_rejects_unknown_ids_and_merges_with_rules():
     assert "reviewer: loc looks wrong" in st.critic_verdict.critique_reason
 
 
+def test_critic_logs_its_tool_calls():
+    from inspector.agents.mock import MockCritic
+    st = mk_state()
+    q0, q1 = st.questions
+    st.reader_a_responses = st.reader_b_responses = {q0.id: ans(q0.id, "A"), q1.id: ans(q1.id, "B")}
+    c = MockCritic(Settings())
+    c.load()
+    try:
+        c._run(st, rec := {})
+    finally:
+        c.unload()
+    assert rec["tool_calls"] == 1 and "llm" in rec
+
+
+def test_llm_critic_schema_has_only_its_four_fields_and_prompt_has_rule_findings():
+    from inspector.schemas.agent_outputs import CriticReview
+    assert set(CriticReview.model_json_schema()["properties"]) == {"is_valid", "conflict_detected", "reopen_questions", "critique_reason"}
+    st = mk_state()
+    st.visual_evidence = expert(0.9, "top right")
+    q0, q1 = st.questions
+    st.reader_a_responses = st.reader_b_responses = {q0.id: ans(q0.id, "B"), q1.id: ans(q1.id, "B")}
+    model, _ = scripted('{"is_valid": true, "conflict_detected": false, "reopen_questions": [], "critique_reason": ""}')
+    c = CriticVerifier(Settings(), model=model)
+    c.image_parts = lambda s: []
+    c.load()
+    try:
+        c._run(st, rec := {})
+    finally:
+        c.unload()
+    assert "Automatic checks:" in rec["prompt"] and "said no defect" in rec["prompt"] and "llm_error" not in rec
+
+
 def test_llm_critic_failure_keeps_rules_verdict():
     st = mk_state()
     st.visual_evidence = expert(0.9, "top right")
@@ -196,6 +292,40 @@ def test_llm_critic_failure_keeps_rules_verdict():
     st = critic._run(st, rec := {})
     critic.unload()
     assert st.critic_verdict.reopen_questions == [q0.id] and "llm_error" in rec
+
+
+def test_llm_critic_server_error_keeps_rules_verdict():
+    """A 5xx from the server (Ollama: "token repeat limit reached") must not crash the pass."""
+    from pydantic_ai.exceptions import ModelServerError
+
+    def boom(messages, info):
+        raise ModelServerError("gemma4:e2b", "prediction aborted, token repeat limit reached")
+
+    st = mk_state()
+    st.visual_evidence = expert(0.9, "top right")
+    q0, q1 = st.questions
+    st.reader_a_responses = st.reader_b_responses = {q0.id: ans(q0.id, "B"), q1.id: ans(q1.id, "B")}
+    critic = CriticVerifier(Settings(), model=FunctionModel(boom))
+    critic.image_parts = lambda s: []
+    critic.load()
+    st = critic._run(st, rec := {})
+    critic.unload()
+    assert st.critic_verdict.reopen_questions == [q0.id] and "ModelServerError" in rec["llm_error"]
+
+
+def test_critic_extra_body_reaches_model_settings():
+    off = CriticVerifier(Settings(), model=scripted("x")[0]).build(scripted("x")[0])
+    assert "extra_body" not in (off.model_settings or {})
+    s = Settings(critic_extra_body={"reasoning_effort": "none"})
+    on = CriticVerifier(s, model=scripted("x")[0]).build(scripted("x")[0])
+    assert on.model_settings["extra_body"] == {"reasoning_effort": "none"}
+
+
+def test_judge_extra_body_reaches_model_settings():
+    m = scripted("x")[0]
+    assert "extra_body" not in (ConflictJudge(Settings(judge_model="j"), model=m).build(m).model_settings or {})
+    on = ConflictJudge(Settings(judge_model="j", judge_extra_body={"reasoning_effort": "none"}), model=m).build(m)
+    assert on.model_settings["extra_body"] == {"reasoning_effort": "none"}
 
 
 def test_cell_in_text_longest_match():
@@ -225,10 +355,99 @@ def test_aggregator_expert_votes_on_discrimination_and_none_if_no_votes():
     assert st.final_answers[q1.id].selected_option is None
 
 
+def test_aggregator_expert_vote_per_source():
+    st = mk_state()
+    q0, _ = st.questions
+    st.visual_evidence = expert(0.6)
+    st.reader_a_responses = {q0.id: ans(q0.id, "B")}
+    st.reader_b_responses = {}
+    s = Settings(expert_weight_discrimination=2.0)
+    assert Aggregator(s)._run(st.model_copy(deep=True), {}).final_answers[q0.id].selected_option == "A"
+    st.source = "GoodsAD"
+    off = Settings(expert_weight_discrimination=2.0, expert_weight_by_source={"GoodsAD": 0})
+    assert Aggregator(off)._run(st.model_copy(deep=True), {}).final_answers[q0.id].selected_option == "B"
+    hi = Settings(expert_weight_discrimination=2.0, expert_threshold_by_source={"GoodsAD": 0.7})
+    out = Aggregator(hi)._run(st.model_copy(deep=True), {}).final_answers[q0.id]
+    assert out.selected_option == "B" and out.votes["B"] == 3.0  # 0.6 < 0.7: expert says "no defect" too
+
+
 # ---- metrics -----------------------------------------------------------------
 def rows(spec):
     return [{"image_id": i, "question_id": f"{i}#0", "subtask": SubTask.ANOMALY_DISCRIMINATION,
              "correct": c, "is_defective": d, "source": "x"} for i, (c, d) in enumerate(spec)]
+
+
+def test_aggregator_third_reader_breaks_tie_and_can_be_left_out():
+    st = mk_state()
+    q0, q1 = st.questions
+    st.reader_a_responses = {q0.id: ans(q0.id, "A", 0.6), q1.id: ans(q1.id, "C")}
+    st.reader_b_responses = {q0.id: ans(q0.id, "B", 0.9), q1.id: ans(q1.id, "D")}
+    st.reader_c_responses = {q0.id: ans(q0.id, "A", 0.5), q1.id: ans(q1.id, "D")}
+    out = Aggregator(Settings())._run(st.model_copy(deep=True), {})
+    assert out.final_answers[q0.id].selected_option == "A"   # 2 votes vs 1 (B had the higher confidence)
+    assert out.final_answers[q1.id].selected_option == "D"
+    ab = Aggregator(Settings(aggregate_readers=["reader_a", "reader_b"]))._run(st.model_copy(deep=True), {})
+    assert ab.final_answers[q0.id].selected_option == "B"    # without C: tie -> confidence
+
+
+@pytest.mark.parametrize("mode,expected", [("override", "C"), ("vote", "C"), ("off", "B")])
+def test_aggregator_judge_modes(mode, expected):
+    st = mk_state()
+    q1 = st.questions[1]
+    st.reader_a_responses = {q1.id: ans(q1.id, "B", 0.9)}
+    st.reader_b_responses = {q1.id: ans(q1.id, "C", 0.5)}
+    st.judge_answers = {q1.id: ans(q1.id, "C", 0.7)}
+    st = Aggregator(Settings(judge_mode=mode))._run(st, {})
+    assert st.final_answers[q1.id].selected_option == expected
+
+
+def test_conflicts_only_where_readers_disagree():
+    st = mk_state()
+    q0, q1 = st.questions
+    st.reader_a_responses = {q0.id: ans(q0.id, "A"), q1.id: ans(q1.id, "B")}
+    st.reader_b_responses = {q0.id: ans(q0.id, "A"), q1.id: ans(q1.id, "C")}
+    st.reader_c_responses = {q0.id: None, q1.id: None}
+    got = conflicts(st, ["reader_a", "reader_b", "reader_c"])
+    assert [q.id for q, _ in got] == [q1.id] and {a.selected_option for a in got[0][1]} == {"B", "C"}
+    st.reader_b_responses[q1.id] = None           # one valid answer left: nothing to choose
+    assert conflicts(st, ["reader_a", "reader_b"]) == []
+
+
+def test_judge_must_pick_a_candidate_and_sees_only_candidates():
+    st = mk_state()
+    q0, q1 = st.questions
+    st.reader_a_responses = {q0.id: ans(q0.id, "A"), q1.id: ans(q1.id, "B")}
+    st.reader_b_responses = {q0.id: ans(q0.id, "A"), q1.id: ans(q1.id, "C")}
+    # "A" is offered by the question but proposed by no reader -> ModelRetry -> "C" kept
+    model, calls = scripted('{"selected_option": "A", "confidence": 0.8}', '{"selected_option": "C", "confidence": 0.8}')
+    j = ConflictJudge(Settings(judge_model="m"), model=model)
+    j.image_parts = lambda s: []
+    assert j.applies(st)
+    j.load()
+    try:
+        st = j._run(st, rec := {})
+    finally:
+        j.unload()
+    assert list(st.judge_answers) == [q1.id] and st.judge_answers[q1.id].selected_option == "C"
+    prompt = rec["calls"][0]["prompt"]
+    assert "B. top right" in prompt and "C. center" in prompt and "A. top left" not in prompt
+    assert len(calls) == 2
+
+
+def test_optional_passes_built_only_when_configured(tmp_path):
+    names = lambda s: [st.name for st in build_steps(s, tmp_path, mock=True)]  # noqa: E731
+    assert "3b_reader_c" not in names(Settings()) and "6b_judge" not in names(Settings())
+    full = names(Settings(reader_c_model="c", judge_model="j"))
+    assert full.index("3b_reader_c") < full.index("4_critic") < full.index("6b_judge") < full.index("7_aggregator")
+
+
+def test_full_mock_pipeline_with_third_reader_and_judge(tmp_path):
+    s = Settings(reader_c_model="c", judge_model="j")
+    samples = [mk_sample(i) for i in range(4)]
+    states = [InspectionState.from_sample(x) for x in samples]
+    out = PassRunner(tmp_path, Telemetry(tmp_path / "t.jsonl")).run(build_steps(s, tmp_path, mock=True), states)
+    assert all(len(st.final_answers) == 2 and len(st.reader_c_responses) == 2 for st in out)
+    assert (tmp_path / "6b_judge").is_dir()
 
 
 def test_balanced_accuracy_and_fpr():
@@ -277,6 +496,17 @@ def test_sample_per_source_is_balanced_and_deterministic():
     assert {(s.source, s.is_defective) for s in a} == {(src, d) for src in ("VisA", "GoodsAD") for d in (False, True)}
 
 
+def test_stratified_subsample_exact_size_proportional_and_deterministic():
+    pool = [Sample(image_id=f"{src}/c/{d}/{i}", image_path="x.png", source=src, is_defective=d,
+                   templates=["r.png"], questions=mk_questions(f"{src}/c/{d}/{i}"))
+            for src, size in (("VisA", 60), ("GoodsAD", 30)) for d in (False, True) for i in range(size)]
+    a = stratified_subsample(pool, 45, seed=0)
+    assert len(a) == 45 and len({s.image_id for s in a}) == 45
+    assert sum(s.source == "VisA" for s in a) == 30          # 2/3 of the pool -> 2/3 of the sample
+    assert [s.image_id for s in a] == [s.image_id for s in stratified_subsample(pool, 45, seed=0)]
+    assert len(stratified_subsample(pool, 10_000, seed=0)) == len(pool)
+
+
 def test_pass_runner_unloads_each_pass_and_resumes_from_cache(tmp_path):
     Spy.events = []
     tel = Telemetry(tmp_path / "t.jsonl")
@@ -290,6 +520,24 @@ def test_pass_runner_unloads_each_pass_and_resumes_from_cache(tmp_path):
     runner.run(steps, [mk_state(i) for i in range(3)])  # all cached -> nothing loaded
     assert Spy.events == []
     assert any("latency_ms" in json.loads(l) for l in (tmp_path / "t.jsonl").read_text().splitlines())
+
+
+def test_pass_runner_caches_each_image_before_a_crash(tmp_path):
+    class Boom(MockExpert):
+        n = 0
+
+        def _run(self, state, rec):
+            Boom.n += 1
+            if Boom.n == 3:
+                raise RuntimeError("crash")
+            return super()._run(state, rec)
+
+    states = [mk_state(i) for i in range(4)]
+    with pytest.raises(RuntimeError):
+        PassRunner(tmp_path, Telemetry(tmp_path / "t.jsonl")).run([Step("1_expert", Boom)], states)
+    assert len(list((tmp_path / "1_expert").glob("*.json"))) == 2  # the two finished images survived
+    out = PassRunner(tmp_path, Telemetry(tmp_path / "t.jsonl")).run([Step("1_expert", MockExpert)], states)
+    assert all(s.visual_evidence for s in out)
 
 
 def test_full_mock_pipeline_end_to_end(tmp_path):

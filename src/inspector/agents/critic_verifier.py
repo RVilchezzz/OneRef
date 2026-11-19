@@ -23,13 +23,14 @@ from dataclasses import dataclass
 from typing import Any
 
 from pydantic_ai import Agent, ModelRetry, PromptedOutput, RunContext, capture_run_messages
-from pydantic_ai.exceptions import UnexpectedModelBehavior
+from pydantic_ai.exceptions import ModelServerError, UnexpectedModelBehavior
+from pydantic_ai.messages import ModelResponse, ToolCallPart
 from pydantic_ai.models import Model
 from pydantic_ai.settings import ModelSettings
 
 from inspector.agents.llm import LLMAgent, response_texts
 from inspector.config.settings import Settings
-from inspector.schemas.agent_outputs import CriticOutput, ReaderOutput
+from inspector.schemas.agent_outputs import CriticOutput, CriticReview, ReaderOutput
 from inspector.schemas.mmad import Question, SubTask
 from inspector.schemas.state import InspectionState
 
@@ -41,8 +42,9 @@ _CELLS = [
 CRITIC_PROMPT = (
     "You are the quality-control reviewer of an industrial inspection team. Image 1 is the inspected "
     "part, image 2 a normal reference, image 3 (if present) the region a visual expert found most "
-    "different. Two inspectors answered multiple-choice questions about image 1. First call "
-    "`run_consistency_rules` to get the automatic checks. Then decide which questions must be "
+    "different. Two inspectors answered multiple-choice questions about image 1. The automatic "
+    "consistency checks are listed in the input (also available as the `run_consistency_rules` tool). "
+    "Decide which questions must be "
     "re-asked because an answer contradicts the images, the expert evidence, or another answer of "
     "the same inspector. Only list question ids that appear in the input. Do not re-ask a question "
     "just because the two inspectors disagree."
@@ -82,15 +84,16 @@ class CriticVerifier(LLMAgent):
     def enabled(self) -> bool:
         return self.s.use_llm_critic
 
-    def build(self, model: Model) -> Agent[CriticDeps, CriticOutput]:
+    def build(self, model: Model) -> Agent[CriticDeps, CriticReview]:
         agent = Agent(
             model,
             name="Critic",
             system_prompt=CRITIC_PROMPT,
-            output_type=PromptedOutput([CriticOutput]),
+            output_type=PromptedOutput([CriticReview]),
             deps_type=CriticDeps,
             retries={"output": self.s.json_retries},
-            model_settings=ModelSettings(temperature=0.0, max_tokens=self.s.max_new_tokens),
+            model_settings=ModelSettings(temperature=0.0, max_tokens=self.s.max_new_tokens,
+                                         **({"extra_body": self.s.critic_extra_body} if self.s.critic_extra_body else {})),
         )
 
         @agent.tool
@@ -99,7 +102,7 @@ class CriticVerifier(LLMAgent):
             return "\n".join(ctx.deps.findings) or "No rule violation found."
 
         @agent.output_validator
-        def ids_exist(ctx: RunContext[CriticDeps], out: CriticOutput) -> CriticOutput:
+        def ids_exist(ctx: RunContext[CriticDeps], out: CriticReview) -> CriticReview:
             unknown = set(out.reopen_questions) - ctx.deps.question_ids
             if unknown:
                 raise ModelRetry(f"Unknown question ids {sorted(unknown)}. Valid ids: {sorted(ctx.deps.question_ids)}.")
@@ -149,15 +152,19 @@ class CriticVerifier(LLMAgent):
 
     def _run(self, state: InspectionState, rec: dict[str, Any]) -> InspectionState:
         valid, reopen, reasons = True, [], []
+        by_reader: dict[str, set[str]] = {}
+        why_by_reader: dict[str, list[str]] = {}
         for who, ans in (("reader_a", state.reader_a_responses), ("reader_b", state.reader_b_responses)):
             v, r, why = self.check_reader(state, ans, who)
             valid &= v
             reopen += r
             reasons += why
+            by_reader[who], why_by_reader[who] = set(r), list(why)
 
         if self.agent is not None:
             deps = CriticDeps(findings=list(reasons), question_ids={q.id for q in state.questions})
-            prompt = self.describe(state)
+            # Rule findings go in the prompt too: small models (Gemma 4 E2B) answer without calling the tool.
+            prompt = self.describe(state) + "\n\nAutomatic checks:\n" + ("\n".join(reasons) or "No rule violation found.")
             rec["prompt"] = prompt
             with capture_run_messages() as messages:
                 try:
@@ -165,11 +172,19 @@ class CriticVerifier(LLMAgent):
                     usage = res.usage
                     rec.update(llm=res.output.model_dump(), tokens_in=usage.input_tokens, tokens_out=usage.output_tokens)
                     reopen += res.output.reopen_questions
+                    for who in by_reader:  # the reviewer's flags go to both readers
+                        by_reader[who] |= set(res.output.reopen_questions)
                     if res.output.reopen_questions and res.output.critique_reason:
                         reasons.append(f"reviewer: {res.output.critique_reason}")
-                except UnexpectedModelBehavior as e:  # LLM critic failed: the rules-only verdict stands
+                        for who in why_by_reader:
+                            why_by_reader[who].append(f"reviewer: {res.output.critique_reason}")
+                # LLM critic failed (invalid output, or a 5xx such as Ollama's "token repeat limit"):
+                # the rules-only verdict stands, and the failure is logged.
+                except (UnexpectedModelBehavior, ModelServerError) as e:
                     rec["llm_error"] = repr(e)
             rec["raw"] = response_texts(messages)
+            rec["tool_calls"] = sum(isinstance(p, ToolCallPart) and p.tool_name == "run_consistency_rules"
+                                    for m in messages if isinstance(m, ModelResponse) for p in m.parts)
 
         reopen = sorted(set(reopen))
         allowed = state.reopen_count < self.s.max_reopen
@@ -180,6 +195,8 @@ class CriticVerifier(LLMAgent):
             conflict_detected=bool(reopen),
             reopen_questions=reopen if allowed else [],
             critique_reason=" ".join(reasons),
+            reopen_by_reader={w: sorted(ids) if allowed else [] for w, ids in by_reader.items()},
+            reason_by_reader={w: " ".join(r) for w, r in why_by_reader.items()},
         )
         state.critic_verdict = verdict
         rec["verdict"] = verdict.model_dump()

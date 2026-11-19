@@ -1,0 +1,530 @@
+{
+  "S_frozen": {
+    "official": {
+      "per_dataset": {
+        "MVTec-AD": {
+          "Anomaly Detection": 79.0449037776194,
+          "Defect Classification": 60.33057851239669,
+          "Defect Description": 68.0327868852459,
+          "Defect Analysis": 87.70491803278688,
+          "Defect Localization": 64.70588235294117,
+          "Object Classification": 89.1304347826087,
+          "Object Analysis": 80.59701492537313,
+          "Overkill": 30.434782608695656,
+          "Miss": 11.475409836065575,
+          "Average": 75.64950275271028
+        },
+        "MVTec-LOCO": {
+          "Anomaly Detection": 58.37320574162679,
+          "Defect Classification": 26.041666666666668,
+          "Defect Description": 48.958333333333336,
+          "Defect Analysis": 70.96774193548387,
+          "Defect Localization": 54.166666666666664,
+          "Object Classification": 81.13207547169812,
+          "Object Analysis": 70.1219512195122,
+          "Overkill": 43.85964912280702,
+          "Miss": 39.39393939393939,
+          "Average": 58.53737729071252
+        },
+        "VisA": {
+          "Anomaly Detection": 74.21052631578947,
+          "Defect Classification": 47.05882352941177,
+          "Defect Description": 63.865546218487395,
+          "Defect Analysis": 82.05128205128206,
+          "Defect Localization": 55.0,
+          "Object Classification": 91.39784946236558,
+          "Object Analysis": 72.34042553191489,
+          "Overkill": 11.578947368421055,
+          "Miss": 40.0,
+          "Average": 69.41777901560731
+        },
+        "GoodsAD": {
+          "Anomaly Detection": 53.7840490797546,
+          "Defect Classification": 46.82539682539682,
+          "Defect Description": 62.121212121212125,
+          "Defect Analysis": 86.61971830985915,
+          "Defect Localization": 41.49659863945578,
+          "Object Classification": 81.19658119658119,
+          "Object Analysis": 68.26347305389221,
+          "Overkill": 72.8,
+          "Miss": 19.631901840490794,
+          "Average": 62.90100417516455
+        }
+      },
+      "average": 66.62641580854867,
+      "removed": 0,
+      "types": [
+        "Anomaly Detection",
+        "Defect Classification",
+        "Defect Description",
+        "Defect Analysis",
+        "Defect Localization",
+        "Object Classification",
+        "Object Analysis"
+      ]
+    },
+    "official_invalid_as_wrong": {
+      "per_dataset": {
+        "MVTec-AD": {
+          "Anomaly Detection": 79.0449037776194,
+          "Defect Classification": 60.33057851239669,
+          "Defect Description": 68.0327868852459,
+          "Defect Analysis": 87.70491803278688,
+          "Defect Localization": 64.70588235294117,
+          "Object Classification": 89.1304347826087,
+          "Object Analysis": 80.59701492537313,
+          "Overkill": 30.434782608695656,
+          "Miss": 11.475409836065575,
+          "Average": 75.64950275271028
+        },
+        "MVTec-LOCO": {
+          "Anomaly Detection": 58.37320574162679,
+          "Defect Classification": 26.041666666666668,
+          "Defect Description": 48.958333333333336,
+          "Defect Analysis": 70.96774193548387,
+          "Defect Localization": 54.166666666666664,
+          "Object Classification": 81.13207547169812,
+          "Object Analysis": 70.1219512195122,
+          "Overkill": 43.85964912280702,
+          "Miss": 39.39393939393939,
+          "Average": 58.53737729071252
+        },
+        "VisA": {
+          "Anomaly Detection": 74.21052631578947,
+          "Defect Classification": 47.05882352941177,
+          "Defect Description": 63.865546218487395,
+          "Defect Analysis": 82.05128205128206,
+          "Defect Localization": 55.0,
+          "Object Classification": 91.39784946236558,
+          "Object Analysis": 72.34042553191489,
+          "Overkill": 11.578947368421055,
+          "Miss": 40.0,
+          "Average": 69.41777901560731
+        },
+        "GoodsAD": {
+          "Anomaly Detection": 53.7840490797546,
+          "Defect Classification": 46.82539682539682,
+          "Defect Description": 62.121212121212125,
+          "Defect Analysis": 86.61971830985915,
+          "Defect Localization": 41.49659863945578,
+          "Object Classification": 81.19658119658119,
+          "Object Analysis": 68.26347305389221,
+          "Overkill": 72.8,
+          "Miss": 19.631901840490794,
+          "Average": 62.90100417516455
+        }
+      },
+      "average": 66.62641580854867,
+      "removed": 0,
+      "types": [
+        "Anomaly Detection",
+        "Defect Classification",
+        "Defect Description",
+        "Defect Analysis",
+        "Defect Localization",
+        "Object Classification",
+        "Object Analysis"
+      ]
+    },
+    "ours_pooled": 66.48606339612749,
+    "n_questions": 3937,
+    "invalid_answers": 0,
+    "label_mismatch_images": 0
+  },
+  "B1_qwen": {
+    "official": {
+      "per_dataset": {
+        "MVTec-AD": {
+          "Anomaly Detection": 76.60370634354953,
+          "Defect Classification": 63.63636363636363,
+          "Defect Description": 66.39344262295081,
+          "Defect Analysis": 86.88524590163935,
+          "Defect Localization": 68.0672268907563,
+          "Object Classification": 91.30434782608695,
+          "Object Analysis": 82.08955223880596,
+          "Overkill": 36.95652173913043,
+          "Miss": 9.836065573770492,
+          "Average": 76.42569792287894
+        },
+        "MVTec-LOCO": {
+          "Anomaly Detection": 54.970760233918135,
+          "Defect Classification": 20.833333333333332,
+          "Defect Description": 46.875,
+          "Defect Analysis": 65.59139784946237,
+          "Defect Localization": 56.25,
+          "Object Classification": 83.01886792452831,
+          "Object Analysis": 65.2439024390244,
+          "Overkill": 45.614035087719294,
+          "Miss": 44.44444444444444,
+          "Average": 56.11189454003807
+        },
+        "VisA": {
+          "Anomaly Detection": 75.43859649122805,
+          "Defect Classification": 52.94117647058823,
+          "Defect Description": 61.34453781512605,
+          "Defect Analysis": 77.77777777777777,
+          "Defect Localization": 55.833333333333336,
+          "Object Classification": 94.6236559139785,
+          "Object Analysis": 70.56737588652483,
+          "Overkill": 15.789473684210531,
+          "Miss": 33.333333333333336,
+          "Average": 69.78949338407953
+        },
+        "GoodsAD": {
+          "Anomaly Detection": 52.105521472392645,
+          "Defect Classification": 43.65079365079365,
+          "Defect Description": 55.303030303030305,
+          "Defect Analysis": 83.80281690140845,
+          "Defect Localization": 42.857142857142854,
+          "Object Classification": 83.76068376068376,
+          "Object Analysis": 68.8622754491018,
+          "Overkill": 87.2,
+          "Miss": 8.588957055214719,
+          "Average": 61.47746634207907
+        }
+      },
+      "average": 65.9511380472689,
+      "removed": 0,
+      "types": [
+        "Anomaly Detection",
+        "Defect Classification",
+        "Defect Description",
+        "Defect Analysis",
+        "Defect Localization",
+        "Object Classification",
+        "Object Analysis"
+      ]
+    },
+    "official_invalid_as_wrong": {
+      "per_dataset": {
+        "MVTec-AD": {
+          "Anomaly Detection": 76.60370634354953,
+          "Defect Classification": 63.63636363636363,
+          "Defect Description": 66.39344262295081,
+          "Defect Analysis": 86.88524590163935,
+          "Defect Localization": 68.0672268907563,
+          "Object Classification": 91.30434782608695,
+          "Object Analysis": 82.08955223880596,
+          "Overkill": 36.95652173913043,
+          "Miss": 9.836065573770492,
+          "Average": 76.42569792287894
+        },
+        "MVTec-LOCO": {
+          "Anomaly Detection": 54.970760233918135,
+          "Defect Classification": 20.833333333333332,
+          "Defect Description": 46.875,
+          "Defect Analysis": 65.59139784946237,
+          "Defect Localization": 56.25,
+          "Object Classification": 83.01886792452831,
+          "Object Analysis": 65.2439024390244,
+          "Overkill": 45.614035087719294,
+          "Miss": 44.44444444444444,
+          "Average": 56.11189454003807
+        },
+        "VisA": {
+          "Anomaly Detection": 75.43859649122805,
+          "Defect Classification": 52.94117647058823,
+          "Defect Description": 61.34453781512605,
+          "Defect Analysis": 77.77777777777777,
+          "Defect Localization": 55.833333333333336,
+          "Object Classification": 94.6236559139785,
+          "Object Analysis": 70.56737588652483,
+          "Overkill": 15.789473684210531,
+          "Miss": 33.333333333333336,
+          "Average": 69.78949338407953
+        },
+        "GoodsAD": {
+          "Anomaly Detection": 52.105521472392645,
+          "Defect Classification": 43.65079365079365,
+          "Defect Description": 55.303030303030305,
+          "Defect Analysis": 83.80281690140845,
+          "Defect Localization": 42.857142857142854,
+          "Object Classification": 83.76068376068376,
+          "Object Analysis": 68.8622754491018,
+          "Overkill": 87.2,
+          "Miss": 8.588957055214719,
+          "Average": 61.47746634207907
+        }
+      },
+      "average": 65.9511380472689,
+      "removed": 0,
+      "types": [
+        "Anomaly Detection",
+        "Defect Classification",
+        "Defect Description",
+        "Defect Analysis",
+        "Defect Localization",
+        "Object Classification",
+        "Object Analysis"
+      ]
+    },
+    "ours_pooled": 65.85539794025709,
+    "n_questions": 3937,
+    "invalid_answers": 0,
+    "label_mismatch_images": 0
+  },
+  "B2_internvl": {
+    "official": {
+      "per_dataset": {
+        "MVTec-AD": {
+          "Anomaly Detection": 66.52094717668488,
+          "Defect Classification": 50.0,
+          "Defect Description": 61.47540983606557,
+          "Defect Analysis": 85.24590163934427,
+          "Defect Localization": 64.40677966101696,
+          "Object Classification": 62.22222222222222,
+          "Object Analysis": 74.61538461538461,
+          "Overkill": 17.777777777777782,
+          "Miss": 49.18032786885246,
+          "Average": 66.35523502153121
+        },
+        "MVTec-LOCO": {
+          "Anomaly Detection": 53.56193514088251,
+          "Defect Classification": 25.0,
+          "Defect Description": 36.458333333333336,
+          "Defect Analysis": 68.81720430107526,
+          "Defect Localization": 50.0,
+          "Object Classification": 66.0377358490566,
+          "Object Analysis": 69.1358024691358,
+          "Overkill": 40.35087719298246,
+          "Miss": 52.52525252525253,
+          "Average": 52.7158587276405
+        },
+        "VisA": {
+          "Anomaly Detection": 63.837719298245624,
+          "Defect Classification": 47.05882352941177,
+          "Defect Description": 64.40677966101696,
+          "Defect Analysis": 82.05128205128206,
+          "Defect Localization": 52.94117647058823,
+          "Object Classification": 77.41935483870968,
+          "Object Analysis": 68.57142857142857,
+          "Overkill": 3.157894736842104,
+          "Miss": 69.16666666666667,
+          "Average": 65.18379491724042
+        },
+        "GoodsAD": {
+          "Anomaly Detection": 55.180368098159505,
+          "Defect Classification": 43.65079365079365,
+          "Defect Description": 54.54545454545455,
+          "Defect Analysis": 79.5774647887324,
+          "Defect Localization": 38.095238095238095,
+          "Object Classification": 65.8119658119658,
+          "Object Analysis": 60.47904191616767,
+          "Overkill": 42.400000000000006,
+          "Miss": 47.239263803680984,
+          "Average": 56.762903843787385
+        }
+      },
+      "average": 60.25444812754988,
+      "removed": 7,
+      "types": [
+        "Anomaly Detection",
+        "Defect Classification",
+        "Defect Description",
+        "Defect Analysis",
+        "Defect Localization",
+        "Object Classification",
+        "Object Analysis"
+      ]
+    },
+    "official_invalid_as_wrong": {
+      "per_dataset": {
+        "MVTec-AD": {
+          "Anomaly Detection": 66.71418389166072,
+          "Defect Classification": 49.586776859504134,
+          "Defect Description": 61.47540983606557,
+          "Defect Analysis": 85.24590163934427,
+          "Defect Localization": 64.70588235294117,
+          "Object Classification": 60.869565217391305,
+          "Object Analysis": 73.13432835820896,
+          "Overkill": 17.391304347826086,
+          "Miss": 49.18032786885246,
+          "Average": 65.9617211650166
+        },
+        "MVTec-LOCO": {
+          "Anomaly Detection": 53.56193514088251,
+          "Defect Classification": 25.0,
+          "Defect Description": 36.458333333333336,
+          "Defect Analysis": 68.81720430107526,
+          "Defect Localization": 50.0,
+          "Object Classification": 66.0377358490566,
+          "Object Analysis": 68.90243902439025,
+          "Overkill": 40.35087719298246,
+          "Miss": 52.52525252525253,
+          "Average": 52.68252109267685
+        },
+        "VisA": {
+          "Anomaly Detection": 63.837719298245624,
+          "Defect Classification": 47.05882352941177,
+          "Defect Description": 63.865546218487395,
+          "Defect Analysis": 82.05128205128206,
+          "Defect Localization": 52.5,
+          "Object Classification": 77.41935483870968,
+          "Object Analysis": 68.08510638297872,
+          "Overkill": 3.157894736842104,
+          "Miss": 69.16666666666667,
+          "Average": 64.97397604558789
+        },
+        "GoodsAD": {
+          "Anomaly Detection": 55.180368098159505,
+          "Defect Classification": 43.65079365079365,
+          "Defect Description": 54.54545454545455,
+          "Defect Analysis": 79.5774647887324,
+          "Defect Localization": 38.095238095238095,
+          "Object Classification": 65.8119658119658,
+          "Object Analysis": 60.47904191616767,
+          "Overkill": 42.400000000000006,
+          "Miss": 47.239263803680984,
+          "Average": 56.762903843787385
+        }
+      },
+      "average": 60.09528053676718,
+      "removed": 0,
+      "types": [
+        "Anomaly Detection",
+        "Defect Classification",
+        "Defect Description",
+        "Defect Analysis",
+        "Defect Localization",
+        "Object Classification",
+        "Object Analysis"
+      ]
+    },
+    "ours_pooled": 60.24658285383679,
+    "n_questions": 3937,
+    "invalid_answers": 8,
+    "label_mismatch_images": 0
+  },
+  "S_nojudge": {
+    "official": {
+      "per_dataset": {
+        "MVTec-AD": {
+          "Anomaly Detection": 71.43620812544546,
+          "Defect Classification": 59.50413223140496,
+          "Defect Description": 69.67213114754098,
+          "Defect Analysis": 86.88524590163935,
+          "Defect Localization": 63.02521008403362,
+          "Object Classification": 89.1304347826087,
+          "Object Analysis": 77.61194029850746,
+          "Overkill": 45.652173913043484,
+          "Miss": 11.475409836065575,
+          "Average": 73.89504322445437
+        },
+        "MVTec-LOCO": {
+          "Anomaly Detection": 57.17703349282297,
+          "Defect Classification": 27.083333333333332,
+          "Defect Description": 41.666666666666664,
+          "Defect Analysis": 68.81720430107526,
+          "Defect Localization": 48.958333333333336,
+          "Object Classification": 83.01886792452831,
+          "Object Analysis": 70.73170731707317,
+          "Overkill": 61.40350877192983,
+          "Miss": 24.242424242424242,
+          "Average": 56.7790209098333
+        },
+        "VisA": {
+          "Anomaly Detection": 72.82894736842105,
+          "Defect Classification": 53.78151260504202,
+          "Defect Description": 59.66386554621849,
+          "Defect Analysis": 77.77777777777777,
+          "Defect Localization": 52.5,
+          "Object Classification": 88.17204301075269,
+          "Object Analysis": 71.63120567375887,
+          "Overkill": 16.84210526315789,
+          "Miss": 37.5,
+          "Average": 68.05076456885298
+        },
+        "GoodsAD": {
+          "Anomaly Detection": 50.4,
+          "Defect Classification": 44.44444444444444,
+          "Defect Description": 53.03030303030303,
+          "Defect Analysis": 83.80281690140845,
+          "Defect Localization": 40.136054421768705,
+          "Object Classification": 80.34188034188034,
+          "Object Analysis": 65.86826347305389,
+          "Overkill": 99.2,
+          "Miss": 0.0,
+          "Average": 59.717680373265544
+        }
+      },
+      "average": 64.61062726910154,
+      "removed": 0,
+      "types": [
+        "Anomaly Detection",
+        "Defect Classification",
+        "Defect Description",
+        "Defect Analysis",
+        "Defect Localization",
+        "Object Classification",
+        "Object Analysis"
+      ]
+    },
+    "official_invalid_as_wrong": {
+      "per_dataset": {
+        "MVTec-AD": {
+          "Anomaly Detection": 71.43620812544546,
+          "Defect Classification": 59.50413223140496,
+          "Defect Description": 69.67213114754098,
+          "Defect Analysis": 86.88524590163935,
+          "Defect Localization": 63.02521008403362,
+          "Object Classification": 89.1304347826087,
+          "Object Analysis": 77.61194029850746,
+          "Overkill": 45.652173913043484,
+          "Miss": 11.475409836065575,
+          "Average": 73.89504322445437
+        },
+        "MVTec-LOCO": {
+          "Anomaly Detection": 57.17703349282297,
+          "Defect Classification": 27.083333333333332,
+          "Defect Description": 41.666666666666664,
+          "Defect Analysis": 68.81720430107526,
+          "Defect Localization": 48.958333333333336,
+          "Object Classification": 83.01886792452831,
+          "Object Analysis": 70.73170731707317,
+          "Overkill": 61.40350877192983,
+          "Miss": 24.242424242424242,
+          "Average": 56.7790209098333
+        },
+        "VisA": {
+          "Anomaly Detection": 72.82894736842105,
+          "Defect Classification": 53.78151260504202,
+          "Defect Description": 59.66386554621849,
+          "Defect Analysis": 77.77777777777777,
+          "Defect Localization": 52.5,
+          "Object Classification": 88.17204301075269,
+          "Object Analysis": 71.63120567375887,
+          "Overkill": 16.84210526315789,
+          "Miss": 37.5,
+          "Average": 68.05076456885298
+        },
+        "GoodsAD": {
+          "Anomaly Detection": 50.4,
+          "Defect Classification": 44.44444444444444,
+          "Defect Description": 53.03030303030303,
+          "Defect Analysis": 83.80281690140845,
+          "Defect Localization": 40.136054421768705,
+          "Object Classification": 80.34188034188034,
+          "Object Analysis": 65.86826347305389,
+          "Overkill": 99.2,
+          "Miss": 0.0,
+          "Average": 59.717680373265544
+        }
+      },
+      "average": 64.61062726910154,
+      "removed": 0,
+      "types": [
+        "Anomaly Detection",
+        "Defect Classification",
+        "Defect Description",
+        "Defect Analysis",
+        "Defect Localization",
+        "Object Classification",
+        "Object Analysis"
+      ]
+    },
+    "ours_pooled": 64.40368335479036,
+    "n_questions": 3937,
+    "invalid_answers": 0,
+    "label_mismatch_images": 0
+  }
+}

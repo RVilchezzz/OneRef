@@ -4,13 +4,13 @@ Final project of **IA025 – Introduction to Deep Learning** (Unicamp 2026 S2). 
 Deliveries: Oct 29 (plan, done) · **Nov 12 (preliminary, on dev)** · **Nov 26 (final)**. Test week: Nov 19–23.
 
 ## What it is
-A **training-free multi-agent system** for industrial visual inspection from **one photo of the part + one normal reference photo**. It orchestrates open pre-trained models (≤ 8B), no fine-tuning. Evaluated on the **MMAD** benchmark (ICLR 2025: 8,366 images, 39,670 multiple-choice questions, 7 subtasks, 4 sources: MVTec AD, VisA, MVTec LOCO, GoodsAD).
+A **training-free multi-agent system** for industrial visual inspection from **one photo of the part + one normal reference photo**. It orchestrates open pre-trained models, no fine-tuning. **Scale decision (Nov 18): 4B models only, run locally; the 8B models and Colab are dropped** (8B numbers from the literature are cited as reference only). Evaluated on the **MMAD** benchmark (ICLR 2025: 8,366 images, 39,670 multiple-choice questions, 7 subtasks, 4 sources: MVTec AD, VisA, MVTec LOCO, GoodsAD).
 
 **Question studied:** how much of the multi-agent gain reported by SiGMA (85.2 %) survives under a *strict* protocol (1 reference, no added text, no tuning on MMAD)?
-**Success:** the full system beats, with McNemar p < 0.05, both the best single model (Qwen3-VL-8B, 73.91 %) and the equal-budget majority vote. A well-measured negative result is also valid.
+**Success:** the full system beats, with McNemar p < 0.05, both the best single model (B1 = Qwen3-VL-4B alone, same protocol) and the equal-budget majority vote. A well-measured negative result is also valid.
 
 ## Architecture (orchestrated workflow, fixed flow in Python, not free-form agents)
-Orchestrator → **Visual expert** (DINOv3 frozen, DINOv2 fallback: patch-distance anomaly map, 3×3 region, zoomed crop, score) → **Reader A** (Qwen3-VL-8B) and **Reader B** (InternVL3-8B) → **Verifier** (Qwen3-VL-8B critic, may reopen conflicts **once max**) → **Aggregator** (weighted vote per reader/subtask, weights fixed on dev; expert votes on discrimination).
+Orchestrator → **Visual expert** (DINOv3 frozen, DINOv2 fallback: patch-distance anomaly map, 3×3 region, zoomed crop, score) → **Reader A** (Qwen3-VL-4B) and **Reader B** (InternVL3.5-4B) → **Verifier** (Gemma 4 E2B critic + rules, may reopen conflicts **once max**) → **Conflict judge** (Gemma 4 E2B, only where voters disagree, override) → **Aggregator** (weighted vote; expert votes on discrimination, per-source weights fixed on dev). Frozen config: `configs/2026-11-19_frozen.env`.
 - Agents exchange **Pydantic-validated JSON**; one retry on bad format, then the question counts as an error.
 - Everything logged as JSONL per image.
 - **Pass-based offline execution**: each agent runs over the whole split, caches outputs to disk, frees the GPU, then the next agent runs. Never two 8B models loaded at once.
@@ -21,11 +21,12 @@ Orchestrator → **Visual expert** (DINOv3 frozen, DINOv2 fallback: patch-distan
 - Split: **dev 10 %** (~840 images, stratified by source/category/normal-defective, fixed seed) for prompts and calibration; **test** (~2,000 stratified images, up to the full 90 %) run **once** with a frozen config. Never tune on test.
 - Metric: accuracy per subtask + mean of 7; discrimination uses **balanced accuracy**; also report FPR and missed-defect rate. Use MMAD's `evaluation/examples/helper/summary.py`.
 - Stats: McNemar + 1,000-resample image-level bootstrap 95 % CI. Error analysis: 100 failures, categories perception / reasoning / MAST orchestration / annotation.
-- Systems to compare: B0 random, B1 Qwen3-VL-8B, B2 InternVL3-8B (+ Qwen3-VL-4B), B3 iso-compute vote, B4 heterogeneous vote, **S** full system. Ablations of S: no expert, no verifier, identical readers, expert as raw map/calibrated map/text, routing by subtask. Reuse cached outputs across baselines.
+- Systems to compare: B0 random, B1 Qwen3-VL-4B, B2 InternVL3.5-4B, B3 iso-compute vote, B4 heterogeneous vote, **S** full system. Ablations of S: no expert, no verifier, identical readers, expert as raw map/calibrated map/text, routing by subtask. Reuse cached outputs across baselines.
 
 ## Compute
-- Local: RTX 3060 Laptop 6 GB: DINOv3 expert, pipeline debugging with Qwen3-VL-4B 4-bit.
-- Colab Pro (100 units): 8B readers on **L4 (bf16) or T4 (4-bit), never A100**; serve with vLLM; measure units on 50 questions before fixing test size; save to Drive every N questions.
+- Everything runs locally: RTX 3060 Laptop 6 GB, Ollama (`OLLAMA_CONTEXT_LENGTH=8192 ollama serve`), 4B models quantized. One model at a time.
+- Throughput: ~10 h for the 835 dev images (readers ~3 h 50 each) → a 2,000-image test ≈ 24 h. The full 90 % (7,531 images) does not fit the test week.
+- Colab / vLLM / 8B paths stay in the code but are not used (decision of Nov 18).
 
 ## Repo layout
 - `docs/full_plan.md`: authoritative plan (state of the art, workflow, dataset, validation, risks). `executive_summary.md`, `references.md`, `mmad/LEADERBOARD_snapshot_2026-10-23.md`, `course/` (template), `slides/` (Delivery I deck, `project/` = HTML slides, speaker scripts EN/FR).
@@ -37,8 +38,8 @@ Orchestrator → **Visual expert** (DINOv3 frozen, DINOv2 fallback: patch-distan
 - Grok shortcut: `ONEREF_USE_GROK=true` + `ONEREF_GROK_API_KEY` + `ONEREF_GROK_*_MODEL` fill `remote` for all three roles (settings.py).
 - Hosted APIs (Grok, HF router...) per agent: `ONEREF_REMOTE='{"reader_a":{"base_url":...,"api_key":...,"model":...}}'` (roles reader_a, reader_b, critic; skips vLLM). Leaves the strict local <=8B protocol: report as upper bound only.
 - `Colab/`: self-contained copy of `src/inspector/` + `OneRef_Colab.ipynb` (Drive + local vLLM per pass). It is a copy: re-sync after code changes (see `Colab/README.md`). Never run on a real Colab yet.
-- Real model paths (DINOv3 expert, Qwen3-VL / InternVL3 via vLLM) are **not yet run/validated**; only mock + unit tests were executed.
-- `configs/`, `notebooks/`, `data/splits/`: still empty (splits are generated by the CLI).
+- Status (Nov 18): full S run on all dev at 4B (`results/compare/2026-11-17_dev_full_S/`, run states in `results/runs/2026-11-17_dev_full_S/`). Dev means of 7: B1 65.9, B2 60.2, S without judge 64.4, **S + judge 66.5** (vs B1 p = 0.28, not significant). B3 iso-compute (Qwen × 3) 65.6 (S vs B3 p = 0.14). Test not run yet (`scripts/run_test.sh`). Final deliverables: report skeleton `docs/reports/final_report.md`, slide skeleton `docs/slides/final/slides_content.md` (`TBD(test)` = filled after the test).
+- `configs/`: run configs (`*.env`), the frozen one is `2026-11-19_frozen.env`. `data/splits/`: dev and test ids (generated by the CLI). Only dev images are downloaded (`scripts/fetch_mmad_subset.py --split dev`).
 - `scripts/download_papers.sh`: fetches papers into `papers/` (PDFs are gitignored).
 - Gitignored: `data/MMAD/`, `outputs/`, weights (`*.safetensors`, `*.bin`), zips, PDFs in `papers/`, `.venv/`.
 - Parent folder (`../`) also holds the Delivery I slides/PDF and the attached paper `2601.13671v1.pdf` (Skan AI position paper, used as conceptual framework).

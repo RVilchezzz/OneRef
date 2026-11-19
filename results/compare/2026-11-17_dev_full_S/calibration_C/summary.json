@@ -1,0 +1,178 @@
+{
+  "runs": {
+    "C0": {
+      "n_images": 835,
+      "n_questions": 3937,
+      "per_subtask": {
+        "anomaly_discrimination": 0.6142531574033122,
+        "defect_classification": 0.47186147186147187,
+        "defect_localization": 0.5062240663900415,
+        "defect_description": 0.5671641791044776,
+        "defect_analysis": 0.8016877637130801,
+        "object_classification": 0.8446601941747572,
+        "object_analysis": 0.7024070021881839
+      },
+      "mean": 0.6440368335479035,
+      "ci95": [
+        0.6281400264121435,
+        0.6609981521440289
+      ],
+      "fpr": 0.6068111455108359,
+      "miss": 0.16468253968253968,
+      "mean_per_source": {
+        "DS-MVTec": 0.7374953453133049,
+        "GoodsAD": 0.5971768037326556,
+        "MVTec-AD": 0.8888888888888888,
+        "MVTec-LOCO": 0.567790209098333,
+        "VisA": 0.6805076456885298
+      }
+    },
+    "C1": {
+      "n_images": 835,
+      "n_questions": 3937,
+      "per_subtask": {
+        "anomaly_discrimination": 0.6196926138876603,
+        "defect_classification": 0.47186147186147187,
+        "defect_localization": 0.5062240663900415,
+        "defect_description": 0.5671641791044776,
+        "defect_analysis": 0.8016877637130801,
+        "object_classification": 0.8446601941747572,
+        "object_analysis": 0.7024070021881839
+      },
+      "mean": 0.6448138987599533,
+      "ci95": [
+        0.6287077134172032,
+        0.6620647626001794
+      ],
+      "fpr": 0.5820433436532507,
+      "miss": 0.17857142857142858,
+      "mean_per_source": {
+        "DS-MVTec": 0.7374953453133049,
+        "GoodsAD": 0.5986807476415075,
+        "MVTec-AD": 0.8888888888888888,
+        "MVTec-LOCO": 0.567790209098333,
+        "VisA": 0.6805076456885298
+      }
+    },
+    "C2": {
+      "n_images": 835,
+      "n_questions": 3937,
+      "per_subtask": {
+        "anomaly_discrimination": 0.6302121725883336,
+        "defect_classification": 0.47186147186147187,
+        "defect_localization": 0.5062240663900415,
+        "defect_description": 0.5671641791044776,
+        "defect_analysis": 0.8016877637130801,
+        "object_classification": 0.8446601941747572,
+        "object_analysis": 0.7024070021881839
+      },
+      "mean": 0.6463166928600493,
+      "ci95": [
+        0.6300810898993661,
+        0.663465928750896
+      ],
+      "fpr": 0.5510835913312694,
+      "miss": 0.1884920634920635,
+      "mean_per_source": {
+        "DS-MVTec": 0.7411945149960811,
+        "GoodsAD": 0.5986807476415075,
+        "MVTec-AD": 0.8888888888888888,
+        "MVTec-LOCO": 0.5718533973720474,
+        "VisA": 0.6831705529567003
+      }
+    },
+    "C3": {
+      "n_images": 835,
+      "n_questions": 3937,
+      "per_subtask": {
+        "anomaly_discrimination": 0.6285106147722247,
+        "defect_classification": 0.47186147186147187,
+        "defect_localization": 0.5062240663900415,
+        "defect_description": 0.5671641791044776,
+        "defect_analysis": 0.8016877637130801,
+        "object_classification": 0.8446601941747572,
+        "object_analysis": 0.7024070021881839
+      },
+      "mean": 0.6460736131720338,
+      "ci95": [
+        0.6299057006792305,
+        0.6629753228075462
+      ],
+      "fpr": 0.5108359133126935,
+      "miss": 0.23214285714285715,
+      "mean_per_source": {
+        "DS-MVTec": 0.7494178490390873,
+        "GoodsAD": 0.5986807476415075,
+        "MVTec-AD": 0.8888888888888888,
+        "MVTec-LOCO": 0.5718533973720474,
+        "VisA": 0.6831705529567003
+      }
+    }
+  },
+  "pairs": {
+    "C0 vs C1": {
+      "paired_questions": 3937,
+      "both_right": 2552,
+      "only_first": 7,
+      "only_second": 8,
+      "both_wrong": 1370,
+      "oracle_acc": 0.6520193040386081,
+      "mcnemar_p": 1.0
+    },
+    "C0 vs C2": {
+      "paired_questions": 3937,
+      "both_right": 2538,
+      "only_first": 21,
+      "only_second": 27,
+      "both_wrong": 1351,
+      "oracle_acc": 0.6568453136906274,
+      "mcnemar_p": 0.470879013621712
+    },
+    "C0 vs C3": {
+      "paired_questions": 3937,
+      "both_right": 2516,
+      "only_first": 43,
+      "only_second": 40,
+      "both_wrong": 1338,
+      "oracle_acc": 0.6601473202946406,
+      "mcnemar_p": 0.8264047244491927
+    },
+    "C1 vs C2": {
+      "paired_questions": 3937,
+      "both_right": 2546,
+      "only_first": 14,
+      "only_second": 19,
+      "both_wrong": 1358,
+      "oracle_acc": 0.6550673101346203,
+      "mcnemar_p": 0.48685024166479707
+    },
+    "C1 vs C3": {
+      "paired_questions": 3937,
+      "both_right": 2524,
+      "only_first": 36,
+      "only_second": 32,
+      "both_wrong": 1345,
+      "oracle_acc": 0.6583693167386335,
+      "mcnemar_p": 0.716300760154337
+    },
+    "C2 vs C3": {
+      "paired_questions": 3937,
+      "both_right": 2543,
+      "only_first": 22,
+      "only_second": 13,
+      "both_wrong": 1359,
+      "oracle_acc": 0.6548133096266192,
+      "mcnemar_p": 0.175465248990804
+    }
+  },
+  "args": {
+    "runs": [
+      "C0=outputs/reagg/dev_full_S_C/C0_default",
+      "C1=outputs/reagg/dev_full_S_C/C1_tiebreak_noGoods",
+      "C2=outputs/reagg/dev_full_S_C/C2_tiebreak_thr",
+      "C3=outputs/reagg/dev_full_S_C/C3_tuned"
+    ],
+    "step": "7_aggregator",
+    "out": "results/compare/2026-11-17_dev_full_S/calibration_C"
+  }
+}
