@@ -27,7 +27,7 @@ All rows use the frozen aggregation settings (re-aggregated from the same cache,
 | A + B vote, no verifier | 64.4 [62.7, 66.1] | 45.2 | 27.6 | p = 0.001 |
 | S without judge | 64.6 [63.0, 66.3] | 55.1 | 18.8 | p = 0.009 |
 | **S (frozen)** | **66.5 [64.8, 68.2]** | 43.7 | 26.4 | — |
-| B3 iso-compute (Qwen 4B × 3 samples) | running, see `results/compare/2026-11-18_dev_B3/` | | | |
+| B3 iso-compute (Qwen 4B × 3 samples, T = 0.7) | 65.6 [64.0, 67.3] | 52.9 | 22.4 | p = 0.14 |
 
 Per source (S): DS-MVTec 75.7 · VisA 69.4 · GoodsAD 62.9 · MVTec-LOCO 58.5. MVTec-AD has only 2 dev images,
 so its number is not meaningful.
@@ -60,7 +60,9 @@ sheet is in `sheet.html` / `sheet.csv`.
 
 ## 4. Reading so far
 At 4B, the multi-agent system **matches** the best single model but does not beat it significantly
-(+0.6 points, p = 0.28). Unless the test sample turns this around, the likely outcome is a **negative result,
+(+0.6 points, p = 0.28), and it is +0.9 over the iso-compute baseline B3 (p = 0.14). Sampling Qwen
+3 times does not help at all (B3 vs B1: 65 of 3,937 answers change, p = 0.32), so S's small edge comes from
+the heterogeneous judge, not from the extra calls. Unless the test sample turns this around, the likely outcome is a **negative result,
 well measured**. The ablations already explain it:
 1. The second reader is weaker.
 2. The verifier fixes about as much as it breaks.
