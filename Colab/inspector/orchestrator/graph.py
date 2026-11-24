@@ -4,7 +4,8 @@
            -> [judge] -> aggregator
 
 ``reader_c`` (third voter) and ``judge`` (conflict judge) exist only when ``Settings.reader_c_model`` /
-``Settings.judge_model`` are set.
+``Settings.judge_model`` are set. The aggregator is the weighted vote, or an LLM on the contested
+questions when ``Settings.aggregator_model`` is set.
 
 The only "loop" is the reopen pair, which is a straight-line pass that runs only for images the
 critic flagged, and the critic grants it at most ``max_reopen`` (=1) times per image.
@@ -29,13 +30,15 @@ class Step:
 
 def build_steps(settings: Settings, run_dir: Path, mock: bool = False) -> list[Step]:
     if mock:
-        from inspector.agents.mock import MockCritic, MockExpert, MockJudge, MockReader
+        from inspector.agents.mock import MockCritic, MockExpert, MockJudge, MockLLMAggregator, MockReader
 
         expert: Callable[[], BaseAgent] = MockExpert
         reader = lambda name, reopen: (lambda: MockReader(settings, name, reopen))  # noqa: E731
         critic: Callable[[], BaseAgent] = lambda: MockCritic(settings)  # noqa: E731
         judge: Callable[[], BaseAgent] = lambda: MockJudge(settings)  # noqa: E731
+        llm_aggregator: Callable[[], BaseAgent] = lambda: MockLLMAggregator(settings)  # noqa: E731
     else:
+        from inspector.agents.llm_aggregator import LLMAggregator
         from inspector.agents.conflict_judge import ConflictJudge
         from inspector.agents.reader_mllm import ReaderMLLM
         from inspector.agents.visual_expert import VisualExpert
@@ -46,6 +49,7 @@ def build_steps(settings: Settings, run_dir: Path, mock: bool = False) -> list[S
         reader = lambda name, reopen: (lambda: ReaderMLLM(settings, models[name.removesuffix("_reopen")], name, reopen))  # noqa: E731
         critic = lambda: CriticVerifier(settings)  # noqa: E731
         judge = lambda: ConflictJudge(settings)  # noqa: E731
+        llm_aggregator = lambda: LLMAggregator(settings)  # noqa: E731
 
     steps = [
         Step("1_expert", expert),
@@ -56,7 +60,7 @@ def build_steps(settings: Settings, run_dir: Path, mock: bool = False) -> list[S
         Step("5_reader_a_reopen", reader("reader_a_reopen", True)),
         Step("6_reader_b_reopen", reader("reader_b_reopen", True)),
         Step("6b_judge", judge),
-        Step("7_aggregator", lambda: Aggregator(settings)),
+        Step("7_aggregator", llm_aggregator if settings.aggregator_model else (lambda: Aggregator(settings))),
     ]
     optional = {"3b_reader_c": settings.reader_c_model, "6b_judge": settings.judge_model}
     return [st for st in steps if optional.get(st.name, True)]

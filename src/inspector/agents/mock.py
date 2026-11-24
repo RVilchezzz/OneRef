@@ -16,6 +16,7 @@ from pydantic_ai.models.function import AgentInfo, FunctionModel
 from inspector.agents.base import BaseAgent
 from inspector.agents.conflict_judge import ConflictJudge
 from inspector.agents.critic_verifier import CriticVerifier
+from inspector.agents.llm_aggregator import LLMAggregator
 from inspector.agents.reader_mllm import ReaderMLLM
 from inspector.config.settings import Settings
 from inspector.schemas.agent_outputs import VisualExpertOutput
@@ -108,3 +109,8 @@ class MockJudge(ConflictJudge):
 
     def image_parts(self, state: InspectionState) -> list:
         return []
+
+
+class MockLLMAggregator(LLMAggregator):
+    def __init__(self, settings: Settings):
+        super().__init__(settings, model=judge_model())  # same stand-in: first candidate listed

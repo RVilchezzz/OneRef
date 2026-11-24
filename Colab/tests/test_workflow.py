@@ -11,6 +11,7 @@ from inspector.agents.aggregator import Aggregator
 from inspector.agents.conflict_judge import ConflictJudge, conflicts
 from inspector.agents.critic_verifier import CriticVerifier, cell_in_text
 from inspector.agents.llm import make_model, make_role_model
+from inspector.agents.llm_aggregator import LLMAggregator
 from inspector.agents.mock import MockExpert
 from inspector.agents.reader_mllm import ReaderMLLM
 from inspector.config.settings import Settings
@@ -294,11 +295,37 @@ def test_llm_critic_failure_keeps_rules_verdict():
     assert st.critic_verdict.reopen_questions == [q0.id] and "llm_error" in rec
 
 
+def test_llm_critic_server_error_keeps_rules_verdict():
+    """A 5xx from the server (Ollama: "token repeat limit reached") must not crash the pass."""
+    from pydantic_ai.exceptions import ModelServerError
+
+    def boom(messages, info):
+        raise ModelServerError("gemma4:e2b", "prediction aborted, token repeat limit reached")
+
+    st = mk_state()
+    st.visual_evidence = expert(0.9, "top right")
+    q0, q1 = st.questions
+    st.reader_a_responses = st.reader_b_responses = {q0.id: ans(q0.id, "B"), q1.id: ans(q1.id, "B")}
+    critic = CriticVerifier(Settings(), model=FunctionModel(boom))
+    critic.image_parts = lambda s: []
+    critic.load()
+    st = critic._run(st, rec := {})
+    critic.unload()
+    assert st.critic_verdict.reopen_questions == [q0.id] and "ModelServerError" in rec["llm_error"]
+
+
 def test_critic_extra_body_reaches_model_settings():
     off = CriticVerifier(Settings(), model=scripted("x")[0]).build(scripted("x")[0])
     assert "extra_body" not in (off.model_settings or {})
     s = Settings(critic_extra_body={"reasoning_effort": "none"})
     on = CriticVerifier(s, model=scripted("x")[0]).build(scripted("x")[0])
+    assert on.model_settings["extra_body"] == {"reasoning_effort": "none"}
+
+
+def test_judge_extra_body_reaches_model_settings():
+    m = scripted("x")[0]
+    assert "extra_body" not in (ConflictJudge(Settings(judge_model="j"), model=m).build(m).model_settings or {})
+    on = ConflictJudge(Settings(judge_model="j", judge_extra_body={"reasoning_effort": "none"}), model=m).build(m)
     assert on.model_settings["extra_body"] == {"reasoning_effort": "none"}
 
 
@@ -327,6 +354,22 @@ def test_aggregator_expert_votes_on_discrimination_and_none_if_no_votes():
     st = Aggregator(Settings(expert_weight_discrimination=2.0))._run(st, {})
     assert st.final_answers[q0.id].selected_option == "A"  # expert "Yes" (weight 2) outvotes reader "No" (1)
     assert st.final_answers[q1.id].selected_option is None
+
+
+def test_aggregator_expert_vote_per_source():
+    st = mk_state()
+    q0, _ = st.questions
+    st.visual_evidence = expert(0.6)
+    st.reader_a_responses = {q0.id: ans(q0.id, "B")}
+    st.reader_b_responses = {}
+    s = Settings(expert_weight_discrimination=2.0)
+    assert Aggregator(s)._run(st.model_copy(deep=True), {}).final_answers[q0.id].selected_option == "A"
+    st.source = "GoodsAD"
+    off = Settings(expert_weight_discrimination=2.0, expert_weight_by_source={"GoodsAD": 0})
+    assert Aggregator(off)._run(st.model_copy(deep=True), {}).final_answers[q0.id].selected_option == "B"
+    hi = Settings(expert_weight_discrimination=2.0, expert_threshold_by_source={"GoodsAD": 0.7})
+    out = Aggregator(hi)._run(st.model_copy(deep=True), {}).final_answers[q0.id]
+    assert out.selected_option == "B" and out.votes["B"] == 3.0  # 0.6 < 0.7: expert says "no defect" too
 
 
 # ---- metrics -----------------------------------------------------------------
@@ -392,6 +435,36 @@ def test_judge_must_pick_a_candidate_and_sees_only_candidates():
     assert len(calls) == 2
 
 
+def test_llm_aggregator_decides_only_contested_questions_and_falls_back():
+    st = mk_state()
+    q0, q1 = st.questions
+    st.reader_a_responses = {q0.id: ans(q0.id, "A"), q1.id: ans(q1.id, "B", 0.9)}
+    st.reader_b_responses = {q0.id: ans(q0.id, "A"), q1.id: ans(q1.id, "C", 0.5)}
+    st.judge_answers = {q1.id: ans(q1.id, "C", 0.7)}
+    # "A" is offered by the question but is no candidate -> ModelRetry -> "C"
+    model, calls = scripted('{"selected_option": "A", "confidence": 0.8}', '{"selected_option": "C", "confidence": 0.8}')
+    agg = LLMAggregator(Settings(aggregator_model="m"), model=model)
+    assert [q.id for q, _, _ in agg.contested(st)] == [q1.id]   # q0 is unanimous: no LLM call
+    agg.load()
+    try:
+        out = agg._run(st.model_copy(deep=True), rec := {})
+    finally:
+        agg.unload()
+    assert out.final_answers[q0.id].selected_option == "A" and out.final_answers[q1.id].selected_option == "C"
+    assert len(calls) == 2 and rec["llm_decided"] == [q1.id]
+    prompt = rec["calls"][0]["prompt"]
+    assert "Senior inspector" in prompt and "B. top right" in prompt and "A. top left" not in prompt
+    # model failure: the weighted vote stands (judge_mode "off" here, B has the higher confidence on a tie)
+    bad, _ = scripted("not json", "not json", "not json", "not json")
+    agg = LLMAggregator(Settings(aggregator_model="m", judge_mode="off"), model=bad)
+    agg.load()
+    try:
+        out = agg._run(st.model_copy(deep=True), {})
+    finally:
+        agg.unload()
+    assert out.final_answers[q1.id].selected_option == "B"
+
+
 def test_optional_passes_built_only_when_configured(tmp_path):
     names = lambda s: [st.name for st in build_steps(s, tmp_path, mock=True)]  # noqa: E731
     assert "3b_reader_c" not in names(Settings()) and "6b_judge" not in names(Settings())
@@ -406,6 +479,13 @@ def test_full_mock_pipeline_with_third_reader_and_judge(tmp_path):
     out = PassRunner(tmp_path, Telemetry(tmp_path / "t.jsonl")).run(build_steps(s, tmp_path, mock=True), states)
     assert all(len(st.final_answers) == 2 and len(st.reader_c_responses) == 2 for st in out)
     assert (tmp_path / "6b_judge").is_dir()
+
+
+def test_full_mock_pipeline_with_llm_aggregator(tmp_path):
+    s = Settings(reader_c_model="c", judge_model="j", aggregator_model="a")
+    states = [InspectionState.from_sample(mk_sample(i)) for i in range(4)]
+    out = PassRunner(tmp_path, Telemetry(tmp_path / "t.jsonl")).run(build_steps(s, tmp_path, mock=True), states)
+    assert all(len(st.final_answers) == 2 for st in out) and (tmp_path / "7_aggregator").is_dir()
 
 
 def test_balanced_accuracy_and_fpr():

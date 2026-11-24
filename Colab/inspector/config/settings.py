@@ -113,6 +113,10 @@ class Settings(BaseSettings):
     judge_weight: float = 1.0
     # Extra request body for the judge, like critic_extra_body (Gemma 4 in Ollama: {"reasoning_effort": "none"}).
     judge_extra_body: dict[str, Any] = {}
+    # LLM aggregator (optional): a text-only model settles the questions where the weighted vote is not
+    # unanimous (readers, expert, judge disagree); unanimous questions and model failures keep the vote.
+    aggregator_model: str | None = None
+    aggregator_extra_body: dict[str, Any] = {}
 
     # ---- critic ------------------------------------------------------------
     # Rule "discrimination=No but the image has defect-localization questions" depends on the
