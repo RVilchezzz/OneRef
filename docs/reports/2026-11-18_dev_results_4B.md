@@ -3,10 +3,15 @@
 Summary for the Nov 19 monitoring session. Everything below is on **dev** (835 images, 3,937 questions, strict
 protocol: one reference `random_templates[0]`, no added text). The test has not been touched.
 
+> **Naming (Nov 25):** the row called B1 here is Qwen3-VL-4B **with the expert's hint text and crop** ("Qwen + expert"),
+> not the model alone. The true single model ("Qwen alone", no expert evidence) was measured on 82 dev images only:
+> 61.2 vs 68.3 for Qwen + expert and 68.6 for S (same images; S vs Qwen alone p = 0.041, S vs Qwen + expert p = 0.47).
+> See `docs/reports/2026-11-25_test_protocol_change.md`.
+
 ## 1. Decision: 4B only, local
 The 8B models and Colab are dropped (Nov 18).
 - Every system runs on the team laptop (RTX 3060 6 GB, Ollama, 4-bit models), one model at a time.
-- B1 is now **Qwen3-VL-4B alone** under the same protocol.
+- B1 is now **Qwen3-VL-4B** under the same protocol (with the expert's hint, see the naming note).
 - The 8B numbers from the MMAD paper and leaderboard are cited only as external reference.
 
 | Role | Model |
@@ -22,7 +27,7 @@ All rows use the frozen aggregation settings (re-aggregated from the same cache,
 
 | System | Mean | FPR | Missed defects | McNemar vs S |
 |---|---|---|---|---|
-| B1 Qwen3-VL-4B alone | 65.9 [64.3, 67.5] | 51.7 | 21.8 | p = 0.28 |
+| B1 Qwen3-VL-4B + expert | 65.9 [64.3, 67.5] | 51.7 | 21.8 | p = 0.28 |
 | B2 InternVL3.5-4B alone | 60.2 [58.5, 61.8] | 27.9 | 54.2 | p < 1e-20 |
 | A + B vote, no verifier | 64.4 [62.7, 66.1] | 45.2 | 27.6 | p = 0.001 |
 | S without judge | 64.6 [63.0, 66.3] | 55.1 | 18.8 | p = 0.009 |

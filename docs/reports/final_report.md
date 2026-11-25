@@ -87,9 +87,10 @@ Condense `docs/full_plan.md` §2 to about one page.
 ### 3.4 Baselines (same images, same protocol)
 | Id | System | Calls / question |
 |---|---|---|
-| B1 | Qwen3-VL-4B alone | 1 |
-| B2 | InternVL3.5-4B alone | 1 |
-| B3 | Qwen3-VL-4B sampled k = 3 (T = 0.7) + majority vote: iso-compute | 3 |
+| Q | Qwen3-VL-4B alone, no expert evidence ("Qwen alone") | 1 |
+| B1 | Qwen3-VL-4B with the expert's hint and crop ("Qwen + expert") | 1 |
+| B2 | InternVL3.5-4B with the expert's hint and crop | 1 |
+| B3 | Qwen3-VL-4B + expert, sampled k = 3 (T = 0.7) + majority vote: iso-compute | 3 |
 | S | Full system | 2.64 (10,402 calls / 3,937 dev questions) |
 
 B1, B2 and the ablations are re-aggregations of S's own cache, with no extra calls. They therefore see exactly the same

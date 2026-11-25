@@ -9,19 +9,20 @@ one normal reference photo**, and answers the multiple-choice questions of the *
 
 **Question studied:** how much of the multi-agent gain reported by SiGMA (85.2 %) survives under a *strict*
 protocol (1 reference, no added text, no tuning on MMAD)? **Success:** the full system S beats, with McNemar
-p < 0.05, both the best single model under the same protocol (B1) and an equal-cost majority vote (B3).
+p < 0.05, both the best single reader with the same evidence (B1 = Qwen + expert) and an equal-cost majority vote (B3).
 A well-measured negative result is also valid.
 
-## Status (Nov 19)
+## Status (Nov 25)
 
-| | 4B, local (Peter) | 8B, Colab (Maxime) |
+| | 4B, local | 8B (not part of the IA025 results) |
 |---|---|---|
 | Code | Done, 50 GPU-free tests pass | Same code (`Colab/` is an identical copy) |
 | Dev (835 images) | **Done**: S 66.5 · B1 65.9 · B3 65.6 · B2 60.2 | To do: [`docs/guides/guide_8B.fr.md`](docs/guides/guide_8B.fr.md) |
 | Config | Frozen: [`configs/2026-11-19_frozen.env`](configs/2026-11-19_frozen.env) | Template: [`configs/2026-11-19_8B_colab_template.env`](configs/2026-11-19_8B_colab_template.env) |
-| Test (2,000 images, once) | Not run yet: `scripts/run_test.sh` (~40 h) | After its own dev and freeze |
+| Test | 200 images running (`scripts/run_test200.sh`), 2,000 planned for the article: [`docs/reports/2026-11-25_test_protocol_change.md`](docs/reports/2026-11-25_test_protocol_change.md) | — |
 
-On dev at 4B, S is the best system but **not yet significantly better than B1** (+0.6, p = 0.28). The conflict
+B1 is Qwen3-VL-4B **with** the expert's hint and crop; on 82 dev images Qwen truly alone gets 61.2 vs 68.6 for S
+(p = 0.041), so most of the gain comes from the expert. On dev at 4B, S is the best system but **not yet significantly better than B1** (+0.6, p = 0.28). The conflict
 judge is the component that matters (+2.1 over S without it, p = 0.004). Full tables:
 [`results/compare/2026-11-19_dev_frozen/summary.md`](results/compare/2026-11-19_dev_frozen/summary.md) and
 [`docs/reports/2026-11-18_dev_results_4B.md`](docs/reports/2026-11-18_dev_results_4B.md).

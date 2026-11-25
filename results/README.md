@@ -1,7 +1,8 @@
 # Results
 
 Every number in the reports and slides comes from a file in this folder. Everything here is on **dev**
-(835 images, 3,937 questions) unless the folder name says otherwise; the test has not been run yet.
+(835 images, 3,937 questions) unless the folder name says otherwise. "B1" = Qwen3-VL-4B **with** the expert's hint
+("Qwen + expert"); see `docs/reports/2026-11-25_test_protocol_change.md`.
 `outputs/` (live runs) is gitignored; the shareable copies of the runs are in `runs/`.
 
 **Start here:** [`compare/2026-11-19_dev_frozen/summary.md`](compare/2026-11-19_dev_frozen/summary.md), the dev
