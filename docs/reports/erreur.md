@@ -134,3 +134,5 @@ Les résultats dev locaux du 18 nov. (Ollama) ont été produits avant le change
 | DINOv3 | 403 « not in the authorized list » malgré un token autorisé aux dépôts restreints | expert **DINOv2-base** |
 | Seuils de l'expert | ceux de DINOv3 saturent avec DINOv2 (50/50 images à 1,00 dans la sonde 4B) | seuil dev 0,455 (835 images, balanced accuracy 0,622, in-sample) ; poids et seuils de vote par source à refaire après le dev |
 | Qwen3-VL-8B en bf16 | ne démarre pas : cache KV 1,69 Go requis, 1,36 Go disponibles à 0,92 (0,62 Go à 0,95 avec limite d'images) | `--quantization fp8`, **à signaler dans le rapport** ; à vérifier sur L4 |
+
+**Mise à jour (26 nov.) :** accès DINOv3 accordé. Le profil 8B revient à DINOv3 avec la calibration de la config gelée 4B ; la sonde `probe_8B` (DINOv2, interrompue pendant le lecteur B) est abandonnée. Les runs sont désormais nommés par profil et par expert (`probe_8B_dinov3`) pour ne jamais reprendre le cache d'un autre expert.

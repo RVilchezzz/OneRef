@@ -744,3 +744,11 @@ def test_multiple_keys_build_a_failover_chain():
     only_gemini = Settings(_env_file=None, llm_api_key="m1", llm_api_keys="m2")      # no hosted endpoint: rotate Gemini keys
     assert [m.client.api_key for m in make_role_model(only_gemini, "gemini-x").models] == ["m1", "m2"]
     assert not hasattr(make_role_model(Settings(_env_file=None, llm_api_key="m1"), "gemini-x"), "models")
+
+
+def test_pass_runner_prints_progress(tmp_path, capsys):
+    states = [mk_state(i) for i in range(12)]
+    steps = [Step("1_expert", MockExpert)]
+    PassRunner(tmp_path, Telemetry(tmp_path / "t.jsonl", run="r")).run(steps, states)
+    out = capsys.readouterr().out
+    assert "1_expert 10/12" in out and "1_expert 12/12" in out and "1_expert 11/12" not in out

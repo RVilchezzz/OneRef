@@ -44,6 +44,17 @@ def test_clean_run_passes_and_projects_duration():
     assert abs(r["hours"] - (6 * 2 + 835 * 6 * 8) / 3600) < 1e-6  # 2 s start-up + 8 s per image, per pass
 
 
+def test_projection_counts_only_the_share_of_images_a_pass_applies_to():
+    """10 images, the judge runs on 5 of them: half as many images in the projection."""
+    ev = []
+    for step, n, t0 in (("1_expert", 10, 0.0), ("6b_judge", 5, 100.0)):
+        ev.append({"event": "pass_start", "ts": t0, "step": step, "cached": 0, "to_run": n})
+        ev += [{"agent": AGENT[step], "image_id": str(i), "ts": t0 + i + 1, "latency_ms": 1000, "model": "dinov3",
+                "answers": {}} for i in range(n)]
+        ev.append({"event": "pass_end", "ts": t0 + n, "step": step})
+    assert abs(report(ev, project=100)["hours"] - (100 + 50) / 3600) < 1e-9
+
+
 def test_each_threshold_fails():
     assert any("reader_a" in f for f in report(telemetry(bad_reader_calls=5))["failures"])
     assert not report(telemetry(bad_reader_calls=4))["failures"]
@@ -71,7 +82,7 @@ def test_8b_template_loads_in_settings(monkeypatch):
     assert (s.reader_a_model, s.reader_b_model) == ("Qwen/Qwen3-VL-8B-Instruct", "OpenGVLab/InternVL3_5-8B")
     assert s.critic_model == s.judge_model == "google/gemma-4-E4B-it"
     assert s.critic_use_tool is False
-    assert s.expert_model == "facebook/dinov2-base"  # DINOv3 access refused
-    assert (s.anomaly_norm_low, s.anomaly_norm_high) == (0.355, 0.555)  # DINOv2 dev threshold 0.455
+    assert s.expert_model == "facebook/dinov3-vitb16-pretrain-lvd1689m"
+    assert (s.anomaly_norm_low, s.anomaly_norm_high) == (0.065, 0.265)  # calibration of the frozen 4B config
     assert s.critic_extra_body == s.judge_extra_body == {"chat_template_kwargs": {"enable_thinking": False}}
     assert json.dumps(s.critic_extra_body)

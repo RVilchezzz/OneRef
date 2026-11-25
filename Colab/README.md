@@ -27,16 +27,19 @@ Le profil 4B a tourné sur T4. **Le profil 8B n'a encore jamais été exécuté.
 | 1 | profil, GPU, arguments vLLM | régler `PROFILE` ; 8B sur T4 s'arrête avec un message |
 | 2 | Drive + clone | valider l'autorisation Drive ; dans VS Code, si le montage échoue : commande **Colab: Mount Google Drive to Server** |
 | 3 | installation | si Colab demande un redémarrage : repartir de la cellule 1 |
-| 4 | token HF | si le secret n'est pas accessible : `from getpass import getpass; os.environ["HF_TOKEN"] = getpass("HF_TOKEN : ")` |
+| 4 | token HF + accès DINOv3 | sans secret accessible (VS Code), le token est demandé en saisie masquée ; doit afficher `Acces DINOv3 : 200` |
 | 5 | variables et config du profil | |
 | 5b | MMAD sur Drive | `subset` : `N_SAMPLE` images dev et leurs références |
 | 6 | tests sans GPU | doit passer avant d'utiliser le GPU |
 | 6b | démarre chaque modèle une fois (hors T4) | la réponse ne doit contenir aucun bloc de réflexion |
-| 7 | sonde, run `probe_<profil>` | se termine par un **VERDICT** |
-| 8 | **dev complet**, run `dev_full_S_<profil>` | ne démarre que si la sonde passe ; vérifier d'abord les unités restantes |
+| 7 | sonde, run `probe_<profil>_<expert>` (ex. `probe_8B_dinov3`) | se termine par un **VERDICT** |
+| 8 | **dev complet**, run `dev_full_S_<profil>_<expert>` | ne démarre que si la sonde passe ; vérifier d'abord les unités restantes |
 | 9 | bilan du dev complet | |
 
 4. À la fin : **déconnecter et supprimer l'environnement d'exécution** (sinon les unités continuent d'être consommées).
+
+### Dans VS Code
+Activer **File → Auto Save**, puis exécuter `Colab/run_vscode.ipynb` (copie non suivie par git de `OneRef_Colab.ipynb`) : les sorties sont enregistrées dans ce fichier et peuvent être relues hors de Colab. Recopier `OneRef_Colab.ipynb` dessus après une mise à jour du notebook. À la fin : **Colab: Remove Server**.
 
 ### Seuils de la sonde (`scripts/check_run.py`)
 Toutes les passes terminées ; moins de 5 % de réponses invalides par lecteur au 1er passage ; critic LLM en échec sur moins de 10 % des images ; le juge répond ; au plus 2 % de questions sans réponse ; expert conforme à la config (**DINOv2** en 8B, DINOv3 en 4B ; les seuils en dépendent). Le script projette la durée sur 835 images, mais **ne connaît pas les unités restantes** : heures projetées × débit du GPU doit tenir dans le solde avec 15 % de marge.

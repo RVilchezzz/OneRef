@@ -41,11 +41,11 @@ def report(events: list[dict], project: int = 835, expert: str = "dinov3") -> di
                 open_pass["records"].append(e)
     # hours for `project` images = model start-up of each pass + work per image of the split
     seconds, durations = 0.0, {}
+    n_split = max([e["to_run"] + e["cached"] for e in events if e.get("event") == "pass_start"] or [1]) or 1
     for step, p in timed.items():
         rs, start = p["records"], p["start"]
         dur = p["end"]["ts"] - start["ts"]
         work = rs[-1]["ts"] - (rs[0]["ts"] - rs[0].get("latency_ms", 0) / 1000)
-        n_split = max(start["to_run"] + start["cached"], 1)
         applies = (start["to_run"] + start["cached"]) / n_split
         seconds += (dur - work) + project * applies * work / len(rs)
         durations[step] = dur / 60

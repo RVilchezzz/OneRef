@@ -51,9 +51,11 @@ class PassRunner:
         if todo:  # skip loading weights entirely when nothing needs this model
             agent.load()
             try:
-                for s in todo:
+                for i, s in enumerate(todo, 1):
                     done[s.image_id] = agent.run(s, self.tel)
                     self._save(step, done[s.image_id])  # per image: a crash mid-pass loses one image, not the pass
+                    if i % 10 == 0 or i == len(todo):
+                        print(f"{step.name} {i}/{len(todo)}", flush=True)
             finally:  # always release the GPU, even on error, before the next pass
                 agent.unload()
         del agent
