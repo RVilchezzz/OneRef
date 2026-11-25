@@ -1,6 +1,10 @@
 """Deterministic workflow definition: an explicit, ordered list of typed steps (no free-form loops).
 
-    expert -> reader_a -> reader_b -> critic -> [reader_a_reopen -> reader_b_reopen] -> aggregator
+    expert -> reader_a -> reader_b -> [reader_c] -> critic -> [reader_a_reopen -> reader_b_reopen]
+           -> [judge] -> aggregator
+
+``reader_c`` (third voter) and ``judge`` (conflict judge) exist only when ``Settings.reader_c_model`` /
+``Settings.judge_model`` are set.
 
 The only "loop" is the reopen pair, which is a straight-line pass that runs only for images the
 critic flagged, and the critic grants it at most ``max_reopen`` (=1) times per image.
@@ -25,26 +29,34 @@ class Step:
 
 def build_steps(settings: Settings, run_dir: Path, mock: bool = False) -> list[Step]:
     if mock:
-        from inspector.agents.mock import MockCritic, MockExpert, MockReader
+        from inspector.agents.mock import MockCritic, MockExpert, MockJudge, MockReader
 
         expert: Callable[[], BaseAgent] = MockExpert
         reader = lambda name, reopen: (lambda: MockReader(settings, name, reopen))  # noqa: E731
         critic: Callable[[], BaseAgent] = lambda: MockCritic(settings)  # noqa: E731
+        judge: Callable[[], BaseAgent] = lambda: MockJudge(settings)  # noqa: E731
     else:
+        from inspector.agents.conflict_judge import ConflictJudge
         from inspector.agents.reader_mllm import ReaderMLLM
         from inspector.agents.visual_expert import VisualExpert
 
         expert = lambda: VisualExpert(settings, run_dir)  # noqa: E731
-        models = {"reader_a": settings.reader_a_model, "reader_b": settings.reader_b_model}
+        models = {"reader_a": settings.reader_a_model, "reader_b": settings.reader_b_model,
+                  "reader_c": settings.reader_c_model or ""}
         reader = lambda name, reopen: (lambda: ReaderMLLM(settings, models[name.removesuffix("_reopen")], name, reopen))  # noqa: E731
         critic = lambda: CriticVerifier(settings)  # noqa: E731
+        judge = lambda: ConflictJudge(settings)  # noqa: E731
 
-    return [
+    steps = [
         Step("1_expert", expert),
         Step("2_reader_a", reader("reader_a", False)),
         Step("3_reader_b", reader("reader_b", False)),
+        Step("3b_reader_c", reader("reader_c", False)),
         Step("4_critic", critic),
         Step("5_reader_a_reopen", reader("reader_a_reopen", True)),
         Step("6_reader_b_reopen", reader("reader_b_reopen", True)),
+        Step("6b_judge", judge),
         Step("7_aggregator", lambda: Aggregator(settings)),
     ]
+    optional = {"3b_reader_c": settings.reader_c_model, "6b_judge": settings.judge_model}
+    return [st for st in steps if optional.get(st.name, True)]

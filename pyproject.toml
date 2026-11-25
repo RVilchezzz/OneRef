@@ -17,6 +17,7 @@ dependencies = [
 
 [project.optional-dependencies]
 logfire = ["logfire"]    # optional telemetry (ONEREF_USE_LOGFIRE=true)
+figures = ["matplotlib"]  # scripts/make_figures.py
 
 [dependency-groups]
 dev = ["pytest"]

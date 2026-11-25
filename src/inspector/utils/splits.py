@@ -42,6 +42,31 @@ def sample_per_source(samples: list[Sample], per_source: int, seed: int) -> list
     return picked
 
 
+def stratified_subsample(samples: list[Sample], n: int, seed: int) -> list[Sample]:
+    """Exactly ``n`` images (or all if fewer), stratified by (source, category, is_defective).
+
+    Proportional allocation with the largest-remainder rule, so every stratum keeps its share of the
+    pool and the total is exact; images inside a stratum are a seeded shuffle. Used to fix the test
+    size (e.g. 1,000 images of the 90 % pool) before the single frozen run."""
+    if n >= len(samples):
+        return list(samples)
+    strata: dict[tuple, list[Sample]] = defaultdict(list)
+    for s in samples:
+        strata[(s.source, s.category, s.is_defective)].append(s)
+    keys = sorted(strata, key=str)
+    quota = {k: n * len(strata[k]) / len(samples) for k in keys}
+    take = {k: int(quota[k]) for k in keys}
+    for k in sorted(keys, key=lambda k: (-(quota[k] - take[k]), str(k)))[: n - sum(take.values())]:
+        take[k] += 1
+    rng = random.Random(seed)
+    picked: list[Sample] = []
+    for k in keys:
+        group = sorted(strata[k], key=lambda s: s.image_id)
+        rng.shuffle(group)
+        picked += group[: take[k]]
+    return picked
+
+
 def save_split(dev: list[Sample], test: list[Sample], out_dir: Path) -> None:
     out_dir.mkdir(parents=True, exist_ok=True)
     (out_dir / "dev_ids.json").write_text(json.dumps([s.image_id for s in dev]), encoding="utf-8")

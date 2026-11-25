@@ -1,0 +1,14 @@
+{
+  "from": "outputs/dev_full_S_judge/6b_judge",
+  "overrides": {
+    "expert_weight_discrimination": 0.5,
+    "expert_weight_by_source": {
+      "GoodsAD": 0
+    },
+    "expert_threshold_by_source": {
+      "DS-MVTec": 0.7,
+      "MVTec-LOCO": 0.7,
+      "VisA": 0.3
+    }
+  }
+}

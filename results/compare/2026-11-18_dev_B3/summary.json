@@ -1,0 +1,123 @@
+{
+  "runs": {
+    "S_judge": {
+      "n_images": 835,
+      "n_questions": 3937,
+      "per_subtask": {
+        "anomaly_discrimination": 0.6497893016855865,
+        "defect_classification": 0.461038961038961,
+        "defect_localization": 0.5311203319502075,
+        "defect_description": 0.6140724946695096,
+        "defect_analysis": 0.8270042194092827,
+        "object_classification": 0.8543689320388349,
+        "object_analysis": 0.7166301969365426
+      },
+      "mean": 0.6648606339612749,
+      "ci95": [
+        0.6475876482395638,
+        0.6815276999395218
+      ],
+      "fpr": 0.43653250773993807,
+      "miss": 0.2638888888888889,
+      "mean_per_source": {
+        "DS-MVTec": 0.7573572817556775,
+        "GoodsAD": 0.6290100417516457,
+        "MVTec-AD": 0.7222222222222222,
+        "MVTec-LOCO": 0.5853737729071252,
+        "VisA": 0.6941777901560731
+      }
+    },
+    "B1_qwen": {
+      "n_images": 835,
+      "n_questions": 3937,
+      "per_subtask": {
+        "anomaly_discrimination": 0.632359083984471,
+        "defect_classification": 0.4653679653679654,
+        "defect_localization": 0.549792531120332,
+        "defect_description": 0.579957356076759,
+        "defect_analysis": 0.7953586497890295,
+        "object_classification": 0.8802588996763754,
+        "object_analysis": 0.7067833698030634
+      },
+      "mean": 0.6585539794025709,
+      "ci95": [
+        0.6429107920964972,
+        0.6749160292638375
+      ],
+      "fpr": 0.5170278637770898,
+      "miss": 0.21825396825396826,
+      "mean_per_source": {
+        "DS-MVTec": 0.764032527131568,
+        "GoodsAD": 0.6147746634207907,
+        "MVTec-AD": 0.7777777777777778,
+        "MVTec-LOCO": 0.5611189454003808,
+        "VisA": 0.6978949338407955
+      }
+    },
+    "B3_k3": {
+      "n_images": 835,
+      "n_questions": 3937,
+      "per_subtask": {
+        "anomaly_discrimination": 0.6231909430438842,
+        "defect_classification": 0.4588744588744589,
+        "defect_localization": 0.549792531120332,
+        "defect_description": 0.579957356076759,
+        "defect_analysis": 0.7890295358649789,
+        "object_classification": 0.883495145631068,
+        "object_analysis": 0.7100656455142232
+      },
+      "mean": 0.6563436594465292,
+      "ci95": [
+        0.6403463203956713,
+        0.6725607025177093
+      ],
+      "fpr": 0.5294117647058824,
+      "miss": 0.22420634920634921,
+      "mean_per_source": {
+        "DS-MVTec": 0.7592901343066695,
+        "GoodsAD": 0.6153070609073287,
+        "MVTec-AD": 0.7777777777777778,
+        "MVTec-LOCO": 0.5577020268891226,
+        "VisA": 0.695326814825308
+      }
+    }
+  },
+  "pairs": {
+    "S_judge vs B1_qwen": {
+      "paired_questions": 3937,
+      "both_right": 2379,
+      "only_first": 242,
+      "only_second": 218,
+      "both_wrong": 1098,
+      "oracle_acc": 0.7211074422148844,
+      "mcnemar_p": 0.2835362980275993
+    },
+    "S_judge vs B3_k3": {
+      "paired_questions": 3937,
+      "both_right": 2365,
+      "only_first": 256,
+      "only_second": 223,
+      "both_wrong": 1093,
+      "oracle_acc": 0.7223774447548895,
+      "mcnemar_p": 0.14362982611078323
+    },
+    "B1_qwen vs B3_k3": {
+      "paired_questions": 3937,
+      "both_right": 2560,
+      "only_first": 37,
+      "only_second": 28,
+      "both_wrong": 1312,
+      "oracle_acc": 0.666751333502667,
+      "mcnemar_p": 0.3210841356849955
+    }
+  },
+  "args": {
+    "runs": [
+      "S_judge=outputs/reagg/dev_full_S_judge/override_C2",
+      "B1_qwen=outputs/reagg/dev_full_S_pre/B1_qwen",
+      "B3_k3=outputs/dev_B3_k3"
+    ],
+    "step": "7_aggregator",
+    "out": "results/compare/2026-11-18_dev_B3"
+  }
+}
