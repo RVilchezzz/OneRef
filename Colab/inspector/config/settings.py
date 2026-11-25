@@ -58,7 +58,7 @@ class Settings(BaseSettings):
     # False: a server is already running; the pass only checks it serves the right model.
     vllm_autostart: bool = False
     vllm_args: list[str] = [
-        "--max-model-len", "8192", "--gpu-memory-utilization", "0.9", "--trust-remote-code",
+        "--max-model-len", "16384", "--gpu-memory-utilization", "0.9", "--trust-remote-code",
         "--enable-auto-tool-choice", "--tool-call-parser", "hermes",  # needed by the critic's tool
     ]
     vllm_startup_timeout_s: int = 900
@@ -126,6 +126,9 @@ class Settings(BaseSettings):
     # Extra JSON fields sent with every critic request, e.g. '{"reasoning_effort": "none"}' to turn off
     # the "thinking" mode that Gemma 4 has on by default in Ollama (slow, and truncated at max_new_tokens).
     critic_extra_body: dict[str, Any] = {}
+    # False: the critic gets the rule findings in its prompt only, no tool. For vLLM with Qwen3-VL-4B, which
+    # answered {"error": ...} on 50/50 images with the tool offered next to JSON output.
+    critic_use_tool: bool = True
 
     # ---- telemetry ---------------------------------------------------------
     use_logfire: bool = False                         # optional; JSONL is always on

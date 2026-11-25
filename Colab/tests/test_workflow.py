@@ -188,6 +188,54 @@ def test_reader_accepts_schema_echo_of_internvl():
     assert ReaderAnswer.model_validate({"selected_option": "A", "confidence": 0.5, "properties": {"x": 1}}).selected_option == "A"
 
 
+def test_reader_accepts_answer_and_rationale_keys_of_qwen_on_vllm():
+    st = mk_state()
+    st.questions = st.questions[:1]
+    model, calls = scripted('{"answer": "B", "confidence": 0.95, "rationale": "hole"}')
+    st, rec = run_reader(model, st)
+    a = st.reader_a_responses[st.questions[0].id]
+    assert (a.selected_option, a.brief_rationale, len(calls)) == ("B", "hole", 1)
+    from inspector.schemas.agent_outputs import ReaderAnswer
+    both = ReaderAnswer.model_validate({"selected_option": "A", "answer": "B", "confidence": 0.5})
+    assert both.selected_option == "A"  # the schema key wins
+
+
+def test_failed_reopen_keeps_the_first_answer():
+    st = mk_state()
+    q0, q1 = st.questions
+    st.visual_evidence = expert(0.9, "top right")
+    st.reader_a_responses = {q0.id: ans(q0.id, "B"), q1.id: None}
+    st.reader_b_responses = {q0.id: ans(q0.id, "A"), q1.id: ans(q1.id, "B")}
+    st = CriticVerifier(Settings())._run(st, {})
+    r = ReaderMLLM(Settings(), "m", "reader_a_reopen", reopen=True, model=scripted("garbage")[0])
+    r.image_parts = lambda s: []
+    r.load()
+    try:
+        st = r._run(st, rec := {})
+    finally:
+        r.unload()
+    assert st.reader_a_responses[q0.id].selected_option == "B" and st.reader_a_responses[q1.id] is None
+    assert all("error" in c for c in rec["calls"])  # the failure stays visible in the log
+
+
+def test_critic_without_tool_sends_no_tool_and_does_not_mention_it():
+    seen = []
+
+    def fn(messages, info):
+        seen.append((info.function_tools, str(messages)))
+        return ModelResponse(parts=[TextPart('{"is_valid": true, "conflict_detected": false}')])
+
+    st = mk_state()
+    c = CriticVerifier(Settings(critic_use_tool=False), model=FunctionModel(fn))
+    c.image_parts = lambda s: []
+    c.load()
+    try:
+        c._run(st, rec := {})
+    finally:
+        c.unload()
+    assert seen[0][0] == [] and "run_consistency_rules" not in seen[0][1] and "llm" in rec
+
+
 def test_reader_agent_gives_none_after_retries():
     model, _ = scripted("not json at all")
     st, rec = run_reader(model, mk_state())

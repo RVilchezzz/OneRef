@@ -43,7 +43,7 @@ CRITIC_PROMPT = (
     "You are the quality-control reviewer of an industrial inspection team. Image 1 is the inspected "
     "part, image 2 a normal reference, image 3 (if present) the region a visual expert found most "
     "different. Two inspectors answered multiple-choice questions about image 1. The automatic "
-    "consistency checks are listed in the input (also available as the `run_consistency_rules` tool). "
+    "consistency checks are listed in the input{tool}. "
     "Decide which questions must be "
     "re-asked because an answer contradicts the images, the expert evidence, or another answer of "
     "the same inspector. Only list question ids that appear in the input. Do not re-ask a question "
@@ -88,7 +88,8 @@ class CriticVerifier(LLMAgent):
         agent = Agent(
             model,
             name="Critic",
-            system_prompt=CRITIC_PROMPT,
+            system_prompt=CRITIC_PROMPT.format(
+                tool=" (also available as the `run_consistency_rules` tool)" if self.s.critic_use_tool else ""),
             output_type=PromptedOutput([CriticReview]),
             deps_type=CriticDeps,
             retries={"output": self.s.json_retries},
@@ -96,10 +97,12 @@ class CriticVerifier(LLMAgent):
                                          **({"extra_body": self.s.critic_extra_body} if self.s.critic_extra_body else {})),
         )
 
-        @agent.tool
         def run_consistency_rules(ctx: RunContext[CriticDeps]) -> str:
             """Deterministic checks: missing answers, answers contradicting the visual expert."""
             return "\n".join(ctx.deps.findings) or "No rule violation found."
+
+        if self.s.critic_use_tool:
+            agent.tool(run_consistency_rules)
 
         @agent.output_validator
         def ids_exist(ctx: RunContext[CriticDeps], out: CriticReview) -> CriticReview:

@@ -150,6 +150,7 @@ class ReaderMLLM(LLMAgent):
             return await asyncio.gather(*(self.ask(q, state, critique, images, rec) for q in todo))
 
         for q, out in zip(todo, self.run_async(ask_all())):
-            store[q.id] = out
+            if out is not None or store.get(q.id) is None:  # a failed reopen keeps the first answer
+                store[q.id] = out
         rec["answers"] = {q.id: (store[q.id].selected_option if store.get(q.id) else None) for q in todo}
         return state

@@ -46,14 +46,17 @@ class ReaderAnswer(BaseModel):
 
     @model_validator(mode="before")
     @classmethod
-    def unwrap_schema_echo(cls, data: Any) -> Any:
+    def normalize_format(cls, data: Any) -> Any:
         """Format normalization, content unchanged: some small models (InternVL3.5-4B GGUF in Ollama)
         echo the JSON-schema layout, ``{"properties": {"selected_option": ...}, "required": [...]}``.
-        If the answer sits under ``properties`` and not at the top level, use it."""
+        If the answer sits under ``properties`` and not at the top level, use it.
+        Qwen3-VL-4B under vLLM names the keys ``answer`` / ``rationale``: accepted as aliases."""
         if isinstance(data, dict) and "selected_option" not in data:
             inner = data.get("properties")
             if isinstance(inner, dict) and "selected_option" in inner:
                 return inner
+            if "answer" in data:
+                return {"brief_rationale": data.get("rationale", ""), **data, "selected_option": data["answer"]}
         return data
 
 

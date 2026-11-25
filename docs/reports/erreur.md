@@ -113,3 +113,16 @@ Ma cellule de lecture, lancée avec Ctrl+Entrée, a été suivie de l'exécution
 - DINOv3 : toujours 403 (§1).
 - Run dev complet (835 images) : plusieurs heures de T4, quota Colab.
 - Split test : une seule fois, config gelée. Pas pour déboguer.
+
+## 9. Réponses rejetées dans la sonde 50 images (2026-11-25, run `probe`, `telemetry.jsonl`)
+
+MEAN 57,1 % (241 questions, 13 sans réponse) : ne mesure pas correctement la pipeline à cause de ces rejets.
+
+| Problème (1er passage) | Cause | Correction | Statut |
+|---|---|---|---|
+| Lecteur A : 114/241 appels en échec | surtout les clés `answer` / `rationale` au lieu de `selected_option` / `brief_rationale` | alias acceptés dans `ReaderAnswer`, contenu inchangé | rejeu local des réponses enregistrées : 104/114 acceptées (relecture : 71/87) |
+| Lecteur B : 45/241 en échec | entrée d'environ 10 300 tokens, limite 8 192 | `--max-model-len 16384` | à vérifier sur T4 (mémoire) |
+| Critic LLM : 50/50 images en échec | Qwen répond `{"error": ...}` ; cause supposée : outil proposé avec la sortie JSON | `ONEREF_CRITIC_USE_TOOL=false` dans la config Colab | **hypothèse**, à vérifier sur T4 |
+| Relecture : 5 réponses valides effacées | un échec à la relecture écrasait la première réponse | la première réponse est conservée | testé en local |
+
+Les résultats dev locaux du 18 nov. (Ollama) ont été produits avant le changement de relecture.
