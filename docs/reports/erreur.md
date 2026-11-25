@@ -126,3 +126,11 @@ MEAN 57,1 % (241 questions, 13 sans réponse) : ne mesure pas correctement la pi
 | Relecture : 5 réponses valides effacées | un échec à la relecture écrasait la première réponse | la première réponse est conservée | testé en local |
 
 Les résultats dev locaux du 18 nov. (Ollama) ont été produits avant le changement de relecture.
+
+## 10. Profil 8B sur Colab L4 (2026-11-25)
+
+| Point | Constat | Décision |
+|---|---|---|
+| DINOv3 | 403 « not in the authorized list » malgré un token autorisé aux dépôts restreints | expert **DINOv2-base** |
+| Seuils de l'expert | ceux de DINOv3 saturent avec DINOv2 (50/50 images à 1,00 dans la sonde 4B) | seuil dev 0,455 (835 images, balanced accuracy 0,622, in-sample) ; poids et seuils de vote par source à refaire après le dev |
+| Qwen3-VL-8B en bf16 | ne démarre pas : cache KV 1,69 Go requis, 1,36 Go disponibles à 0,92 (0,62 Go à 0,95 avec limite d'images) | `--quantization fp8`, **à signaler dans le rapport** ; à vérifier sur L4 |

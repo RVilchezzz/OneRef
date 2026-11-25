@@ -17,7 +17,7 @@ MAX_CRITIC_FAIL = 0.10      # images without an LLM review
 MAX_UNANSWERED = 0.02       # questions that end with no vote
 
 
-def report(events: list[dict], project: int = 835) -> dict:
+def report(events: list[dict], project: int = 835, expert: str = "dinov3") -> dict:
     records: dict[tuple[str, str], dict] = {}  # latest record per (agent, image): resumed runs append
     done: dict[str, bool] = {}
     timed: dict[str, dict] = {}  # last interval of each pass that did real work (cache-only reruns are skipped)
@@ -77,8 +77,8 @@ def report(events: list[dict], project: int = 835) -> dict:
         failures.append(f"unanswered questions: {unanswered}/{len(finals)}")
     experts = sorted({r.get("model", "?") for r in of("visual_expert")})
     stats["expert"] = ", ".join(experts)
-    if not experts or any("dinov3" not in m for m in experts):
-        failures.append(f"expert is not DINOv3 ({stats['expert']}): its calibration does not apply")
+    if not experts or any(expert not in m for m in experts):
+        failures.append(f"expert is not {expert} ({stats['expert']}): the configured calibration does not apply")
     return {"failures": failures, "stats": stats, "minutes": durations, "hours": seconds / 3600,
             "mean": final and final["mean"], "project": project}
 
@@ -87,10 +87,11 @@ def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     ap.add_argument("run", type=Path, help="run folder (or its telemetry.jsonl)")
     ap.add_argument("--project", type=int, default=835, help="images of the next run (dev = 835)")
+    ap.add_argument("--expert", default="dinov3", help="expert model the anomaly thresholds were calibrated for")
     args = ap.parse_args()
     path = args.run / "telemetry.jsonl" if args.run.is_dir() else args.run
     events = [json.loads(line) for line in path.read_text(encoding="utf-8").splitlines() if line.strip()]
-    r = report(events, args.project)
+    r = report(events, args.project, args.expert)
     for k, v in r["stats"].items():
         print(f"{k:12s} {v}")
     for k, v in r["minutes"].items():

@@ -8,7 +8,7 @@ Deux profils, choisis en cellule 1 (`PROFILE`) :
 
 | Profil | Lecteurs | Critic et juge | GPU |
 |---|---|---|---|
-| `8B` (défaut) | Qwen3-VL-8B, InternVL3.5-8B | Gemma 4 E4B | **L4** minimum (poids ≈ 16 Go) |
+| `8B` (défaut) | Qwen3-VL-8B, InternVL3.5-8B | Gemma 4 E4B | **L4** minimum, poids en **FP8** |
 | `4B` | Qwen3-VL-4B, InternVL3.5-4B | T4 : Qwen3-VL-4B et Ministral-3-3B ; sinon Gemma 4 E2B | T4 possible |
 
 Le profil 4B a tourné sur T4. **Le profil 8B n'a encore jamais été exécuté.**
@@ -39,7 +39,7 @@ Le profil 4B a tourné sur T4. **Le profil 8B n'a encore jamais été exécuté.
 4. À la fin : **déconnecter et supprimer l'environnement d'exécution** (sinon les unités continuent d'être consommées).
 
 ### Seuils de la sonde (`scripts/check_run.py`)
-Toutes les passes terminées ; moins de 5 % de réponses invalides par lecteur au 1er passage ; critic LLM en échec sur moins de 10 % des images ; le juge répond ; au plus 2 % de questions sans réponse ; expert **DINOv3** (sa calibration en dépend). Le script projette la durée sur 835 images, mais **ne connaît pas les unités restantes** : heures projetées × débit du GPU doit tenir dans le solde avec 15 % de marge.
+Toutes les passes terminées ; moins de 5 % de réponses invalides par lecteur au 1er passage ; critic LLM en échec sur moins de 10 % des images ; le juge répond ; au plus 2 % de questions sans réponse ; expert conforme à la config (**DINOv2** en 8B, DINOv3 en 4B ; les seuils en dépendent). Le script projette la durée sur 835 images, mais **ne connaît pas les unités restantes** : heures projetées × débit du GPU doit tenir dans le solde avec 15 % de marge.
 
 ### Résultats et reprise
 Tout est sur Drive : `MyDrive/OneRef/outputs/<run>/<passe>/<id>.json` et `telemetry.jsonl`. Après une coupure, relancer les cellules 1 à 5 puis la même commande : les images déjà en cache sont sautées. Le cache est lié au nom du run : **changer de modèle ou de réglage = nouveau `--run-name`**.

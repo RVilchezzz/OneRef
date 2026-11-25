@@ -54,6 +54,12 @@ def test_each_threshold_fails():
     assert any("6b_judge" in f for f in report(unfinished)["failures"])
 
 
+def test_expected_expert_can_be_changed():
+    ev = telemetry(expert="facebook/dinov2-base")
+    assert report(ev, expert="facebook/dinov2-base")["failures"] == []
+    assert any("expert" in f for f in report(telemetry(), expert="facebook/dinov2-base")["failures"])
+
+
 def test_8b_template_loads_in_settings(monkeypatch):
     text = (ROOT / "configs" / "2026-11-19_8B_colab_template.env").read_text(encoding="utf-8")
     for line in text.splitlines():
@@ -65,5 +71,7 @@ def test_8b_template_loads_in_settings(monkeypatch):
     assert (s.reader_a_model, s.reader_b_model) == ("Qwen/Qwen3-VL-8B-Instruct", "OpenGVLab/InternVL3_5-8B")
     assert s.critic_model == s.judge_model == "google/gemma-4-E4B-it"
     assert s.critic_use_tool is False
+    assert s.expert_model == "facebook/dinov2-base"  # DINOv3 access refused
+    assert (s.anomaly_norm_low, s.anomaly_norm_high) == (0.355, 0.555)  # DINOv2 dev threshold 0.455
     assert s.critic_extra_body == s.judge_extra_body == {"chat_template_kwargs": {"enable_thinking": False}}
     assert json.dumps(s.critic_extra_body)
