@@ -4,7 +4,7 @@ Final project of **IA025 – Introduction to Deep Learning** (Unicamp 2026 S2). 
 Deliveries: Oct 29 (plan, done) · **Nov 12 (preliminary, on dev)** · **Nov 26 (final)**. Test week: Nov 19–23.
 
 ## What it is
-A **training-free multi-agent system** for industrial visual inspection from **one photo of the part + one normal reference photo**. It orchestrates open pre-trained models, no fine-tuning. **Scale decision (Nov 18): 4B models only, run locally; the 8B models and Colab are dropped** (8B numbers from the literature are cited as reference only). Evaluated on the **MMAD** benchmark (ICLR 2025: 8,366 images, 39,670 multiple-choice questions, 7 subtasks, 4 sources: MVTec AD, VisA, MVTec LOCO, GoodsAD).
+A **training-free multi-agent system** for industrial visual inspection from **one photo of the part + one normal reference photo**. It orchestrates open pre-trained models, no fine-tuning. **Scale decision (Nov 18): 4B models only, run locally; the 8B models and Colab are dropped** (8B numbers from the literature are cited as reference only). **Update Nov 25: an 8B run on Colab L4 (dev only, `configs/2026-11-19_8B_colab_template.env`) is added next to the 4B system; the frozen 4B config is unchanged.** Evaluated on the **MMAD** benchmark (ICLR 2025: 8,366 images, 39,670 multiple-choice questions, 7 subtasks, 4 sources: MVTec AD, VisA, MVTec LOCO, GoodsAD).
 
 **Question studied:** how much of the multi-agent gain reported by SiGMA (85.2 %) survives under a *strict* protocol (1 reference, no added text, no tuning on MMAD)?
 **Success:** the full system beats, with McNemar p < 0.05, both the best single model (B1 = Qwen3-VL-4B alone, same protocol) and the equal-budget majority vote. A well-measured negative result is also valid.
@@ -26,7 +26,7 @@ Orchestrator → **Visual expert** (DINOv3 frozen, DINOv2 fallback: patch-distan
 ## Compute
 - Everything runs locally: RTX 3060 Laptop 6 GB, Ollama (`OLLAMA_CONTEXT_LENGTH=8192 ollama serve`), 4B models quantized. One model at a time.
 - Throughput: ~10 h for the 835 dev images (readers ~3 h 50 each) → a 2,000-image test ≈ 24 h. The full 90 % (7,531 images) does not fit the test week.
-- Colab / vLLM / 8B paths stay in the code but are not used (decision of Nov 18).
+- Colab / vLLM: used since Nov 24 (4B probe on T4) and for the 8B profile on L4 (`Colab/README.md`; `scripts/check_run.py` gates the full dev run).
 
 ## Repo layout
 - `docs/full_plan.md`: authoritative plan (state of the art, workflow, dataset, validation, risks). `executive_summary.md`, `references.md`, `mmad/LEADERBOARD_snapshot_2026-10-23.md`, `course/` (template), `slides/` (Delivery I deck, `project/` = HTML slides, speaker scripts EN/FR).
