@@ -49,7 +49,7 @@ Date : 2026-11-24. Branche du dépôt : `Test_implementation`. Les tests ont ét
 | Sujet | Constat |
 |---|---|
 | Gemma 4 E2B sur T4 | Ne tourne pas : kernel Triton qui demande plus de 96 Ko de shared memory. |
-| Ministral version FP8 (par défaut) | Inutilisable sur T4 (pas de FP8 natif). Il faut le dépôt BF16, chargé en fp16. |
+| Ministral version FP8 (par défaut) | **Correction (batterie du 2026-11-24)** : elle démarre et répond sur T4 (vLLM 0.34). Les deux dépôts sont utilisables. |
 | `google/gemma-3-4b-it` | HTTP 403 avec le token actuel. |
 | DINOv3 (`facebook/dinov3-vitb16-pretrain-lvd1689m`) | HTTP 403 : le token a `canReadGatedRepos: false`. Il faut l'accès au dépôt (licence acceptée) et la permission sur le token. L'expert reste donc en DINOv2. |
 | `microsoft/Phi-4-multimodal-instruct` | HTTP 200 (accès OK), mais **non testé** comme judge. |
@@ -68,7 +68,8 @@ Date : 2026-11-24. Branche du dépôt : `Test_implementation`. Les tests ont ét
 ## 6. Non testé
 
 - Run entièrement frais avec Ministral sur toutes les passes (les passes 1 à 6 sont reprises du cache).
-- **Aggregator LLM** : écrit en local (`src/inspector/agents/llm_aggregator.py`, 52 tests GPU-free passent avec des modèles simulés). Il n'a **jamais tourné sur Colab**, car le notebook clone GitHub et le code n'y est pas poussé.
+- **Aggregator LLM** : a tourné sur Colab (run `probe_llmagg`, passes 1 à 6b en cache, 54 appels, 5 en erreur). MEAN 35,8 % contre 57,4 % pour le vote, avec seulement 12 réponses différentes sur 157 : écart **non expliqué**, à investiguer, ne pas citer. Détails dans `erreur.md` §5. Les 52 tests passent aussi sur Colab.
+- **Batterie de 14 modèles 3B/4B** : voir `erreur.md` §5.
 - Cellule « Run dev complet » (835 images) et split test.
 - Judge de repli (Phi-4-multimodal ou autre).
 - DINOv3 comme expert.
