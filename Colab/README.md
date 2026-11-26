@@ -33,6 +33,7 @@ Le profil 4B a tourné sur T4. **Le profil 8B n'a encore jamais été exécuté.
 | 6 | tests sans GPU | doit passer avant d'utiliser le GPU |
 | 6b | démarre chaque modèle une fois (hors T4) | la réponse ne doit contenir aucun bloc de réflexion |
 | 7 | sonde, run `probe_<profil>_<expert>` (ex. `probe_8B_dinov3`) | se termine par un **VERDICT** |
+| 7b | test léger : pipeline complet sur `N_LIGHT` images (20, soit ~26 min estimées ; VM neuve : 10), run `light_<profil>_<expert>_<N>` | optionnel, indépendant de la 7 |
 | 8 | **dev complet**, run `dev_full_S_<profil>_<expert>` | ne démarre que si la sonde passe ; vérifier d'abord les unités restantes |
 | 9 | bilan du dev complet | |
 

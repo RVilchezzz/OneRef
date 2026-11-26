@@ -62,6 +62,10 @@ class Settings(BaseSettings):
         "--enable-auto-tool-choice", "--tool-call-parser", "hermes",  # needed by the critic's tool
     ]
     vllm_startup_timeout_s: int = 900
+    # A server that exits during start-up (e.g. CUDA out of memory right after the previous pass) is
+    # started again, after a wait that lets the GPU memory be released.
+    vllm_start_retries: int = 2
+    vllm_retry_wait_s: int = 30
     # Hosted API per agent, e.g. ONEREF_REMOTE='{"reader_a":{"base_url":"https://api.x.ai/v1","api_key":"...","model":"grok-..."}}'
     # Roles: reader_a, reader_b, critic. A listed role skips vLLM entirely (nothing on the GPU).
     remote: dict[str, dict[str, str]] = {}

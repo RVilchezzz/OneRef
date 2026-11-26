@@ -136,3 +136,5 @@ Les résultats dev locaux du 18 nov. (Ollama) ont été produits avant le change
 | Qwen3-VL-8B en bf16 | ne démarre pas : cache KV 1,69 Go requis, 1,36 Go disponibles à 0,92 (0,62 Go à 0,95 avec limite d'images) | `--quantization fp8`, **à signaler dans le rapport** ; à vérifier sur L4 |
 
 **Mise à jour (26 nov.) :** accès DINOv3 accordé. Le profil 8B revient à DINOv3 avec la calibration de la config gelée 4B ; la sonde `probe_8B` (DINOv2, interrompue pendant le lecteur B) est abandonnée. Les runs sont désormais nommés par profil et par expert (`probe_8B_dinov3`) pour ne jamais reprendre le cache d'un autre expert.
+
+**Juge Gemma 4, sonde `probe_8B_dinov3` :** échec au démarrage (`CUDA_ERROR_OUT_OF_MEMORY`) alors que le même modèle avait démarré pour le vérificateur ; cause non prouvée (mémoire pas encore libérée ?). `VLLMServer.start` réessaie désormais 2 fois après 30 s (`ONEREF_VLLM_START_RETRIES`, `ONEREF_VLLM_RETRY_WAIT_S`). Passes 1 à 6 : lecteur A 0/241 réponses invalides, lecteur B 2/241.

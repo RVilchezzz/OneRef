@@ -103,16 +103,23 @@ class VLLMServer:
                 raise RuntimeError(f"Server at {self.s.llm_base_url} serves {models}, not {self.model_name!r}.")
             return
         port = str(urlparse(self.s.llm_base_url).port or 8000)
-        self.proc = subprocess.Popen(["vllm", "serve", self.model_name, "--port", port, *self.s.vllm_args])
-        deadline = time.monotonic() + self.s.vllm_startup_timeout_s
-        while time.monotonic() < deadline:
-            if self.proc.poll() is not None:
-                raise RuntimeError(f"vllm serve {self.model_name} exited with code {self.proc.returncode}")
-            if self.model_name in (served_models(self.s) or []):
-                return
-            time.sleep(5)
-        self.stop()
-        raise TimeoutError(f"vllm serve {self.model_name} not ready after {self.s.vllm_startup_timeout_s}s")
+        attempts = 1 + self.s.vllm_start_retries
+        for attempt in range(1, attempts + 1):
+            self.proc = subprocess.Popen(["vllm", "serve", self.model_name, "--port", port, *self.s.vllm_args])
+            deadline = time.monotonic() + self.s.vllm_startup_timeout_s
+            while time.monotonic() < deadline and self.proc.poll() is None:
+                if self.model_name in (served_models(self.s) or []):
+                    return
+                time.sleep(5)
+            code = self.proc.poll()
+            self.stop()
+            if code is None:  # still loading at the deadline: another try would not be faster
+                raise TimeoutError(f"vllm serve {self.model_name} not ready after {self.s.vllm_startup_timeout_s}s")
+            if attempt == attempts:
+                raise RuntimeError(f"vllm serve {self.model_name} exited with code {code}")
+            print(f"vllm serve {self.model_name} exited with code {code} (attempt {attempt}/{attempts}); "
+                  f"retrying in {self.s.vllm_retry_wait_s} s", flush=True)
+            time.sleep(self.s.vllm_retry_wait_s)
 
     def stop(self) -> None:
         if self.proc and self.proc.poll() is None:

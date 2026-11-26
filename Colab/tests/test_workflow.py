@@ -752,3 +752,45 @@ def test_pass_runner_prints_progress(tmp_path, capsys):
     PassRunner(tmp_path, Telemetry(tmp_path / "t.jsonl", run="r")).run(steps, states)
     out = capsys.readouterr().out
     assert "1_expert 10/12" in out and "1_expert 12/12" in out and "1_expert 11/12" not in out
+
+
+class _FakeProc:
+    def __init__(self, code):
+        self.returncode = code
+
+    def poll(self):
+        return self.returncode
+
+    def terminate(self):
+        pass
+
+    def wait(self, timeout=None):
+        return 0
+
+
+def _vllm(monkeypatch, codes):
+    """VLLMServer whose successive `vllm serve` processes exit with `codes` (None = stays up and serves)."""
+    from inspector.agents import llm
+    procs, waits = [], []
+
+    def popen(cmd):
+        procs.append(_FakeProc(codes[len(procs)]))
+        return procs[-1]
+
+    monkeypatch.setattr(llm.subprocess, "Popen", popen)
+    monkeypatch.setattr(llm.time, "sleep", waits.append)
+    monkeypatch.setattr(llm, "served_models", lambda s: ["m"] if procs[-1].returncode is None else None)
+    return llm.VLLMServer(Settings(vllm_autostart=True), "m"), procs, waits
+
+
+def test_vllm_server_retries_after_a_failed_start(monkeypatch):
+    server, procs, waits = _vllm(monkeypatch, [1, None])
+    server.start()
+    assert len(procs) == 2 and server.proc is procs[1] and 30 in waits  # waits for GPU memory before retrying
+
+
+def test_vllm_server_gives_up_after_the_last_retry(monkeypatch):
+    server, procs, _ = _vllm(monkeypatch, [1, 1, 1, None])
+    with pytest.raises(RuntimeError, match="exited with code 1"):
+        server.start()
+    assert len(procs) == 3 and server.proc is None
