@@ -25,12 +25,13 @@ frozen on Nov 19 ([`results/test/test200_2026-11-25/summary.md`](results/test/te
 | S without the judge | 68.7 [65.0, 72.1] | p = 0.47 |
 | Qwen alone, no expert | 64.5 [61.5, 67.6] | p < 0.001 |
 | InternVL + expert | 62.6 [59.3, 65.9] | p < 0.001 |
+| B3, Qwen + expert ×3 samples, majority vote (equal compute) | 69.7 [66.3, 72.8] | 48 vs 42 questions, p = 0.60 |
 
 - The expert's evidence adds +5.8 points to Qwen (p < 0.001); the team adds nothing on top (−0.2, p = 1.0).
 - S makes fewer false alarms (48 % vs 53 % of good parts) with the same missed defects (18 % vs 17 %).
 - Dev (835 images) showed the same picture: S 66.5, Qwen + expert 65.9 (p = 0.28), B3 65.6
   ([`results/compare/2026-11-19_dev_frozen/summary.md`](results/compare/2026-11-19_dev_frozen/summary.md)).
-- B3 (equal-compute vote) on the test is still running; the 2,000-image test is planned for the article.
+- S does not beat the equal-compute vote B3 either (70.1 vs 69.7, p = 0.60). The 2,000-image test is planned for the article.
   The protocol change was written before any test answer: [`docs/reports/2026-11-25_test_protocol_change.md`](docs/reports/2026-11-25_test_protocol_change.md).
 
 | | |
