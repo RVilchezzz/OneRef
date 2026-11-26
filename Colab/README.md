@@ -34,7 +34,7 @@ Le profil 4B a tourné sur T4. **Le profil 8B n'a encore jamais été exécuté.
 | 6b | démarre chaque modèle une fois (hors T4) | la réponse ne doit contenir aucun bloc de réflexion |
 | 7 | sonde, run `probe_<profil>_<expert>` (ex. `probe_8B_dinov3`) | se termine par un **VERDICT** |
 | 7b | test léger : pipeline complet sur `N_LIGHT` images (20, soit ~26 min estimées ; VM neuve : 10), run `light_<profil>_<expert>_<N>` | optionnel, indépendant de la 7 |
-| 8 | **dev complet**, run `dev_full_S_<profil>_<expert>` | ne démarre que si la sonde passe ; vérifier d'abord les unités restantes |
+| 8 | **dev complet par paliers** de `TIER` images, run `dev_full_S_<profil>_<expert>` | ne démarre que si la sonde passe ; vérifier d'abord les unités restantes ; peut être arrêtée après n'importe quel palier |
 | 9 | bilan du dev complet | |
 
 4. À la fin : **déconnecter et supprimer l'environnement d'exécution** (sinon les unités continuent d'être consommées).
@@ -44,6 +44,9 @@ Activer **File → Auto Save**, puis exécuter `Colab/run_vscode.ipynb` (copie n
 
 ### Seuils de la sonde (`scripts/check_run.py`)
 Toutes les passes terminées ; moins de 5 % de réponses invalides par lecteur au 1er passage ; critic LLM en échec sur moins de 10 % des images ; le juge répond ; au plus 2 % de questions sans réponse ; expert conforme à la config (**DINOv2** en 8B, DINOv3 en 4B ; les seuils en dépendent). Le script projette la durée sur 835 images, mais **ne connaît pas les unités restantes** : heures projetées × débit du GPU doit tenir dans le solde avec 15 % de marge.
+
+### Paliers
+Après chaque palier (`--tier N`), `outputs/<run>/tiers/tier_<n>/` contient `votes.csv` (par question : vérité, score de l'expert, réponse de chaque lecteur avant et après réouverture, juge, vote final) et `metrics.json` (moyenne des 7 sous-tâches pour le vote final et chaque lecteur seul, juge). Les paliers sont cumulatifs et chaque préfixe garde les proportions source / catégorie / défaut. Les lecteurs reçoivent l'indice de l'expert : leur score seul n'est pas la baseline B1/B2. Chaque palier recharge tous les modèles (environ 15 min estimées) : 50 images donnent des résultats plus souvent mais couvrent moins d'images dans un temps fixé que 150.
 
 ### Résultats et reprise
 Tout est sur Drive : `MyDrive/OneRef/outputs/<run>/<passe>/<id>.json` et `telemetry.jsonl`. Après une coupure, relancer les cellules 1 à 5 puis la même commande : les images déjà en cache sont sautées. Le cache est lié au nom du run : **changer de modèle ou de réglage = nouveau `--run-name`**.

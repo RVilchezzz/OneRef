@@ -21,7 +21,7 @@ from inspector.schemas.agent_outputs import ReaderOutput, VisualExpertOutput
 from inspector.schemas.mmad import Question, Sample, SubTask, load_mmad, parse_subtask
 from inspector.schemas.state import InspectionState
 from inspector.utils import metrics
-from inspector.utils.splits import make_split, sample_per_source, stratified_subsample
+from inspector.utils.splits import make_split, sample_per_source, stratified_subsample, tier_order
 from inspector.utils.telemetry import Telemetry
 
 
@@ -794,3 +794,40 @@ def test_vllm_server_gives_up_after_the_last_retry(monkeypatch):
     with pytest.raises(RuntimeError, match="exited with code 1"):
         server.start()
     assert len(procs) == 3 and server.proc is None
+
+
+# ---- tiers (partial results every N images) ---------------------------------
+def _pool(per_group=10):
+    return [Sample(image_id=f"{src}/c/{d}/{i}", image_path="x.png", source=src, is_defective=d,
+                   templates=["r.png"], questions=mk_questions(f"{src}/c/{d}/{i}"))
+            for src in ("VisA", "GoodsAD") for d in (False, True) for i in range(per_group)]
+
+
+def test_tier_order_starts_with_the_probe_sample_and_stays_stratified():
+    pool = _pool()
+    ordered = tier_order(pool, 8, seed=0)
+    assert sorted(s.image_id for s in ordered) == sorted(s.image_id for s in pool)
+    assert {s.image_id for s in ordered[:8]} == {s.image_id for s in stratified_subsample(pool, 8, seed=0)}
+    assert len({(s.source, s.is_defective) for s in ordered[8:12]}) == 4  # every later prefix keeps all strata
+    assert ordered == tier_order(pool, 8, seed=0)
+
+
+def test_main_with_tiers_saves_cumulative_votes_and_metrics(tmp_path, monkeypatch):
+    import csv
+    import inspector.main as cli
+    pool = _pool(3)
+    s = Settings(_env_file=None, outputs_dir=tmp_path / "out", splits_dir=tmp_path / "splits", dev_fraction=0.5)
+    monkeypatch.setattr(cli, "get_settings", lambda: s)
+    monkeypatch.setattr(cli, "load_mmad", lambda *a, **k: pool)
+    assert cli.main(["--split", "dev", "--mock", "--tier", "4", "--run-name", "t"]) == 0
+    n_dev = len(make_split(pool, 0.5, s.seed)[0])
+    folders = sorted(p.name for p in (tmp_path / "out" / "t" / "tiers").iterdir())
+    assert folders == [f"tier_{k:04d}" for k in sorted({*range(4, n_dev, 4), n_dev})]
+    last = tmp_path / "out" / "t" / "tiers" / folders[-1]
+    votes = list(csv.DictReader((last / "votes.csv").open(encoding="utf-8")))
+    assert len(votes) == 2 * n_dev
+    assert {"truth", "expert_score", "reader_a_first", "reader_a", "reader_b", "judge", "final"} <= set(votes[0])
+    assert all(v["reader_a_first"] and v["final"] for v in votes)
+    m = json.loads((last / "metrics.json").read_text(encoding="utf-8"))
+    assert m["images"] == n_dev and set(m["mean"]) == {"final", "reader_a", "reader_b"}
+    assert 0 <= m["judge"]["correct"] <= m["judge"]["answered"]

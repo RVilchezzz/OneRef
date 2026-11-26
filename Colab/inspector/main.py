@@ -4,6 +4,7 @@
     python -m inspector.main --split test --frozen-config --run-name final     # run ONCE
     python -m inspector.main --split dev --limit 5 --mock                       # GPU-free smoke test
     python -m inspector.main --split dev --per-source 4 --run-name quick         # few images of every source
+    python -m inspector.main --split dev --tier 50 --run-name full                # results saved every 50 images
 
 Needs ``src`` on PYTHONPATH (``pip install -e .`` or ``set PYTHONPATH=src``).
 """
@@ -19,7 +20,8 @@ from inspector.orchestrator.pass_runner import PassRunner
 from inspector.schemas.mmad import load_mmad
 from inspector.schemas.state import InspectionState
 from inspector.utils import metrics
-from inspector.utils.splits import make_split, sample_per_source, save_split, stratified_subsample
+from inspector.utils.export import export_tier
+from inspector.utils.splits import make_split, sample_per_source, save_split, stratified_subsample, tier_order
 from inspector.utils.telemetry import Telemetry
 
 
@@ -33,6 +35,9 @@ def main(argv: list[str] | None = None) -> int:
     ap.add_argument("--available-only", action="store_true", help="keep only images present under ONEREF_MMAD_ROOT (sample download)")
     ap.add_argument("--steps", default=None,
                     help="comma-separated passes to run, e.g. expert,reader_a,aggregator (single-model baseline); default all")
+    ap.add_argument("--tier", type=int, default=None,
+                    help="run all passes on N images, then 2N, ..., saving every vote and the scores each time "
+                         "(every tier reloads every model: smaller N = more overhead)")
     ap.add_argument("--run-name", default="run")
     ap.add_argument("--mock", action="store_true", help="GPU-free mock agents (smoke test)")
     ap.add_argument("--frozen-config", action="store_true", help="required for --split test: config is frozen")
@@ -58,6 +63,8 @@ def main(argv: list[str] | None = None) -> int:
     if args.per_source:
         chosen = sample_per_source(chosen, args.per_source, s.seed)
     chosen = chosen[: args.limit]
+    if args.tier:
+        chosen = tier_order(chosen, args.tier, s.seed)
 
     run_dir = Path(s.outputs_dir) / args.run_name
     tel = Telemetry(run_dir / "telemetry.jsonl", run=args.run_name, use_logfire=s.use_logfire)
@@ -69,15 +76,23 @@ def main(argv: list[str] | None = None) -> int:
         if not steps:
             print(f"--steps {args.steps!r} matches no pass", file=sys.stderr)
             return 2
-    states = PassRunner(run_dir, tel).run(steps, states)
-
-    rows = metrics.build_rows(chosen, states)
-    acc = metrics.per_subtask_accuracy(rows)
-    for k, v in acc.items():
-        print(f"{k.value:26s} {v:6.1%}")
-    lo, hi = metrics.bootstrap_ci(rows)
-    print(f"{'MEAN (7 subtasks)':26s} {metrics.mean_accuracy(rows):6.1%}  95% CI [{lo:.1%}, {hi:.1%}]  n_img={len(states)}")
-    tel.write({"event": "final_metrics", "mean": metrics.mean_accuracy(rows), "per_subtask": {k.value: v for k, v in acc.items()}})
+    size = args.tier or len(states) or 1
+    done: list[InspectionState] = []
+    for stop in range(size, len(states) + size, size):  # a single tier (everything) without --tier
+        done += PassRunner(run_dir, tel).run(steps, states[len(done):stop])  # only the new images
+        rows = metrics.build_rows(chosen[:stop], done)
+        acc = metrics.per_subtask_accuracy(rows)
+        for k, v in acc.items():
+            print(f"{k.value:26s} {v:6.1%}")
+        lo, hi = metrics.bootstrap_ci(rows)
+        print(f"{'MEAN (7 subtasks)':26s} {metrics.mean_accuracy(rows):6.1%}  95% CI [{lo:.1%}, {hi:.1%}]  n_img={len(done)}")
+        tel.write({"event": "final_metrics", "mean": metrics.mean_accuracy(rows), "n_img": len(done),
+                   "per_subtask": {k.value: v for k, v in acc.items()}})
+        if args.tier:
+            m = export_tier(run_dir, chosen[:stop], done)
+            print(f"=== TIER {len(done)}/{len(states)} saved | "
+                  + " | ".join(f"{k} {v:.1%}" for k, v in m["mean"].items())
+                  + f" | judge {m['judge']['correct']}/{m['judge']['answered']} ===", flush=True)
     return 0
 
 

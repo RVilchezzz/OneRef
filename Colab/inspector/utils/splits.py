@@ -71,3 +71,20 @@ def save_split(dev: list[Sample], test: list[Sample], out_dir: Path) -> None:
     out_dir.mkdir(parents=True, exist_ok=True)
     (out_dir / "dev_ids.json").write_text(json.dumps([s.image_id for s in dev]), encoding="utf-8")
     (out_dir / "test_ids.json").write_text(json.dumps([s.image_id for s in test]), encoding="utf-8")
+
+
+def tier_order(samples: list[Sample], first_n: int, seed: int) -> list[Sample]:
+    """All images, reordered for runs by tiers: first ``stratified_subsample(first_n)`` (so a probe of the
+    same size is reused), then the rest interleaved so that every prefix keeps the strata proportions."""
+    first = stratified_subsample(samples, first_n, seed)
+    done = {s.image_id for s in first}
+    strata: dict[tuple, list[Sample]] = defaultdict(list)
+    for s in samples:
+        if s.image_id not in done:
+            strata[(s.source, s.category, s.is_defective)].append(s)
+    rng, ranked = random.Random(seed), []
+    for k in sorted(strata, key=str):
+        group = sorted(strata[k], key=lambda s: s.image_id)
+        rng.shuffle(group)
+        ranked += [((i + 0.5) / len(group), str(k), s) for i, s in enumerate(group)]
+    return first + [s for *_, s in sorted(ranked, key=lambda t: t[:2])]
