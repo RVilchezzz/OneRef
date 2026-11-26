@@ -134,6 +134,33 @@
         "MVTec-LOCO": 0.5489574090505768,
         "VisA": 0.6534202353710362
       }
+    },
+    "B3_k3": {
+      "n_images": 200,
+      "n_questions": 952,
+      "per_subtask": {
+        "anomaly_discrimination": 0.6445147679324894,
+        "defect_classification": 0.5688073394495413,
+        "defect_localization": 0.5701754385964912,
+        "defect_description": 0.6194690265486725,
+        "defect_analysis": 0.8508771929824561,
+        "object_classification": 0.8717948717948718,
+        "object_analysis": 0.7511111111111111
+      },
+      "mean": 0.6966785354879477,
+      "ci95": [
+        0.6627116030019387,
+        0.7280022745173911
+      ],
+      "fpr": 0.5443037974683544,
+      "miss": 0.16666666666666666,
+      "mean_per_source": {
+        "DS-MVTec": 0.8520306470345809,
+        "GoodsAD": 0.5994578713620946,
+        "MVTec-AD": 1.0,
+        "MVTec-LOCO": 0.6025436261461107,
+        "VisA": 0.7430892837684272
+      }
     }
   },
   "pairs": {
@@ -173,6 +200,15 @@
       "oracle_acc": 0.7678571428571429,
       "mcnemar_p": 1.5992185050097182e-07
     },
+    "S vs B3_k3": {
+      "paired_questions": 952,
+      "both_right": 625,
+      "only_first": 48,
+      "only_second": 42,
+      "both_wrong": 237,
+      "oracle_acc": 0.7510504201680672,
+      "mcnemar_p": 0.5984117182335185
+    },
     "qwen_alone vs qwen_expert": {
       "paired_questions": 952,
       "both_right": 515,
@@ -200,6 +236,15 @@
       "oracle_acc": 0.7867647058823529,
       "mcnemar_p": 1.0
     },
+    "qwen_alone vs B3_k3": {
+      "paired_questions": 952,
+      "both_right": 511,
+      "only_first": 89,
+      "only_second": 156,
+      "both_wrong": 196,
+      "oracle_acc": 0.7941176470588235,
+      "mcnemar_p": 2.2222326589635786e-05
+    },
     "qwen_expert vs S_nojudge": {
       "paired_questions": 952,
       "both_right": 620,
@@ -218,6 +263,15 @@
       "oracle_acc": 0.8014705882352942,
       "mcnemar_p": 6.746695992767933e-06
     },
+    "qwen_expert vs B3_k3": {
+      "paired_questions": 952,
+      "both_right": 665,
+      "only_first": 8,
+      "only_second": 2,
+      "both_wrong": 277,
+      "oracle_acc": 0.7090336134453782,
+      "mcnemar_p": 0.109375
+    },
     "S_nojudge vs internvl_expert": {
       "paired_questions": 952,
       "both_right": 540,
@@ -226,6 +280,24 @@
       "both_wrong": 226,
       "oracle_acc": 0.7626050420168067,
       "mcnemar_p": 3.1113077147069024e-06
+    },
+    "S_nojudge vs B3_k3": {
+      "paired_questions": 952,
+      "both_right": 615,
+      "only_first": 50,
+      "only_second": 52,
+      "both_wrong": 235,
+      "oracle_acc": 0.7531512605042017,
+      "mcnemar_p": 0.9211910492538724
+    },
+    "internvl_expert vs B3_k3": {
+      "paired_questions": 952,
+      "both_right": 511,
+      "only_first": 90,
+      "only_second": 156,
+      "both_wrong": 195,
+      "oracle_acc": 0.7951680672268907,
+      "mcnemar_p": 3.0789168937527703e-05
     }
   },
   "args": {
@@ -234,7 +306,8 @@
       "qwen_alone=outputs/test200_qwen_alone",
       "qwen_expert=outputs/reagg/test200/pre/qwen_expert",
       "S_nojudge=outputs/reagg/test200/post/S_nojudge",
-      "internvl_expert=outputs/reagg/test200/pre/internvl_expert"
+      "internvl_expert=outputs/reagg/test200/pre/internvl_expert",
+      "B3_k3=outputs/test200_B3_k3"
     ],
     "step": "7_aggregator",
     "out": "results/test/test200_2026-11-25"
