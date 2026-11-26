@@ -12,20 +12,33 @@ protocol (1 reference, no added text, no tuning on MMAD)? **Success:** the full 
 p < 0.05, both the best single reader with the same evidence (B1 = Qwen + expert) and an equal-cost majority vote (B3).
 A well-measured negative result is also valid.
 
-## Status (Nov 25)
+## Status and results (Nov 25)
 
-| | 4B, local | 8B (not part of the IA025 results) |
+**Answer:** under the strict protocol, the team of agents does **not** beat one reader that gets the same evidence.
+What helps is the visual expert's evidence. Test, 200 stratified images (952 questions), run once with the config
+frozen on Nov 19 ([`results/test/test200_2026-11-25/summary.md`](results/test/test200_2026-11-25/summary.md)):
+
+| System (4B, local) | Mean of 7 subtasks [95 % CI] | McNemar vs S |
 |---|---|---|
-| Code | Done, 50 GPU-free tests pass | Same code (`Colab/` is an identical copy) |
-| Dev (835 images) | **Done**: S 66.5 · B1 65.9 · B3 65.6 · B2 60.2 | To do: [`docs/guides/guide_8B.fr.md`](docs/guides/guide_8B.fr.md) |
-| Config | Frozen: [`configs/2026-11-19_frozen.env`](configs/2026-11-19_frozen.env) | Template: [`configs/2026-11-19_8B_colab_template.env`](configs/2026-11-19_8B_colab_template.env) |
-| Test | 200 images running (`scripts/run_test200.sh`), 2,000 planned for the article: [`docs/reports/2026-11-25_test_protocol_change.md`](docs/reports/2026-11-25_test_protocol_change.md) | — |
+| **S**: expert + Qwen + InternVL + verifier + judge | **70.1** [66.9, 73.2] | — |
+| B1, Qwen + expert (hint and crop) | 70.3 [67.0, 73.5] | 44 vs 44 questions, p = 1.0 |
+| S without the judge | 68.7 [65.0, 72.1] | p = 0.47 |
+| Qwen alone, no expert | 64.5 [61.5, 67.6] | p < 0.001 |
+| InternVL + expert | 62.6 [59.3, 65.9] | p < 0.001 |
 
-B1 is Qwen3-VL-4B **with** the expert's hint and crop; on 82 dev images Qwen truly alone gets 61.2 vs 68.6 for S
-(p = 0.041), so most of the gain comes from the expert. On dev at 4B, S is the best system but **not yet significantly better than B1** (+0.6, p = 0.28). The conflict
-judge is the component that matters (+2.1 over S without it, p = 0.004). Full tables:
-[`results/compare/2026-11-19_dev_frozen/summary.md`](results/compare/2026-11-19_dev_frozen/summary.md) and
-[`docs/reports/2026-11-18_dev_results_4B.md`](docs/reports/2026-11-18_dev_results_4B.md).
+- The expert's evidence adds +5.8 points to Qwen (p < 0.001); the team adds nothing on top (−0.2, p = 1.0).
+- S makes fewer false alarms (48 % vs 53 % of good parts) with the same missed defects (18 % vs 17 %).
+- Dev (835 images) showed the same picture: S 66.5, Qwen + expert 65.9 (p = 0.28), B3 65.6
+  ([`results/compare/2026-11-19_dev_frozen/summary.md`](results/compare/2026-11-19_dev_frozen/summary.md)).
+- B3 (equal-compute vote) on the test is still running; the 2,000-image test is planned for the article.
+  The protocol change was written before any test answer: [`docs/reports/2026-11-25_test_protocol_change.md`](docs/reports/2026-11-25_test_protocol_change.md).
+
+| | |
+|---|---|
+| Frozen config | [`configs/2026-11-19_frozen.env`](configs/2026-11-19_frozen.env) |
+| Test driver | [`scripts/run_test200.sh`](scripts/run_test200.sh) (200 images) · [`scripts/run_test.sh`](scripts/run_test.sh) (2,000) |
+| Code | 50 GPU-free tests pass; `Colab/` is an identical copy |
+| 8B version | Not part of the IA025 results; template [`configs/2026-11-19_8B_colab_template.env`](configs/2026-11-19_8B_colab_template.env) |
 
 ## How it works
 
